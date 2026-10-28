@@ -1,0 +1,12658 @@
+local slot = {}
+
+local sources = {}
+
+if type(getfenv) == "function" then
+    local ok1, env1 = pcall(getfenv)
+
+    if ok1 and type(env1) == "table" then
+        sources[#sources + 1] = env1
+    end
+
+    local ok2, env2 = pcall(getfenv, 0)
+
+    if ok2 and type(env2) == "table" and env2 ~= env1 then
+        sources[#sources + 1] = env2
+    end
+end
+
+if type(_G) == "table" then
+    sources[#sources + 1] = _G
+end
+
+local function exget(name)
+    for i = 1, #sources do
+        local ok, value = pcall(function()
+            return sources[i][name]
+        end)
+
+        if ok and value ~= nil then
+            return value
+        end
+    end
+
+    return nil
+end
+
+local function exfn(name)
+    local value = exget(name)
+
+    if type(value) == "function" then
+        return value
+    end
+
+    return nil
+end
+
+local function protect(fn)
+    if not fn then
+        return nil
+    end
+
+    return function(...)
+        local results = table.pack(pcall(fn, ...))
+
+        if not results[1] then
+            return nil
+        end
+
+        return table.unpack(results, 2, results.n)
+    end
+end
+
+local isfolder = exfn("isfolder") or function()
+    return false
+end
+local isfile = exfn("isfile") or function()
+    return false
+end
+local makefolder = exfn("makefolder") or function()
+end
+local writefile = exfn("writefile") or function()
+end
+local readfile = exfn("readfile") or function()
+    return nil
+end
+local genv = exfn("getgenv") or function()
+    return _G
+end
+local cref = (function()
+    local fn = exfn("cloneref")
+
+    if not fn then
+        return function(inst)
+            return inst
+        end
+    end
+
+    return function(inst)
+        local ok, res = pcall(fn, inst)
+
+        if ok and res ~= nil then
+            return res
+        end
+
+        return inst
+    end
+end)()
+local gcx = protect(exfn("getconnections")) or function()
+    return {}
+end
+local ups = protect(exfn("getupvalues")) or function()
+    return {}
+end
+local setuv = protect(exfn("setupvalue")) or function()
+    return false
+end
+local nfo = protect(exfn("getinfo")) or function(f)
+    return {name = "", func = f, source = "", what = ""}
+end
+local islc = protect(exfn("islclosure")) or function(f)
+    return type(f) == "function"
+end
+local ccall = exfn("checkcaller") or function()
+    return false
+end
+local getthreadidentity = exfn("getthreadidentity") or function()
+    return 8
+end
+local setthreadidentity = exfn("setthreadidentity") or function()
+end
+local gethui = exfn("gethui")
+local hookmetamethod = protect(exfn("hookmetamethod")) or function()
+    return function()
+    end
+end
+local newcclosure = exfn("newcclosure") or function(f)
+    return f
+end
+local Drawing = exget("Drawing")
+
+if type(Drawing) ~= "table" then
+    Drawing = (function()
+        local fonts = {UI = 0, System = 1, Plex = 2, Monospace = 3}
+        local stub = {Fonts = fonts}
+
+        function stub.new()
+            return {Visible = false, Remove = function()
+            end, set = function()
+            end}
+        end
+
+        function stub.clear()
+        end
+
+        return stub
+    end)()
+end
+
+local g = game
+local ws = workspace
+slot[10] = hookmetamethod
+slot[11] = newcclosure
+slot[23] = assert
+slot[19] = rawget
+local sel = select
+local _unp = unpack
+local pc = pcall
+local ty = type
+local toy = typeof
+local prs = pairs
+local ips = ipairs
+local wn = warn
+local tostr = tostring
+local ton = tonumber
+local smt = setmetatable
+
+local tk = tick
+local v3 = Vector3
+local cf = CFrame
+local cl3 = Color3
+local ud2 = UDim2
+local ud = UDim
+local ins = Instance
+local en = Enum
+local tb = table
+local str = string
+local mt = math
+local tsk = task
+local osz = os
+local uis = cref(g:GetService("UserInputService"))
+local cpr = cref(g:GetService("ContentProvider"))
+local tws = cref(g:GetService("TweenService"))
+local hjs = cref(g:GetService("HttpService"))
+local txs = cref(g:GetService("TextService"))
+cref(g:GetService("RunService"))
+cref(g:GetService("Lighting"))
+local plrs = cref(g:GetService("Players"))
+local cg = cref(g:GetService("CoreGui"))
+cref(g:GetService("Debris"))
+local seq = 0
+local nid = 0
+local lastgui
+
+local function rnd(a)
+    seq = seq + 1
+    local tmp = a or math.random(14, 22)
+    local create2 = table.create(tmp)
+
+    for i = 1, tmp do
+        local random2 = math.random(1, 63)
+
+        if i == tmp then
+            random2 = (random2 + seq * 19 + tmp * 7) % 63 + 1
+        end
+
+        create2[i] = string.sub("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", random2, random2)
+    end
+
+    return table.concat(create2)
+end
+
+local function rtag(b)
+    seq = seq + 1
+    local itm = b or math.random(12, 18)
+    local create3 = table.create(itm)
+
+    for n = 1, itm do
+        local random3 = math.random(1, 63)
+
+        if n == itm then
+            random3 = (random3 + seq * 23) % 63 + 1
+        end
+
+        create3[n] = string.sub("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", random3, random3)
+    end
+
+    return table.concat(create3)
+end
+
+local gkey = rnd(mt.random(14, 22))
+local mkey = rtag(mt.random(12, 18))
+
+local function hroot()
+    local hr
+
+    pcall(function()
+        if typeof(gethui) ~= "function" then
+            return
+        end
+
+        hr = gethui()
+
+        if hr and typeof(cref) == "function" then
+            hr = cref(hr)
+        end
+    end)
+
+    if hr then
+        return hr
+    end
+
+    return cg
+end
+
+local function each(c)
+    c(hroot())
+    c(cg)
+    c(plrs.LocalPlayer and plrs.LocalPlayer:FindFirstChildOfClass("PlayerGui"))
+end
+
+local function mkn(d)
+    nid = nid + 1
+    local new2 = ins.new(d)
+    new2.Name = rnd(math.random(14, 22))
+    return new2
+end
+
+local randcl = {
+    ScreenGui = true,
+    BillboardGui = true,
+    SurfaceGui = true,
+    Frame = true,
+    ScrollingFrame = true,
+    TextLabel = true,
+    TextButton = true,
+    TextBox = true,
+    ImageLabel = true,
+    ImageButton = true,
+    ViewportFrame = true,
+    VideoFrame = true,
+    CanvasGroup = true,
+    Folder = true,
+    UICorner = true,
+    UIStroke = true,
+    UIGradient = true,
+    UIPadding = true,
+    UIListLayout = true,
+    UIGridLayout = true,
+    UIAspectRatioConstraint = true,
+    UITextSizeConstraint = true,
+    UISizeConstraint = true,
+    UIScale = true,
+    UIPageLayout = true,
+    UITableLayout = true
+}
+
+local function mkraw(e, ...)
+    if randcl[e] then
+        return mkn(e)
+    end
+
+    return ins.new(e, ...)
+end
+
+local inst = smt({}, {
+    __index = function(f, s)
+        if s == "new" then
+            return mkraw
+        end
+
+        return ins[s]
+    end
+})
+
+local function tag(x)
+    if not x then
+        return
+    end
+
+    x:SetAttribute(mkey, rtag(math.random(14, 22)))
+    lastgui = x
+
+    if genv then
+        genv()[gkey] = x
+        genv()._BBPrivateObfuscationRegistry = {GuiRoot = x, GlobalKey = gkey, MarkerAttribute = mkey}
+    end
+end
+
+local function purge()
+    local _thg = mkey
+
+    each(function(y)
+        if not y then
+            return
+        end
+
+        for k, v in ipairs(y:GetChildren()) do
+            if v:IsA("ScreenGui") and v:GetAttribute(mkey) ~= nil then
+                v:Destroy()
+            end
+        end
+    end)
+end
+
+local function nuke()
+    if not genv then
+        return
+    end
+
+    local reg = genv()._BBPrivateObfuscationRegistry
+
+    if typeof(reg) ~= "table" then
+        return
+    end
+
+    if typeof(reg.GuiRoot) == "Instance" and reg.GuiRoot.Parent then
+        pcall(function()
+            reg.GuiRoot:Destroy()
+        end)
+    end
+
+    if typeof(reg.GlobalKey) == "string" then
+        local gobj = genv()[reg.GlobalKey]
+
+        if typeof(gobj) == "Instance" and gobj.Parent then
+            pcall(function()
+                gobj:Destroy()
+            end)
+        end
+
+        genv()[reg.GlobalKey] = nil
+    end
+
+    if typeof(reg.MarkerAttribute) == "string" then
+        local attr = reg.MarkerAttribute
+
+        each(function(z)
+            if not z then
+                return
+            end
+
+            for j, w in ipairs(z:GetChildren()) do
+                if w:IsA("ScreenGui") and w:GetAttribute(attr) ~= nil then
+                    w:Destroy()
+                end
+            end
+        end)
+    end
+end
+
+slot[7] = function()
+    nuke()
+    purge()
+
+    if genv and gkey then
+        local nit = genv()[gkey]
+
+        if typeof(nit) == "Instance" and nit.Parent then
+            nit:Destroy()
+        end
+
+        genv()[gkey] = nil
+    end
+
+    if lastgui and lastgui.Parent then
+        lastgui:Destroy()
+    end
+
+    lastgui = nil
+end
+
+local function mkui()
+    local scr = mkn("ScreenGui")
+    scr.ResetOnSpawn = false
+    scr.IgnoreGuiInset = true
+    scr.ZIndexBehavior = en.ZIndexBehavior.Sibling
+    scr.Parent = hroot()
+    tag(scr)
+    return scr
+end
+
+local function mkaux()
+    local scr2 = mkn("ScreenGui")
+    scr2.ResetOnSpawn = false
+    scr2.IgnoreGuiInset = true
+    scr2.ZIndexBehavior = en.ZIndexBehavior.Sibling
+    scr2:SetAttribute(mkey, rtag(math.random(14, 22)))
+    scr2.Parent = hroot()
+    return scr2
+end
+
+local mk = {new = mkn}
+local mse = plrs.LocalPlayer:GetMouse()
+
+local th = {
+    Language = {
+        CheckboxEnabled = "Enabled",
+        CheckboxDisabled = "Disabled",
+        SliderValue = "Value",
+        DropdownSelect = "Select",
+        DropdownNone = "None",
+        DropdownSelected = "Selected",
+        ButtonClick = "Click",
+        TextboxEnter = "Enter",
+        ModuleEnabled = "Enabled",
+        ModuleDisabled = "Disabled",
+        TabGeneral = "General",
+        TabSettings = "Settings",
+        Loading = "Loading...",
+        Error = "Error",
+        Success = "Success"
+    },
+    Colors = {
+        Background = cl3.fromRGB(11, 11, 17),
+        Card = cl3.fromRGB(17, 17, 24),
+        CardDeep = cl3.fromRGB(13, 13, 20),
+        Stroke = cl3.fromRGB(36, 40, 58),
+        StrokeHot = cl3.fromRGB(72, 76, 130),
+        Accent = cl3.fromRGB(99, 102, 241),
+        AccentDim = cl3.fromRGB(55, 58, 190),
+        AccentSoft = cl3.fromRGB(172, 178, 255),
+        AccentGlow = cl3.fromRGB(99, 102, 241),
+        Text = cl3.fromRGB(235, 235, 245),
+        SubText = cl3.fromRGB(148, 152, 185),
+        NotifyBg = cl3.fromRGB(16, 16, 26),
+        Danger = cl3.fromRGB(240, 70, 70),
+        Success = cl3.fromRGB(72, 210, 140)
+    },
+    DefaultColors = {},
+    Connections = smt({}, {
+        __index = {
+            disconnect = function(p, q)
+                if not p[q] then
+                    return
+                end
+
+                p[q]:Disconnect()
+                p[q] = nil
+            end,
+            disconnect_all = function(r)
+                for m, idx in pairs(r) do
+                    if typeof(idx) ~= "function" then
+                        idx:Disconnect()
+                    end
+                end
+            end
+        }
+    }),
+    Util = {
+        map = function(u, o, h, l, g2, cb)
+            return (o - h) * (cb - g2) / (l - h) + g2
+        end,
+        viewport_point_to_world = function(ev, obj, plr)
+            local ray = ws.CurrentCamera:ScreenPointToRay(obj.X, obj.Y)
+            return ray.Origin + ray.Direction * plr
+        end,
+        get_offset = function(opts)
+            return opts:map(ws.CurrentCamera.ViewportSize.Y, 0, 2560, 8, 56)
+        end
+    },
+    Library = {
+        _all_modules = {},
+        _config = nil,
+        _choosing_keybind = false,
+        _blocking_drag = false,
+        _device = nil,
+        _ui_open = true,
+        _ui_scale = 1,
+        _ui_loaded = false,
+        _ui = nil,
+        _dragging = false,
+        _drag_start = nil,
+        _container_position = nil,
+        _tab = 0,
+        _active_tab_ref = nil,
+        _theme_container = nil,
+        _theme_container_stroke = nil,
+        _theme_vert_div = nil,
+        _theme_search = nil,
+        _theme_search_stroke = nil,
+        _theme_client_grad = nil,
+        _theme_pin = nil,
+        _theme_logo = nil,
+        _container_uiscale = nil,
+        _applying_theme = false,
+        _theme_pending = false,
+        _theme_debounce = nil
+    }
+}
+
+for el, ent in prs(th.Colors) do
+    th.DefaultColors[el] = ent
+end
+
+genv().GG = {Language = th.Language}
+local lang = th.Language
+local conns = th.Connections
+slot[3] = th.Util
+local lib = th.Library
+lib.__index = lib
+local icons_ok, icons_src = pcall(function()
+    return g:HttpGet("https://raw.githubusercontent.com/ieltxq/Library/refs/heads/main/Icons")
+end)
+local icos = {}
+
+if icons_ok and type(icons_src) == "string" then
+    local icon_fn = loadstring(icons_src)
+
+    if icon_fn then
+        local icons_run, icons_tbl = pcall(icon_fn)
+
+        if icons_run and type(icons_tbl) == "table" then
+            icos = icons_tbl
+        else
+            wn("icon map failed to load; falling back to inline icons")
+        end
+    end
+end
+
+
+local function ico(cfg)
+    if not cfg then
+        return ""
+    end
+
+    if cfg:find("rbxassetid://") then
+        return cfg
+    end
+
+    return icos[cfg] or ""
+end
+
+local LOGO_B64 = "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAQoUlEQVR42u2bS28cV3bHf+feenQ3uylSFiXLkiXbsmRbE3uU" ..
+    "wUw8juM8YMfbLLIIECBBVhkEySfIMp8hiyBBgCyyyCYJsggSDGA4nkyM8WPG9lixYdkeSdZbIimS/a6qe08W93az2dOkSFr2" ..
+    "zGTcQKHI6uqqOv97nv9zSgRU+eX9mF9m4QEMXwFw/z8St1+ET7JfAQF04m/Z4VydOP//BQDT6iOAnfG9TgmtU8d0Bkg/9wDI" ..
+    "lPAmbg5IASsCCj6KNCmw3+ZvZmiU/iKYgI1bBixZy6pztFUx8VgKiAiq4FB8FNxPAONnaAZfIgjJfpybxFUfqf3jacq/nT7F" ..
+    "nbUObw4K3iwGnC8GXCsK+qpYIB8LLFQoLgrvtgFiO3P5mQEgU38bIBHBq/LyXJNjKhwTy7lsjj/NmtyywgdVyY+qIW8P+1wY" ..
+    "9lgpKwqUdMIMHFDFvZvQEL8DEHqfI5bu5eTRyqdAJkJLlb9/6BgvJjmD/hDvlLJySKUkClhLL0m5YjwfiOPH1YAPhwOuFkPW" ..
+    "vaecAmMWIHoPQD6PE931bydVP4k2ngFfN4Z/PPEYR7oD+l6pnCOvFHWedefoOId3PpiLFVyWsJEmXBHlJ3g+KoZcKgbcdBXr" ..
+    "UfiRwFXc/C60Q2eE6C/EB5gJLciAb9bqHPZCv3SUgCmVvx32sOp5DsthDGoNHXWs+4pBv8D1lZYI52zCM2nGRi3nuiqXfclF" ..
+    "V3KtKrirnt4UANObTgGyH1+xLydogFSEpirfqjeQfsHQeUSh7Tx/VXVZxtMAHgFewPJtEk4YS12EIUpblXZV0q8KSgQR4YRN" ..
+    "OG5qbKQZy+q54UtWfcmqetpAHxhOCH0vMO4bACOhZSLpSVV5EHgiyRn0CgrnaSq85ytW8Pz1Iyd4ol7jX9bbvNZu8w/9Pnk1" ..
+    "5Eng17CclYSDRsgRhgodCIBQ4MSgYlgiYcFYDnvHAEcPT1uVNZQ20J3IRfyUqYwAue8aMHKAFngyy3iYhG45oBBFHXy3HJBY" ..
+    "yx+0mhzq9XmpNQ+tBS6gvDoc8N1uh3/udPib/oDDCmcxPIllSSy5CIrQBjre0UPpxVUvsXgxNATm8SQofZRl9SwDG1Hg0UL5" ..
+    "XUaNZD/xP0XIUZ7O65hhxcA7ADpe+A8d8GyzxaFKKdoDYIB1yhkVziQJ32ksstZ6gB+4kn/vdfivfo/XBgOoBhxDeBzLEQx1" ..
+    "hBpCiRKu4uloWPUCsAgHjOWAKIdRhhrAuI3SiULbCfPYNwAyw/lZ4ABwNqtT9AoKVVKFT1AuoHxnfh46A7TyGBEqVYYo5WAA" ..
+    "3R7WwYtieAbHn9fm+KTe4vWq5HvDAW8WQzaqkibKQxgOYqghWMAQkiohmMxt76iA1BgWjGEBwxHvWUBZU093KvX+3CawCYDy" ..
+    "sDUcNwmdos1QIPXKG1qhAi/V6rC8jlPFabRPVbxXvIIKrLmKS0WXog81hN+1Cb+VJNzKmnyQeN5zBf/rK37oK5wqcwgNhAyD" ..
+    "jyBkCKlApcptlOsoRiBXsBI8Q6JQ7hDvk92q/mhL44+eqNVpVrDqHKURUuAVHfJ4o84ZB+2ixBmDj3cNwiuqIAp9V6FiUBG6" ..
+    "qnRcRduV9ICDGH7HGJ6VjNsm5ZI6PlbHDRxdrQAhRUgQLIIBajHNdiilCH1VWlHsar8ATANho/3XUZ5Kcga9PgM8qsKyCK/j" ..
+    "+KP6HFl3wIrzWB/ckNcAQCAfBfFKXx0eKFUpAR8dYBXVu6uOnldKhAeBQ5LQIeE6jmU8t/F08KhCIgarghXBYBAUEXhAYQXd" ..
+    "kaDZkw8Y2eEh4IQk3C269EXIgA/Vsw68UK/TXusz9BqVFVTD6nsFQRBVBuqpokMr474gVI0aH9eI4CIgPfX0Yx1xBMs8llVR" ..
+    "VtTRUY9HqGFRCSteQ1jAc3tKg3W3AMwsfuL+VJoyr8KyOpwY5oDXtSK1htOFZ7nbp7AGUY0xOay+BjRAQlJTbhE+PHg5UQsE" ..
+    "3xG0SOKTlMAgRgYDLGDp4skRcoVKwQk8CJh4f7MfJ6gTnn9S/XOU02lOuyhZj2dWwH9TcibJme8OWVFH6oNNalRTHcfpzUzQ" ..
+    "iYzz/Z8SfPS/sOlIJ5JdjVjmKArMETTRxuPHRbg2seq6V1JUpvg+E73/AvCwzblVFDE9Va4Bn6J8yyT0h0M2EDZU6aino0oX" ..
+    "YlKjVHhSlHo0jSHKAN0CwIg8mS6RdYJHKIEmgomiLWCoxfpkQYQj0XTsPTjLZC8lcAIcE6Hm4bqr8AIN4EMN8fhr3nDTFfRk" ..
+    "88YB/RC4MpTbwN9pwddEOKWGAwgNlfFqj3xCEFS3ALD1b2UOuIqnjtAa1wnKSSwpFf1dlLvJ7rO/cPJjaU7fKxt4LAar8A6O" ..
+    "zBiOes9N9RgxJFE1/Tg1VRaBt9XxCp5XAIvjuAqPIZzCcEhNDGdh9YZT1Nlk8WOBilAXnMRSi89dIZyS4J8+dy0wzQE0gIdM" ..
+    "yvWyoAdYDSt0Hs9pLJXzrCHUUERBJPxWETxQV3gLF6NJWOnLKJdRXsUzBxxHOIrhCbEcQLiiSjf6mRFX4GIStBFFXCLkIR6w" ..
+    "GA4LnPeje+/sA5KdIsDW8AcHgVwsV6s+PvJ8d1DuoryIZdW7sHIaLjxynhJvfws4P6HWTIWnLvARykc4XjQp57xwXpTP8FxU" ..
+    "pYOOa4Emwi08GcJBZHzNo2LI1XN3l/zAPcPgZCn8kLH0VcbqD/BxvMWDGsAYhaokNh5NYMmZU7iIHycmszi+0T3nER50yh1g" ..
+    "SUJmeErguiqfoVyOzncd5TiGFkI/AnDaWFZ90NBZ7PK0T0j2wgEumZTrVUkPJYnCXsAxHx3ZOkqGxvR0s3Ah5uzvqd+RhxuV" ..
+    "sacQUhFWYlIUHKPSFDiN8LgKb+E4D5xk5DcUQXhIhO+rn8kU6V5MYHprAjWT8JOyokJIYkJyDc+TWDqE6qucqNosYDX8vwF8" ..
+    "tCWSb/85jdCJXAAxSSqiUxwoZCiXcEgEII9+4ZCxzImO47/fjwnINiAcQCjFcFddYIRRVkY3RlgbOyoZZ4wywR22GZnI9g81" ..
+    "ihhHMNyNFJiL1y2AUsP91qPjPIxhCaGPkgOPGMu6H47JET/DxHSvUWAkyJJNuOM8HZQ8wnQdj8QsbCOeW6FbAABoIbyPoxgd" ..
+    "l/CNV/2phzuE0JQAwCQzXMaIkyDcQKlQTmFpxEUA4Zi1/LCsYk2xu8ZKshsOIAPqkvCZd1tIyZt4WmMb3cwV7ITvCCW0ciJL" ..
+    "uYHlclFsmUmxEQyigMcQCoV2POxUcWymzBlwJZrSEzH85UBDLA2jXPK6hRe8Fwj3BCDk2aDGcqsaksSLd4EOygkMnYmHsxPb" ..
+    "6OIN4C9JqTcbXGtmvOE9/9np8FanS6+qtoC9hGEdZRCDp5swA43O8CqeBsIJzDhHOZokOK24NZU18nnC4CiRaIlhRZU2nhpC" ..
+    "EllZokp2IrYukhPJRPIUVNXwWTFEVoccWUv4w7kGf9yc59rCQd6pCl7t9Hi11+VWUZACd9Hx7E45IYwAbZQ2yjkshxA2Yol8" ..
+    "3Fo+rfq0p5jh+0KKNsVwzQUbHv1oLdq/R8ZFRzn2/oJFx2VoLnA9UmHLvuLj9jqN9hqLWH4jz3k5z7kzt8j7dc9aWXKhLLhW" ..
+    "VfRjp9kiSLzvShTnaQw1lCGQiuWANVwYVGNT+Vw+YLK9lMX08oYPufUghrlezMJGBYiNxGUSq0Yz5u1CZLiMYhUaAjmGOrAC" ..
+    "XBoOqA37NBHOiCWxCc+alFtpyife8YmvuKHKhnoy4FYE/lfEkGgozxeTBDWeixO02G47y8l2dk9EsQG0RegQHgAUL4GoMBgG" ..
+    "cc7OTKz+yAFqNJEVVdais6oBuSo1oCZCLkKGkEenmlYFGdBAeEaEsxhWgIti+DGOZfU8jOGECoWEBs3RLOVq2Wc1+gs3IwTu" ..
+    "GoDJKQ0fQ9yyRqEDo0cRL+sFShEMgsfHsBVSXRtj9gGEO/FYHcgjcZEDNdXA7MY4nkvIGLMxDe7HvuQpDZX/vwLfwLIowl0B" ..
+    "UcNilvLqxhrFRC+R/WrANHGQSIi7KkG9jIb4DTBUx1A9qQSWdmSrMuL2BApV7sTkKIurP5oeyWNCVZPwfRq/y0Qj6xs0yQMd" ..
+    "8byjIeJ/M4JY8zCfJKhRPnYeF9V/MgL4/UYBF9V1qNARjUKFz1wsQHxkcwa62ec3GHIREgmr2I8gJNEc0onW+giITBkfz+M+" ..
+    "UcUKJBpALVDexdFA+DoWAWp4lvIGt13BjYmkSfcwSLGtCYxaS7clePc06oeP1V2qobF5KK6Uw9ONpXFPN4vdgQg1MUGoUX4Q" ..
+    "y+V0BACbWpEBmYZrJtG35MBdgSsKv47huITI08DwQF7jte4y6zEK+T3Y/45OUGLx0ddQZZUSvkkjueElMLCjSnERw0litxdl" ..
+    "Fcd1lFvqGURFtCI0ooakE1EjnQAli4CMjpvoEJcjqL8pCU1MyDxFGFrl/WLIcIYG7JsP0LEdQ4LS1JAAeYQy9vcHjAAJjE8Z" ..
+    "i5cEZQnhcRJqCANRbqjnMp6L6lnDxSQqND8bYsgQEgmOM5noPidxG6J8Gqu/5yLVkqpnsV7nIhUXlcAwj2n43Q9L7EiLj7i4" ..
+    "AYqocgA4gJJjwBi6Cj1VCg2xP4/1ewl0oyG1FE6I5SW1VMBtCYzPe+q5iGc1rqzB0JIAShpDqYmJUA+4jfIYhqewqAg1hXqe" ..
+    "86PeGmuxUqxmjNHcFwAkPsQAWFNPC88hH7i7lrEYsVSxla3ORaenVAgusjVGAqfwDIYXsFiBO8D7VLyF5111rMTuEgiN6DvS" ..
+    "mGqrwvOS8oCEjlBDLJ084d12L84P6JYQeN8mRHSChdVoYxuElb+Jo+Uci5GMOGwz5tKMXCxGFXEO9RVOA1/jRehGQOeBk8Az" ..
+    "pPwJhlWBD3D8AMf3teIjDRMhsZsIwG/bnARLop5WlvKullxyfgy+38ds4Y4A+InOiZvSisnuzQZwzTty32ceWDSGozbjWJqy" ..
+    "KHWaCg1VpCpJnEOiZgxFWEeoibAAvEzK75HTF+FT8bxBxfe05HUtKYDnkpwKIas8eaPGe2WbFaCMDtnvMQTuakxu1mzwNFts" ..
+    "pxzXaJ8DLeCITXg0q3PSJhwzCUvOUy9LbOkQDXVEIpZUDKk1ZGJoIMwZgxrDFTxX1XPOhHZL4jzDxRZ/sXqFt4eBAO1H1qja" ..
+    "ow/Y85ygzGiamKkJkmRqPzpeAxas5USa82SWc8ZmnMLwQOXJhiVUHi9AYjHWYo2QiKERa4Z+9PJNMbzeTPiza5fYiNzEYMbU" ..
+    "mN7vISmdCJGTfL6fmhwvZwCSxBVqO8dV1+ONQY8acDTLeKrW4OlWxlmb86iDBecxzsUeocdZw0CEVCxePSbPeaPosAIgQqmz" ..
+    "B7Hv+6jsTs1TpkbpttOQTe3YbGyOftuyhkdrdc7V6nwjq/OracZxB6aqYq4pOO9hvsnv37zK/3TDoNxwigPwXwYA280RyAxw" ..
+    "ZMp3yJRpjAgUJtgcCxzOMs425vh2vc5zjTmeSixN7/nUWp6/8BFFnDWuZgxL8mUBsBvN2Ml/zALISpgiceOpEWiIcKxe5/lm" ..
+    "k42y5J/u3qU2w+ntdVL0C3tbRXbYb2c6s8AyErJCpyH9HtFy9W1evPBf5Lj8FwEIM5yqzPh+fJ5Etlh1S8z3+xTkS39fSe7h" ..
+    "Q7jHRMdksebvw0sU8rN+m01mdIdlF+GY+/Qqjfycvs7HV6/OfgXAVwB8KZ//A9ybvgilKF16AAAAAElFTkSuQmCC"
+
+local function b64_decode(data)
+    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    local out = {}
+    local acc = 0
+    local bits = 0
+
+    for i = 1, #data do
+        local c = data:sub(i, i)
+
+        if c == "=" then
+            break
+        end
+
+        local v = chars:find(c, 1, true)
+
+        if v then
+            acc = acc * 64 + (v - 1)
+            bits = bits + 6
+
+            if bits >= 8 then
+                bits = bits - 8
+                out[#out + 1] = string.char(math.floor(acc / (2 ^ bits)) % 256)
+                acc = acc % (2 ^ bits)
+            end
+        end
+    end
+
+    return table.concat(out)
+end
+
+local function resolve_logo()
+    local fallback = "rbxassetid://99206841644167"
+    local getasset = exfn("getcustomasset") or exfn("getsynasset")
+
+    if not getasset then
+        return fallback
+    end
+
+    local png = b64_decode(LOGO_B64)
+    local paths = {"!bb_private/logo.png", "logo.png"}
+
+    for i = 1, #paths do
+        local path = paths[i]
+        local ok = pcall(writefile, path, png)
+
+        if ok then
+            local success, asset = pcall(getasset, path)
+
+            if success and type(asset) == "string" and asset ~= "" then
+                return asset
+            end
+        end
+    end
+
+    return fallback
+end
+
+slot[7]()
+
+if not isfolder("!bb_private") then
+    makefolder("!bb_private")
+end
+
+local cfgs = {}
+cfgs.__index = cfgs
+
+function cfgs.save(src, dst, num)
+    local function fn()
+        writefile("!bb_private/" .. dst .. ".json", hjs:JSONEncode(num))
+    end
+
+    local bit, hat = pcall(fn)
+
+    if not bit then
+        wn("failed to save config", hat)
+    end
+end
+
+function cfgs.load(txt, list, tbl)
+    local function fn2()
+        if not isfile("!bb_private/" .. list .. ".json") then
+            txt:save(list, tbl)
+            return
+        end
+
+        local fob = readfile("!bb_private/" .. list .. ".json")
+
+        if not fob then
+            txt:save(list, tbl)
+            return
+        end
+
+        return hjs:JSONDecode(fob)
+    end
+
+    local jig, lug = pcall(fn2)
+
+    if not jig then
+        wn("failed to load config", lug)
+    end
+
+    local mug = lug or {_flags = {}, _keybinds = {}, _library = {}}
+    return mug
+end
+
+lib._config = cfgs:load(g.GameId)
+slot[3] = lib._config._gui
+
+if not slot[3] then
+    slot[3] = {}
+    lib._config._gui = slot[3]
+end
+
+if slot[3].toggle_key == nil then
+    slot[3].toggle_key = "Enum.KeyCode.RightControl"
+end
+
+if slot[3].hide_minimized == nil then
+    slot[3].hide_minimized = false
+end
+
+if slot[3].bg_transparency == nil then
+    slot[3].bg_transparency = 0.04
+end
+
+slot[3] = mkui()
+slot[3].ZIndexBehavior = en.ZIndexBehavior.Global
+local nbox = mk.new("Frame")
+nbox.Size = ud2.new(0, 330, 1, -40)
+nbox.Position = ud2.new(0, 18, 1, -20)
+nbox.AnchorPoint = Vector2.new(0, 1)
+nbox.BackgroundTransparency = 1
+nbox.ClipsDescendants = false
+nbox.Parent = slot[3]
+slot[3] = inst.new("UIListLayout")
+slot[3].VerticalAlignment = en.VerticalAlignment.Bottom
+slot[3].Padding = ud.new(0, 10)
+slot[3].Parent = nbox
+
+function lib.SendNotification(grp)
+    local nip = mk
+    local colors2 = th.Colors
+    local duration2 = grp.duration or 4
+    local iconColor2 = grp.iconColor or colors2.Accent
+    local frm = nip.new("Frame")
+    frm.Size = ud2.new(1, 0, 0, 66)
+    frm.BackgroundTransparency = 1
+    frm.Parent = nbox
+    local frm2 = nip.new("Frame")
+    frm2.Size = ud2.new(1, 0, 1, 0)
+    frm2.BackgroundColor3 = cl3.fromRGB(16, 16, 25)
+    frm2.BackgroundTransparency = 0
+    frm2.BorderSizePixel = 0
+    frm2.ClipsDescendants = true
+    frm2.Parent = frm
+    local cnr = nip.new("UICorner")
+    cnr.CornerRadius = ud.new(0, 12)
+    cnr.Parent = frm2
+    local strk = nip.new("UIStroke")
+    strk.Color = colors2.StrokeHot
+    strk.Transparency = 0.64
+    strk.ApplyStrokeMode = en.ApplyStrokeMode.Border
+    strk.Parent = frm2
+    local frm3 = nip.new("Frame")
+    frm3.Size = ud2.new(1, 0, 0, 34)
+    frm3.Position = ud2.new(0, 0, 0, 0)
+    frm3.BackgroundColor3 = iconColor2
+    frm3.BackgroundTransparency = 0.85
+    frm3.BorderSizePixel = 0
+    frm3.Parent = frm2
+    local cnr2 = nip.new("UICorner")
+
+    cnr2.CornerRadius = ud.new(0, 12)
+    cnr2.Parent = frm3
+    local grad = nip.new("UIGradient")
+    grad.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)})
+    grad.Rotation = 90
+    grad.Parent = frm3
+    local frm4 = nip.new("Frame")
+    frm4.Size = ud2.new(0, 30, 0, 30)
+    frm4.Position = ud2.new(0, 13, 0.5, 0)
+    frm4.AnchorPoint = Vector2.new(0, 0.5)
+    frm4.BackgroundColor3 = iconColor2
+    frm4.BackgroundTransparency = 0.72
+    frm4.BorderSizePixel = 0
+    frm4.Parent = frm2
+    local cnr3 = nip.new("UICorner")
+    cnr3.CornerRadius = ud.new(0, 8)
+    cnr3.Parent = frm4
+    local img = nip.new("ImageLabel")
+    img.BackgroundTransparency = 1
+    img.Size = ud2.new(0, 14, 0, 14)
+    img.Position = ud2.new(0.5, 0, 0.5, 0)
+    img.AnchorPoint = Vector2.new(0.5, 0.5)
+    img.Image = ico(grp.icon)
+    img.ImageColor3 = iconColor2
+    img.Parent = frm4
+    local lbl2 = nip.new("TextLabel")
+    lbl2.Text = grp.title or "Notification"
+    lbl2.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Bold)
+    lbl2.TextSize = 13
+    lbl2.TextColor3 = colors2.Text
+    lbl2.TextTransparency = 0
+    lbl2.BackgroundTransparency = 1
+    lbl2.Position = ud2.new(0, 52, 0, 9)
+    lbl2.Size = ud2.new(1, -60, 0, 16)
+    lbl2.TextXAlignment = en.TextXAlignment.Left
+    lbl2.Parent = frm2
+    local lbl3 = nip.new("TextLabel")
+    lbl3.Text = grp.text or ""
+    lbl3.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Regular)
+    lbl3.TextSize = 11
+    lbl3.TextColor3 = colors2.SubText
+    lbl3.BackgroundTransparency = 1
+    lbl3.Position = ud2.new(0, 52, 0, 27)
+    lbl3.Size = ud2.new(1, -60, 0, 28)
+    lbl3.TextWrapped = true
+    lbl3.TextXAlignment = en.TextXAlignment.Left
+    lbl3.TextYAlignment = en.TextYAlignment.Top
+    lbl3.Parent = frm2
+    local frm5 = nip.new("Frame")
+    frm5.Size = ud2.new(1, -24, 0, 3)
+    frm5.Position = ud2.new(0, 12, 1, -5)
+    frm5.AnchorPoint = Vector2.new(0, 1)
+    frm5.BackgroundColor3 = colors2.Stroke
+    frm5.BackgroundTransparency = 0.3
+    frm5.BorderSizePixel = 0
+    frm5.Parent = frm2
+    local cnr4 = nip.new("UICorner")
+    cnr4.CornerRadius = ud.new(0, 2)
+    cnr4.Parent = frm5
+    local frm6 = nip.new("Frame")
+    frm6.Size = ud2.new(1, 0, 1, 0)
+    frm6.BackgroundColor3 = iconColor2
+    frm6.BackgroundTransparency = 0.15
+    frm6.BorderSizePixel = 0
+    frm6.Parent = frm5
+    local cnr5 = nip.new("UICorner")
+    cnr5.CornerRadius = ud.new(0, 2)
+    cnr5.Parent = frm6
+    frm2.Position = ud2.new(-1.08, 0, 0, 0)
+    tws:Create(frm2, TweenInfo.new(0.52, en.EasingStyle.Quint, en.EasingDirection.Out), {Position = ud2.new(0, 0, 0, 0)}):Play()
+    tws:Create(frm6, TweenInfo.new(duration2 - 0.04, en.EasingStyle.Linear), {Size = ud2.new(0, 0, 1, 0)}):Play()
+
+    task.delay(duration2, function()
+        tws:Create(frm2, TweenInfo.new(0.38, en.EasingStyle.Quint, en.EasingDirection.In), {Position = ud2.new(-1.08, 0, 0, 0)}):Play()
+
+        task.delay(0.4, function()
+            frm:Destroy()
+        end)
+    end)
+end
+
+function lib.get_screen_scale(row)
+    local odd = ws.CurrentCamera.ViewportSize.X / 1400
+
+    if row._device == "Mobile" then
+        row._ui_scale = math.clamp(odd * 0.97, 0.68, 0.9)
+    else
+        row._ui_scale = math.clamp(odd, 0.5, 1.2)
+    end
+end
+
+function lib.get_device(col)
+    if not uis.TouchEnabled and uis.KeyboardEnabled and uis.MouseEnabled then
+        col._device = "PC"
+    elseif uis.TouchEnabled then
+        col._device = "Mobile"
+    elseif uis.GamepadEnabled then
+        col._device = "Console"
+    else
+        col._device = "Unknown"
+    end
+end
+
+function lib.removed(cell, node)
+    cell._ui.AncestryChanged:Once(node)
+end
+
+function lib.flag_type(ref, hnd, evt)
+    if not lib._config._flags[hnd] then
+        return
+    end
+
+    return typeof(lib._config._flags[hnd]) == evt
+end
+
+function lib.remove_table_value(sig, res, err)
+    for n2, i2 in ipairs(res) do
+        if i2 == err then
+            table.remove(res, n2)
+            return
+        end
+    end
+end
+
+function lib.new()
+    local peg = setmetatable({_loaded = false}, lib)
+    peg:create_ui()
+    return peg
+end
+
+function lib.create_ui(ui)
+    local pod = mk;
+
+    (function()
+        local _gui2 = lib._config._gui
+
+        if not _gui2 or not _gui2.colors then
+            return
+        end
+
+        for val2, val3 in pairs(_gui2.colors) do
+            if type(val3) == "table" and val3.H ~= nil and th.Colors[val2] then
+                th.Colors[val2] = cl3.fromHSV(val3.H, val3.S, val3.V)
+            end
+        end
+
+        local colors3 = th.Colors
+
+        if _gui2.colors.Stroke then
+            local stroke2 = colors3.Stroke
+            colors3.StrokeHot = cl3.new(math.clamp(stroke2.R * 1.2 + 0.05, 0, 1), math.clamp(stroke2.G * 1.2 + 0.05, 0, 1), math.clamp(stroke2.B * 1.22 + 0.06, 0, 1))
+        end
+
+        if _gui2.colors.Accent then
+            local accent = colors3.Accent
+            colors3.AccentSoft = cl3.new(math.clamp(accent.R * 0.55 + 0.42, 0, 1), math.clamp(accent.G * 0.55 + 0.42, 0, 1), math.clamp(accent.B * 0.58 + 0.45, 0, 1))
+            colors3.AccentDim = cl3.new(math.clamp(accent.R * 0.42, 0, 1), math.clamp(accent.G * 0.42, 0, 1), math.clamp(accent.B * 0.48, 0, 1))
+            colors3.AccentGlow = accent
+        end
+
+        if _gui2.colors.Card then
+            local card = colors3.Card
+            colors3.CardDeep = cl3.new(card.R * 0.78, card.G * 0.78, card.B * 0.8)
+        end
+    end)()
+
+    local pal = th.Colors
+    local gui = mkui()
+    local holder = pod.new("Frame")
+    holder.ClipsDescendants = true
+    holder.AnchorPoint = Vector2.new(0.5, 0.5)
+    holder.Name = "Container"
+    holder.BackgroundTransparency = lib._config._gui and lib._config._gui.bg_transparency or 0.04
+    holder.BackgroundColor3 = pal.Background
+    holder.Position = ud2.new(0.5, 0, 0.5, 0)
+    holder.Size = ud2.new(0, 0, 0, 0)
+    holder.Active = true
+    holder.BorderSizePixel = 0
+    holder.Parent = gui
+    local cnr6 = pod.new("UICorner")
+    cnr6.CornerRadius = ud.new(0, 18)
+    cnr6.Parent = holder
+    local strk2 = pod.new("UIStroke")
+    strk2.Color = pal.StrokeHot
+    strk2.Transparency = 0.6
+    strk2.ApplyStrokeMode = en.ApplyStrokeMode.Border
+    strk2.Parent = holder
+    local frm7 = pod.new("Frame")
+    frm7.BackgroundTransparency = 1
+    frm7.Name = "Handler"
+    frm7.Size = ud2.new(0, 698, 0, 479)
+    frm7.BorderSizePixel = 0
+    frm7.Parent = holder
+    local frm8 = pod.new("Frame")
+    frm8.Name = "Search"
+    frm8.Size = ud2.new(0, 32, 0, 32)
+    frm8.Position = ud2.new(1, -14, 0, 10)
+    frm8.AnchorPoint = Vector2.new(1, 0)
+    frm8.BackgroundColor3 = pal.CardDeep
+    frm8.BackgroundTransparency = 0.3
+    frm8.BorderSizePixel = 0
+    frm8.Parent = frm7
+    local cnr7 = pod.new("UICorner")
+    cnr7.CornerRadius = ud.new(1, 0)
+    cnr7.Parent = frm8
+    local strk3 = pod.new("UIStroke")
+    strk3.Color = pal.StrokeHot
+    strk3.Transparency = 0.5
+    strk3.Parent = frm8
+    local imbtn = pod.new("ImageButton")
+    imbtn.Size = ud2.new(0, 15, 0, 15)
+    imbtn.Position = ud2.new(0, 8, 0.5, 0)
+    imbtn.AnchorPoint = Vector2.new(0, 0.5)
+    imbtn.ImageColor3 = pal.Accent
+    imbtn.BackgroundTransparency = 1
+    imbtn.Image = ico("search")
+    imbtn.Parent = frm8
+    local inp2 = pod.new("TextBox")
+    inp2.Size = ud2.new(1, -38, 1, 0)
+    inp2.Position = ud2.new(0, 32, 0, 0)
+    inp2.TextXAlignment = en.TextXAlignment.Left
+    inp2.TextYAlignment = en.TextYAlignment.Center
+    inp2.BackgroundTransparency = 1
+    inp2.TextTransparency = 1
+    inp2.PlaceholderText = "Search modules..."
+    inp2.PlaceholderColor3 = pal.SubText
+    inp2.TextColor3 = pal.Text
+    inp2.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Regular)
+    inp2.TextSize = 12
+    inp2.ClearTextOnFocus = false
+    inp2.Text = ""
+    inp2.Parent = frm8
+    local pad = pod.new("UIPadding")
+    pad.PaddingLeft = ud.new(0, 2)
+    pad.Parent = inp2
+    local sod = false
+
+    imbtn.MouseButton1Click:Connect(function()
+        if sod then
+            return
+        end
+
+        sod = true
+        tws:Create(frm8, TweenInfo.new(0.38, en.EasingStyle.Quint, en.EasingDirection.Out), {Size = ud2.new(0, 200, 0, 32)}):Play()
+        tws:Create(inp2, TweenInfo.new(0.25), {TextTransparency = 0}):Play()
+
+        task.delay(0.15, function()
+            inp2:CaptureFocus()
+        end)
+    end)
+
+    inp2.FocusLost:Connect(function()
+        if inp2.Text ~= "" then
+            return
+        end
+
+        sod = false
+        inp2:ReleaseFocus()
+        tws:Create(frm8, TweenInfo.new(0.38, en.EasingStyle.Quint, en.EasingDirection.Out), {Size = ud2.new(0, 32, 0, 32)}):Play()
+        tws:Create(inp2, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+    end)
+
+    inp2:GetPropertyChangedSignal("Text"):Connect(function()
+        local lower2 = inp2.Text:lower()
+
+        for val4, val5 in ipairs(lib._all_modules) do
+            val5.frame.Visible = lower2 == "" or val5.title:find(lower2, 1, true) ~= nil
+        end
+    end)
+
+    local tabbar = pod.new("ScrollingFrame")
+    tabbar.ScrollBarImageTransparency = 1
+    tabbar.ScrollBarThickness = 0
+    tabbar.Name = "Tabs"
+    tabbar.Size = ud2.new(0, 129, 0, 440)
+    tabbar.Selectable = false
+    tabbar.AutomaticCanvasSize = en.AutomaticSize.XY
+    tabbar.BackgroundTransparency = 1
+    tabbar.Position = ud2.new(0.0261, 0, 0.16, 0)
+    tabbar.BorderSizePixel = 0
+    tabbar.CanvasSize = ud2.new(0, 0, 0.5, 0)
+    tabbar.Parent = frm7
+    local list2 = pod.new("UIListLayout")
+    list2.Padding = ud.new(0, 4)
+    list2.SortOrder = en.SortOrder.LayoutOrder
+    list2.Parent = tabbar
+
+    local function fn3(out, top)
+        local frm9 = mk.new("Frame")
+        frm9.Name = "Divider"
+        frm9.BackgroundTransparency = 0.38
+        frm9.BorderSizePixel = 0
+        frm9.BackgroundColor3 = pal.Stroke
+        frm9.Position = out
+        frm9.Size = top
+        frm9.Parent = frm7
+        local grad2 = mk.new("UIGradient")
+
+        grad2.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.3, 0),
+            NumberSequenceKeypoint.new(0.7, 0),
+            NumberSequenceKeypoint.new(1, 1)
+        })
+
+        grad2.Parent = frm9
+    end
+
+    fn3(ud2.new(0.23, 0, 0.12, 0), ud2.new(0, 450, 0, 1))
+    fn3(ud2.new(0, 0, 0.12, 0), ud2.new(0, 157, 0, 1))
+    local frm10 = pod.new("Frame")
+    frm10.BackgroundTransparency = 0.48
+    frm10.BorderSizePixel = 0
+    frm10.BackgroundColor3 = pal.Stroke
+    frm10.Position = ud2.new(0.225, 0, 0.13, 0)
+    frm10.Size = ud2.new(0, 1, 0.78, 0)
+    frm10.Parent = frm7
+    local grad3 = pod.new("UIGradient")
+
+    grad3.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.15, 0),
+        NumberSequenceKeypoint.new(0.85, 0),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+
+    grad3.Rotation = 90
+    grad3.Parent = frm10
+    local lbl4 = pod.new("TextLabel")
+    lbl4.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Bold)
+    lbl4.TextColor3 = pal.Accent
+    lbl4.TextTransparency = 0.05
+    lbl4.Text = "bye zeryxia"
+    lbl4.Name = "ClientName"
+    lbl4.Size = ud2.new(0, 68, 0, 14)
+    lbl4.AnchorPoint = Vector2.new(0, 0.5)
+    lbl4.Position = ud2.new(0.056, 0, 0.055, 0)
+    lbl4.BackgroundTransparency = 1
+    lbl4.TextXAlignment = en.TextXAlignment.Left
+    lbl4.TextSize = 15
+    lbl4.Parent = frm7
+    local grad4 = pod.new("UIGradient")
+
+    grad4.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, pal.Accent),
+        ColorSequenceKeypoint.new(0.42, pal.Accent),
+        ColorSequenceKeypoint.new(1, pal.Accent)
+    })
+
+    grad4.Offset = Vector2.new(0, 0)
+    grad4.Parent = lbl4
+    local frm11 = pod.new("Frame")
+    frm11.Name = "Pin"
+    frm11.Position = ud2.new(0.026, 0, 0.136, 0)
+    frm11.Size = ud2.new(0, 2, 0, 16)
+    frm11.BorderSizePixel = 0
+    frm11.BackgroundColor3 = pal.Accent
+    frm11.Visible = false
+    frm11.Parent = frm7
+    local cnr8 = pod.new("UICorner")
+    cnr8.CornerRadius = ud.new(0, 12)
+    cnr8.Parent = frm11
+    local img2 = pod.new("ImageLabel")
+    img2.ScaleType = en.ScaleType.Fit
+    img2.AnchorPoint = Vector2.new(0, 0.5)
+    img2.Image = resolve_logo()
+    img2.BackgroundTransparency = 1
+    img2.Position = ud2.new(0.025, 0, 0.055, 0)
+    img2.Name = "Icon"
+    img2.Size = ud2.new(0, 18, 0, 18)
+    img2.BorderSizePixel = 0
+    img2.ImageColor3 = cl3.new(1, 1, 1)
+    img2.Parent = frm7
+
+    task.spawn(function()
+    end)
+
+    local pages = pod.new("Folder")
+    pages.Name = "Sections"
+    pages.Parent = frm7
+    local btn2 = pod.new("TextButton")
+    btn2.Text = ""
+    btn2.AutoButtonColor = false
+    btn2.BackgroundTransparency = 1
+    btn2.Name = "Minimize"
+    btn2.Position = ud2.new(0.0201, 0, 0.0292, 0)
+    btn2.Size = ud2.new(0, 24, 0, 24)
+    btn2.BorderSizePixel = 0
+    btn2.Parent = frm7
+    local secL = pod.new("UIScale")
+    secL.Parent = holder
+    ui._container_uiscale = secL
+    ui._ui = gui
+    ui._theme_container = holder
+    ui._theme_container_stroke = strk2
+    ui._theme_vert_div = frm10
+    ui._theme_search = frm8
+    ui._theme_search_stroke = strk3
+    ui._theme_search_icon = imbtn
+    ui._theme_search_box = inp2
+    ui._theme_client_name = lbl4
+    ui._theme_client_grad = grad4
+    ui._theme_pin = frm11
+    ui._theme_logo = img2
+    ui._theme_tabs_ref = tabbar
+
+    local function fn4(secR)
+        if lib._blocking_drag then
+            return
+        end
+
+        if secR.UserInputType ~= en.UserInputType.MouseButton1 and secR.UserInputType ~= en.UserInputType.Touch then
+            return
+        end
+
+        ui._dragging = true
+        ui._drag_start = secR.Position
+        ui._container_position = holder.Position
+
+        conns.container_input_ended = secR.Changed:Connect(function()
+            if secR.UserInputState ~= en.UserInputState.End then
+                return
+            end
+
+            conns:disconnect("container_input_ended")
+            ui._dragging = false
+        end)
+    end
+
+    local function fn5(cur)
+        if not ui._dragging or lib._blocking_drag then
+            return
+        end
+
+        if cur.UserInputType ~= en.UserInputType.MouseMovement and cur.UserInputType ~= en.UserInputType.Touch then
+            return
+        end
+
+        local tap = cur.Position - ui._drag_start
+
+        tws:Create(holder, TweenInfo.new(0.2), {
+            Position = ud2.new(ui._container_position.X.Scale, ui._container_position.X.Offset + tap.X, ui._container_position.Y.Scale, ui._container_position.Y.Offset + tap.Y)
+        }):Play()
+    end
+
+    conns.container_input_began = holder.InputBegan:Connect(fn4)
+    conns.input_changed = uis.InputChanged:Connect(fn5)
+
+    ui:removed(function()
+        ui._ui = nil
+        conns:disconnect_all()
+    end)
+
+    function ui.Update1Run(prev, lo)
+        if lo == "nil" then
+            holder.BackgroundTransparency = 0.04
+        else
+            pcall(function()
+                holder.BackgroundTransparency = tonumber(lo)
+            end)
+        end
+    end
+
+    function ui.UIVisiblity(hi)
+        gui.Enabled = not gui.Enabled
+    end
+
+    function ui.change_visiblity(deg, spd)
+        deg._vis_seq = (deg._vis_seq or 0) + 1
+        local _vis_seq2 = deg._vis_seq
+        local wag = not spd
+        local _device2 = deg._device
+        local kit = "PC"
+        local jot = _device2 == kit
+
+        if _device2 == kit then
+            jot = lib._config._gui and lib._config._gui.hide_minimized
+        end
+
+        local uiscale = deg._container_uiscale
+        local _ui_scale2 = deg._ui_scale or 1
+
+        if wag and jot then
+            if uiscale then
+                tws:Create(uiscale, TweenInfo.new(0.34, en.EasingStyle.Quint, en.EasingDirection.In), {Scale = 0.04}):Play()
+
+                task.delay(0.36, function()
+                    if _vis_seq2 ~= deg._vis_seq then
+                        return
+                    end
+
+                    if not deg._ui_open then
+                        gui.Enabled = false
+                        uiscale.Scale = _ui_scale2
+                    end
+                end)
+            else
+                gui.Enabled = false
+            end
+
+            return
+        end
+
+        gui.Enabled = true
+
+        if spd and uiscale then
+            uiscale.Scale = 0.04
+            tws:Create(uiscale, TweenInfo.new(0.34, en.EasingStyle.Quint, en.EasingDirection.Out), {Scale = _ui_scale2}):Play()
+        end
+
+        local dab = tws
+        local create4 = dab.Create
+        local new3 = TweenInfo.new(0.34, en.EasingStyle.Quint, en.EasingDirection.Out)
+        local t3 = {}
+
+        if spd then
+            spd = ud2.fromOffset(698, 479)
+        end
+
+        if not spd then
+            spd = ud2.fromOffset(104.5, 52)
+        end
+
+        t3.Size = spd
+        create4(dab, holder, new3, t3):Play()
+    end
+
+    function ui.load(rate)
+        local t4 = {}
+
+        for val6, val7 in ipairs(gui:GetDescendants()) do
+            if val7:IsA("ImageLabel") then
+                table.insert(t4, val7)
+            end
+        end
+
+        cpr:PreloadAsync(t4)
+        rate:get_device()
+
+        if rate._device == "Mobile" or rate._device == "Unknown" then
+            rate:get_screen_scale()
+            secL.Scale = rate._ui_scale
+
+            conns.ui_scale = ws.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+                rate:get_screen_scale()
+                secL.Scale = rate._ui_scale
+            end)
+        end
+
+        tws:Create(holder, TweenInfo.new(0.55, en.EasingStyle.Quint, en.EasingDirection.Out), {Size = ud2.fromOffset(698, 479)}):Play()
+        rate._ui_loaded = true
+    end
+
+    function ui.update_tabs(delta, step, span)
+        local gob = span ~= false
+        delta._active_tab_ref = step
+
+        for val8, val9 in ipairs(tabbar:GetChildren()) do
+            if val9.Name == "Tab" then
+                val9.BackgroundColor3 = pal.CardDeep
+                local kid = val9:FindFirstChild("Indicator")
+                local lbl5 = val9:FindFirstChildOfClass("TextLabel")
+                local hop = lbl5 and lbl5:FindFirstChildOfClass("UIGradient")
+                local kid2 = val9:FindFirstChild("Icon")
+
+                if val9 == step then
+                    val9:SetAttribute("_active", true)
+
+                    if gob then
+                        tws:Create(val9, TweenInfo.new(0.32, en.EasingStyle.Quint, en.EasingDirection.Out), {BackgroundTransparency = 0.82}):Play()
+
+                        if lbl5 then
+                            tws:Create(lbl5, TweenInfo.new(0.32, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                                TextTransparency = 0,
+                                TextColor3 = pal.Accent
+                            }):Play()
+                        end
+
+                        if hop then
+                            tws:Create(hop, TweenInfo.new(0.32, en.EasingStyle.Quint, en.EasingDirection.Out), {Offset = Vector2.new(1, 0)}):Play()
+                        end
+
+                        if kid2 then
+                            tws:Create(kid2, TweenInfo.new(0.32, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                                ImageTransparency = 0,
+                                ImageColor3 = pal.Accent
+                            }):Play()
+                        end
+
+                        if kid then
+                            kid.BackgroundColor3 = pal.Accent
+                            kid.BackgroundTransparency = 1
+                            kid.Size = ud2.new(0, 3, 0, 6)
+
+                            tws:Create(kid, TweenInfo.new(0.42, en.EasingStyle.Back, en.EasingDirection.Out), {
+                                BackgroundTransparency = 0,
+                                Size = ud2.new(0, 3, 0, 22)
+                            }):Play()
+                        end
+                    else
+                        val9.BackgroundTransparency = 0.82
+
+                        if lbl5 then
+                            lbl5.TextTransparency = 0
+                            lbl5.TextColor3 = pal.Accent
+                        end
+
+                        if hop then
+                            hop.Offset = Vector2.new(1, 0)
+                        end
+
+                        if kid2 then
+                            kid2.ImageTransparency = 0
+                            kid2.ImageColor3 = pal.Accent
+                        end
+
+                        if kid then
+                            kid.BackgroundColor3 = pal.Accent
+                            kid.BackgroundTransparency = 0
+                            kid.Size = ud2.new(0, 3, 0, 22)
+                        end
+                    end
+                else
+                    val9:SetAttribute("_active", false)
+
+                    if gob then
+                        tws:Create(val9, TweenInfo.new(0.28, en.EasingStyle.Quint, en.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+
+                        if lbl5 then
+                            tws:Create(lbl5, TweenInfo.new(0.28, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                                TextTransparency = 0.42,
+                                TextColor3 = pal.Text
+                            }):Play()
+                        end
+
+                        if hop then
+                            tws:Create(hop, TweenInfo.new(0.28, en.EasingStyle.Quint, en.EasingDirection.Out), {Offset = Vector2.new(0, 0)}):Play()
+                        end
+
+                        if kid2 then
+                            tws:Create(kid2, TweenInfo.new(0.28, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                                ImageTransparency = 0.5,
+                                ImageColor3 = pal.Text
+                            }):Play()
+                        end
+
+                        if kid then
+                            tws:Create(kid, TweenInfo.new(0.22, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                                BackgroundTransparency = 1,
+                                Size = ud2.new(0, 3, 0, 10)
+                            }):Play()
+                        end
+                    else
+                        val9.BackgroundTransparency = 1
+
+                        if lbl5 then
+                            lbl5.TextTransparency = 0.42
+                            lbl5.TextColor3 = pal.Text
+                        end
+
+                        if hop then
+                            hop.Offset = Vector2.new(0, 0)
+                        end
+
+                        if kid2 then
+                            kid2.ImageTransparency = 0.5
+                            kid2.ImageColor3 = pal.Text
+                        end
+
+                        if kid then
+                            kid.BackgroundColor3 = pal.Accent
+                            kid.BackgroundTransparency = 1
+                            kid.Size = ud2.new(0, 3, 0, 10)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    function ui.update_sections(lvl, cap, amt)
+        for val10, val11 in ipairs(pages:GetChildren()) do
+            if val11 == cap or val11 == amt then
+                val11.Visible = true
+                val11.Position = ud2.new(val11.Position.X.Scale, 12, val11.Position.Y.Scale, val11.Position.Y.Offset)
+                local scl = val11:FindFirstChildOfClass("UIScale")
+
+                if not scl then
+                    scl = mk.new("UIScale")
+                    scl.Scale = 0.97
+                    scl.Parent = val11
+                else
+                    scl.Scale = 0.97
+                end
+
+                tws:Create(val11, TweenInfo.new(0.32, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                    Position = ud2.new(val11.Position.X.Scale, 0, val11.Position.Y.Scale, val11.Position.Y.Offset)
+                }):Play()
+
+                tws:Create(scl, TweenInfo.new(0.32, en.EasingStyle.Quint, en.EasingDirection.Out), {Scale = 1}):Play()
+            else
+                val11.Visible = false
+            end
+        end
+    end
+
+    function ui.create_tab(total, cnt, id, tag2)
+        local kip = tag2 or {}
+        local t5 = {}
+        local tbp = mk.new("GetTextBoundsParams")
+        tbp.Text = cnt
+        tbp.Font = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+        tbp.Size = 13
+        tbp.Width = 10000
+        local tbounds = txs:GetTextBoundsAsync(tbp)
+        local lop = not kip.no_activate and (not tabbar:FindFirstChild("Tab") or total._active_tab_ref == nil)
+        local btn3 = mk.new("TextButton")
+        btn3.Text = ""
+        btn3.AutoButtonColor = false
+        btn3.BackgroundTransparency = 1
+        btn3.Name = "Tab"
+        btn3.Size = ud2.new(0, 129, 0, 38)
+        btn3.BorderSizePixel = 0
+        btn3.BackgroundColor3 = pal.CardDeep
+        btn3.Parent = tabbar
+
+        if kip.layout_order ~= nil then
+            btn3.LayoutOrder = kip.layout_order
+        else
+            btn3.LayoutOrder = total._tab
+            total._tab = total._tab + 1
+        end
+
+        local cnr9 = mk.new("UICorner")
+        cnr9.CornerRadius = ud.new(0, 8)
+        cnr9.Parent = btn3
+        local scl2 = mk.new("UIScale")
+        scl2.Scale = 1
+        scl2.Parent = btn3
+        local frm12 = mk.new("Frame")
+        frm12.Name = "Indicator"
+        frm12.Size = ud2.new(0, 3, 0, 20)
+        frm12.Position = ud2.new(0, 2, 0.5, 0)
+        frm12.AnchorPoint = Vector2.new(0, 0.5)
+        frm12.BackgroundColor3 = pal.Accent
+        frm12.BackgroundTransparency = 1
+        frm12.BorderSizePixel = 0
+        frm12.Parent = btn3
+        local cnr10 = mk.new("UICorner")
+        cnr10.CornerRadius = ud.new(0, 3)
+        cnr10.Parent = frm12
+        local lbl6 = mk.new("TextLabel")
+        lbl6.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+        lbl6.TextColor3 = pal.Text
+        lbl6.TextTransparency = 0.38
+        lbl6.Text = cnt
+        lbl6.Size = ud2.new(0, tbounds.X, 0, 16)
+        lbl6.AnchorPoint = Vector2.new(0, 0.5)
+        lbl6.Position = ud2.new(0.24, 0, 0.5, 0)
+        lbl6.BackgroundTransparency = 1
+        lbl6.TextXAlignment = en.TextXAlignment.Left
+        lbl6.TextSize = 13
+        lbl6.Parent = btn3
+        local grad5 = mk.new("UIGradient")
+
+        grad5.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, pal.Text),
+            ColorSequenceKeypoint.new(0.65, cl3.fromRGB(120, 124, 185)),
+            ColorSequenceKeypoint.new(1, cl3.fromRGB(58, 60, 100))
+        })
+
+        grad5.Parent = lbl6
+        local img3 = mk.new("ImageLabel")
+        img3.ScaleType = en.ScaleType.Fit
+        img3.ImageTransparency = 0.45
+        img3.AnchorPoint = Vector2.new(0, 0.5)
+        img3.BackgroundTransparency = 1
+        img3.Position = ud2.new(0.1, 0, 0.5, 0)
+        img3.Name = "Icon"
+        img3.Image = ico(id)
+        img3.ImageColor3 = pal.Text
+        img3.Size = ud2.new(0, 13, 0, 13)
+        img3.BorderSizePixel = 0
+        img3.Parent = btn3
+
+        local function fn6(arg)
+            local scrl = mk.new("ScrollingFrame")
+            scrl.AutomaticCanvasSize = en.AutomaticSize.XY
+            scrl.ScrollBarThickness = 0
+            scrl.Size = ud2.new(0, 243, 0, 360)
+            scrl.Selectable = false
+            scrl.ScrollBarImageTransparency = 1
+            scrl.BackgroundTransparency = 1
+            scrl.Position = ud2.new(arg, 0, 0.16, 0)
+            scrl.BorderSizePixel = 0
+            scrl.CanvasSize = ud2.new(0, 0, 0.5, 0)
+            scrl.Visible = false
+            scrl.Parent = pages
+            local list3 = mk.new("UIListLayout")
+            list3.Padding = ud.new(0, 10)
+            list3.HorizontalAlignment = en.HorizontalAlignment.Center
+            list3.SortOrder = en.SortOrder.LayoutOrder
+            list3.Parent = scrl
+            local pad2 = mk.new("UIPadding")
+            pad2.PaddingTop = ud.new(0, 1)
+            pad2.PaddingBottom = ud.new(0, 8)
+            pad2.Parent = scrl
+            return scrl
+        end
+
+        local sL = fn6(0.23)
+        local sR = fn6(0.6)
+
+        if lop then
+            total:update_tabs(btn3)
+            total:update_sections(sL, sR)
+        end
+
+        btn3.MouseButton1Click:Connect(function()
+            total:update_tabs(btn3)
+            total:update_sections(sL, sR)
+        end)
+
+        function t5.create_module(arg2, arg3)
+            local n3 = 0
+
+            local mod = {
+                _state = false,
+                _size = 0,
+                _multiplier = 0,
+                _accent_bar = nil
+            }
+
+            local mkmod = false
+            local _mob
+            arg3.section = arg3.section == "right" and sR or sL
+            arg3.section:FindFirstChildOfClass("UIListLayout")
+
+            local function fn7()
+                local n4 = 0
+
+                for val12, val13 in ipairs(arg3.section:GetChildren()) do
+                    if val13:IsA("Frame") and n4 < val13.LayoutOrder then
+                        n4 = val13.LayoutOrder
+                    end
+                end
+
+                return n4 + 1
+            end
+
+            local tabbody = mk.new("Frame")
+            tabbody.ClipsDescendants = true
+            tabbody.BorderSizePixel = 0
+            tabbody.BackgroundTransparency = 0.68
+            tabbody.Name = "Module"
+            tabbody.Size = ud2.new(1, -8, 0, 93)
+            tabbody.BackgroundColor3 = pal.Card
+            tabbody.LayoutOrder = fn7()
+            tabbody.Parent = arg3.section
+            local layoutorder = tabbody.LayoutOrder
+            tabbody:SetAttribute("expanded", false)
+            tabbody:SetAttribute("pinned", false)
+            local list4 = mk.new("UIListLayout")
+            list4.SortOrder = en.SortOrder.LayoutOrder
+            list4.Parent = tabbody
+            local cnr11 = mk.new("UICorner")
+            cnr11.CornerRadius = ud.new(0, 10)
+            cnr11.Parent = tabbody
+            local tabstrk = mk.new("UIStroke")
+            tabstrk.Color = pal.Stroke
+            tabstrk.Transparency = 0.32
+            tabstrk.ApplyStrokeMode = en.ApplyStrokeMode.Border
+            tabstrk.Parent = tabbody
+
+            table.insert(lib._all_modules, {
+                frame = tabbody,
+                title = (arg3.title or ""):lower(),
+                manager = mod,
+                flag = arg3.flag
+            })
+
+            local btn4 = mk.new("TextButton")
+            btn4.Text = ""
+            btn4.AutoButtonColor = false
+            btn4.BackgroundTransparency = 1
+            btn4.Name = "Header"
+            btn4.Size = ud2.new(1, 0, 0, 93)
+            btn4.BorderSizePixel = 0
+            btn4.Parent = tabbody
+            local frm13 = mk.new("Frame")
+            frm13.Size = ud2.new(1, 0, 0, 58)
+            frm13.Position = ud2.new(0, 0, 0, 0)
+            frm13.BackgroundColor3 = pal.CardDeep
+            frm13.BackgroundTransparency = 0.6
+            frm13.BorderSizePixel = 0
+            frm13.ZIndex = 0
+            frm13.Parent = btn4
+            local grad6 = mk.new("UIGradient")
+            grad6.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)})
+            grad6.Rotation = 90
+            grad6.Parent = frm13
+            local accentbar = mk.new("Frame")
+            accentbar.Name = "AccentBar"
+            accentbar.Size = ud2.new(0, 2, 0, 50)
+            accentbar.Position = ud2.new(0, 2, 0.5, 0)
+            accentbar.AnchorPoint = Vector2.new(0, 0.5)
+            accentbar.BackgroundColor3 = th.Colors.AccentDim
+            accentbar.BackgroundTransparency = 0.45
+            accentbar.BorderSizePixel = 0
+            accentbar.ZIndex = 3
+            accentbar.Parent = btn4
+            local cnr12 = mk.new("UICorner")
+            cnr12.CornerRadius = ud.new(0, 2)
+            cnr12.Parent = accentbar
+            mod._accent_bar = accentbar
+            local img4 = mk.new("ImageLabel")
+            img4.ImageColor3 = pal.AccentSoft
+            img4.ScaleType = en.ScaleType.Fit
+            img4.AnchorPoint = Vector2.new(0, 0.5)
+            img4.Image = "rbxassetid://79095934438045"
+            img4.BackgroundTransparency = 1
+            img4.Position = ud2.new(0.071, 0, 0.82, 0)
+            img4.Name = "Icon"
+            img4.Size = ud2.new(0, 15, 0, 15)
+            img4.BorderSizePixel = 0
+            img4.ImageTransparency = 0.25
+            img4.Parent = btn4
+            local pinbtn = mk.new("ImageButton")
+            pinbtn.Name = "PinBtn"
+            pinbtn.Size = ud2.new(0, 13, 0, 13)
+            pinbtn.AnchorPoint = Vector2.new(1, 0.5)
+            pinbtn.Position = ud2.new(1, -10, 0.5, -23)
+            pinbtn.BackgroundTransparency = 1
+            pinbtn.Image = ico("pin") ~= "" and ico("pin") or "rbxassetid://7072718362"
+            pinbtn.ImageColor3 = pal.SubText
+            pinbtn.ImageTransparency = 0.55
+            pinbtn.BorderSizePixel = 0
+            pinbtn.ZIndex = 5
+            pinbtn.Parent = btn4
+
+            pinbtn.MouseEnter:Connect(function()
+                tws:Create(pinbtn, TweenInfo.new(0.18), {ImageColor3 = mkmod and pal.Accent or pal.Text, ImageTransparency = 0.1}):Play()
+            end)
+
+            pinbtn.MouseLeave:Connect(function()
+                tws:Create(pinbtn, TweenInfo.new(0.22), {ImageColor3 = mkmod and pal.Accent or pal.SubText, ImageTransparency = mkmod and 0.08 or 0.55}):Play()
+            end)
+
+            pinbtn.MouseButton1Click:Connect(function()
+                mkmod = not mkmod
+                tabbody:SetAttribute("pinned", mkmod)
+
+                if mkmod then
+                    tabbody.LayoutOrder = -1000
+
+                    tws:Create(pinbtn, TweenInfo.new(0.35, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        ImageColor3 = pal.Accent,
+                        ImageTransparency = 0.08
+                    }):Play()
+
+                    tws:Create(tabstrk, TweenInfo.new(0.35), {Color = pal.Accent, Transparency = 0.55}):Play()
+                else
+                    tabbody.LayoutOrder = layoutorder
+
+                    tws:Create(pinbtn, TweenInfo.new(0.35, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        ImageColor3 = pal.SubText,
+                        ImageTransparency = 0.55
+                    }):Play()
+
+                    if not mod._state then
+                        tws:Create(tabstrk, TweenInfo.new(0.35), {Color = pal.Stroke, Transparency = 0.32}):Play()
+                    end
+                end
+            end)
+
+            local lbl7 = mk.new("TextLabel")
+            lbl7.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Bold)
+            lbl7.TextColor3 = pal.Text
+            lbl7.TextTransparency = 0.06
+
+            if not arg3.rich then
+                lbl7.Text = arg3.title or "Module"
+            else
+                lbl7.RichText = true
+                lbl7.Text = arg3.richtext or "Module"
+            end
+
+            lbl7.Name = "ModuleName"
+            lbl7.Size = ud2.new(0, 205, 0, 14)
+            lbl7.AnchorPoint = Vector2.new(0, 0.5)
+            lbl7.Position = ud2.new(0.073, 0, 0.24, 0)
+            lbl7.BackgroundTransparency = 1
+            lbl7.TextXAlignment = en.TextXAlignment.Left
+            lbl7.TextSize = 13
+            lbl7.Parent = btn4
+            local lbl8 = mk.new("TextLabel")
+            lbl8.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Regular)
+            lbl8.TextColor3 = pal.SubText
+            lbl8.TextTransparency = 0.1
+            lbl8.Text = arg3.description or ""
+            lbl8.Name = "Description"
+            lbl8.Size = ud2.new(0, 205, 0, 13)
+            lbl8.AnchorPoint = Vector2.new(0, 0.5)
+            lbl8.Position = ud2.new(0.073, 0, 0.42, 0)
+            lbl8.BackgroundTransparency = 1
+            lbl8.TextXAlignment = en.TextXAlignment.Left
+            lbl8.TextSize = 10
+            lbl8.Parent = btn4
+            local togrow = mk.new("Frame")
+            togrow.Name = "Toggle"
+            togrow.BackgroundTransparency = 0.6
+            togrow.Position = ud2.new(0.82, 0, 0.757, 0)
+            togrow.Size = ud2.new(0, 26, 0, 13)
+            togrow.BorderSizePixel = 0
+            togrow.BackgroundColor3 = cl3.fromRGB(8, 8, 14)
+            togrow.Parent = btn4
+            local cnr13 = mk.new("UICorner")
+            cnr13.CornerRadius = ud.new(0, 12)
+            cnr13.Parent = togrow
+            local strk4 = mk.new("UIStroke")
+            strk4.Color = pal.Stroke
+            strk4.Transparency = 0.25
+            strk4.Parent = togrow
+            local togsw = mk.new("Frame")
+            togsw.AnchorPoint = Vector2.new(0, 0.5)
+            togsw.BackgroundTransparency = 0.1
+            togsw.Position = ud2.new(0, 2, 0.5, 0)
+            togsw.Name = "Circle"
+            togsw.Size = ud2.new(0, 9, 0, 9)
+            togsw.BorderSizePixel = 0
+            togsw.BackgroundColor3 = pal.SubText
+            togsw.Parent = togrow
+            local cnr14 = mk.new("UICorner")
+            cnr14.CornerRadius = ud.new(0, 12)
+            cnr14.Parent = togsw
+            local frm14 = mk.new("Frame")
+            frm14.Name = "Keybind"
+            frm14.BackgroundTransparency = 0.65
+            frm14.Position = ud2.new(0.15, 0, 0.73, 0)
+            frm14.Size = ud2.new(0, 33, 0, 15)
+            frm14.BorderSizePixel = 0
+            frm14.BackgroundColor3 = pal.Accent
+            frm14.Parent = btn4
+            local cnr15 = mk.new("UICorner")
+            cnr15.CornerRadius = ud.new(0, 3)
+            cnr15.Parent = frm14
+
+            local hdrlbl = mk.new("TextLabel")
+            hdrlbl.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+            hdrlbl.TextColor3 = pal.AccentSoft
+            hdrlbl.Text = "None"
+            hdrlbl.AnchorPoint = Vector2.new(0.5, 0.5)
+            hdrlbl.Size = ud2.new(0, 25, 0, 13)
+            hdrlbl.BackgroundTransparency = 1
+            hdrlbl.TextXAlignment = en.TextXAlignment.Left
+            hdrlbl.Position = ud2.new(0.5, 0, 0.5, 0)
+            hdrlbl.TextSize = 10
+            hdrlbl.Parent = frm14
+            local nag = false
+
+            if arg3.notify then
+                local pig = arg3.flag .. "_notify"
+                nag = lib._config._library[pig] == true
+                local imbtn2 = mk.new("ImageButton")
+                imbtn2.Name = "Bell"
+                imbtn2.Size = ud2.new(0, 18, 0, 18)
+                imbtn2.AnchorPoint = Vector2.new(0, 0)
+                imbtn2.Position = ud2.new(0.72, 0, 0.735, 0)
+                imbtn2.BackgroundTransparency = 1
+                imbtn2.Image = ico("bell")
+                imbtn2.ImageColor3 = nag and pal.Accent or pal.SubText
+                imbtn2.ImageTransparency = nag and 0.05 or 0.45
+                imbtn2.BorderSizePixel = 0
+                imbtn2.Parent = btn4
+
+                imbtn2.MouseButton1Click:Connect(function()
+                    nag = not nag
+                    lib._config._library[pig] = nag
+                    cfgs:save(g.GameId, lib._config)
+
+                    tws:Create(imbtn2, TweenInfo.new(0.3, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        ImageColor3 = nag and th.Colors.Accent or th.Colors.SubText,
+                        ImageTransparency = nag and 0.05 or 0.45
+                    }):Play()
+                end)
+            end
+
+            for val14, val15 in {0.62, 1} do
+                local frm15 = mk.new("Frame")
+                frm15.AnchorPoint = Vector2.new(0.5, 0)
+                frm15.BackgroundTransparency = 0.12
+                frm15.Position = ud2.new(0.5, 0, val15, 0)
+                frm15.Size = ud2.new(0, 241, 0, 1)
+                frm15.BorderSizePixel = 0
+                frm15.BackgroundColor3 = pal.Stroke
+                frm15.Parent = btn4
+            end
+
+            local frm16 = mk.new("Frame")
+            frm16.Name = "Options"
+            frm16.BackgroundTransparency = 1
+            frm16.Position = ud2.new(0, 0, 1, 0)
+            frm16.Size = ud2.new(1, 0, 0, 8)
+            frm16.BorderSizePixel = 0
+            frm16.Parent = tabbody
+            local pad3 = mk.new("UIPadding")
+            pad3.PaddingTop = ud.new(0, 8)
+            pad3.PaddingBottom = ud.new(0, 10)
+            pad3.Parent = frm16
+            local list5 = mk.new("UIListLayout")
+            list5.Padding = ud.new(0, 6)
+            list5.HorizontalAlignment = en.HorizontalAlignment.Center
+            list5.SortOrder = en.SortOrder.LayoutOrder
+            list5.Parent = frm16
+
+            btn4.MouseEnter:Connect(function()
+                if mod._state then
+                    return
+                end
+
+                tws:Create(tabstrk, TweenInfo.new(0.22, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                    Color = th.Colors.StrokeHot,
+                    Transparency = 0.1
+                }):Play()
+
+                tws:Create(accentbar, TweenInfo.new(0.22), {BackgroundTransparency = 0.2}):Play()
+            end)
+
+            btn4.MouseLeave:Connect(function()
+                if mod._state then
+                    return
+                end
+
+                tws:Create(tabstrk, TweenInfo.new(0.28, en.EasingStyle.Quint, en.EasingDirection.Out), {Color = th.Colors.Stroke, Transparency = 0.32}):Play()
+                tws:Create(accentbar, TweenInfo.new(0.28), {BackgroundTransparency = 0.45}):Play()
+            end)
+
+            local function fn8()
+                if mod._state then
+                    tabbody.Size = ud2.new(1, -8, 0, 93 + mod._size + mod._multiplier + 16)
+                end
+
+                frm16.Size = ud2.new(1, -8, 0, mod._size + mod._multiplier)
+            end
+
+            function mod.change_state(arg4, arg5)
+                arg4._state = arg5
+                tabbody:SetAttribute("expanded", arg4._state)
+
+                if arg4._state then
+                    tws:Create(tabbody, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.new(1, -8, 0, 93 + arg4._size + arg4._multiplier + 16)
+                    }):Play()
+
+                    tws:Create(togrow, TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        BackgroundColor3 = th.Colors.Accent,
+                        BackgroundTransparency = 0.3
+                    }):Play()
+
+                    tws:Create(togsw, TweenInfo.new(0.35, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.new(0, 9, 0, 9),
+                        Position = ud2.new(1, -11, 0.5, 0),
+                        BackgroundColor3 = th.Colors.Background
+                    }):Play()
+
+                    local new4 = TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out)
+                    mod._ab_tween = tws:Create(accentbar, new4, {BackgroundColor3 = th.Colors.Accent, BackgroundTransparency = 0.08})
+                    mod._ab_tween:Play()
+                    tws:Create(tabstrk, TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out), {Color = th.Colors.Accent, Transparency = 0.68}):Play()
+                else
+                    tws:Create(tabbody, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {Size = ud2.new(1, -8, 0, 93)}):Play()
+
+                    tws:Create(togrow, TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        BackgroundColor3 = cl3.fromRGB(8, 8, 14),
+                        BackgroundTransparency = 0.6
+                    }):Play()
+
+                    tws:Create(togsw, TweenInfo.new(0.35, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.new(0, 9, 0, 9),
+                        Position = ud2.new(0, 2, 0.5, 0),
+                        BackgroundColor3 = th.Colors.SubText
+                    }):Play()
+
+                    local new5 = TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out)
+                    mod._ab_tween = tws:Create(accentbar, new5, {BackgroundColor3 = th.Colors.AccentDim, BackgroundTransparency = 0.45})
+                    mod._ab_tween:Play()
+                    tws:Create(tabstrk, TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out), {Color = th.Colors.Stroke, Transparency = 0.32}):Play()
+                end
+
+                lib._config._flags[arg3.flag] = arg4._state
+                cfgs:save(g.GameId, lib._config)
+                arg3.callback(arg4._state)
+
+                if nag then
+                    lib.SendNotification({
+                        title = arg3.title or "Module",
+                        text = arg4._state and lang.ModuleEnabled or lang.ModuleDisabled,
+                        icon = arg4._state and "check" or "x",
+                        iconColor = arg4._state and pal.Accent or pal.Danger,
+                        duration = 2.5
+                    })
+                end
+            end
+
+            function mod.connect_keybind(arg6)
+                if not lib._config._keybinds[arg3.flag] then
+                    return
+                end
+
+                conns[arg3.flag .. "_keybind"] = uis.InputBegan:Connect(function(arg7, arg8)
+                    if arg8 then
+                        return
+                    end
+
+                    if tostring(arg7.KeyCode) ~= lib._config._keybinds[arg3.flag] then
+                        return
+                    end
+
+                    arg6:change_state(not arg6._state)
+                end)
+            end
+
+            function mod.scale_keybind(arg9, arg10)
+                if lib._config._keybinds[arg3.flag] and not arg10 then
+                    local rob = lib._config._keybinds[arg3.flag]:gsub("Enum.KeyCode.", "")
+                    local tbp2 = mk.new("GetTextBoundsParams")
+                    tbp2.Text = rob
+                    tbp2.Font = Font.new("rbxasset://fonts/families/Montserrat.json", en.FontWeight.Bold)
+                    tbp2.Size = 10
+                    tbp2.Width = 10000
+                    local tbounds2 = txs:GetTextBoundsAsync(tbp2)
+                    frm14.Size = ud2.fromOffset(tbounds2.X + 6, 15)
+                    hdrlbl.Size = ud2.fromOffset(tbounds2.X, 13)
+                else
+                    frm14.Size = ud2.fromOffset(31, 15)
+                    hdrlbl.Size = ud2.fromOffset(25, 13)
+                end
+            end
+
+            if lib:flag_type(arg3.flag, "boolean") then
+                mod._state = true
+                tabbody:SetAttribute("expanded", true)
+                togrow.BackgroundColor3 = th.Colors.Accent
+                togrow.BackgroundTransparency = 0.3
+                togsw.BackgroundColor3 = th.Colors.Background
+                togsw.Position = ud2.new(1, -11, 0.5, 0)
+                accentbar.BackgroundColor3 = th.Colors.Accent
+                accentbar.BackgroundTransparency = 0.08
+                tabstrk.Color = th.Colors.Accent
+                tabstrk.Transparency = 0.68
+                arg3.callback(mod._state)
+            end
+
+            if lib._config._keybinds[arg3.flag] then
+                hdrlbl.Text = lib._config._keybinds[arg3.flag]:gsub("Enum.KeyCode.", "")
+
+                mod:connect_keybind()
+                mod:scale_keybind()
+            end
+
+            conns[arg3.flag .. "_input_began"] = btn4.InputBegan:Connect(function(arg11)
+                if lib._choosing_keybind then
+                    return
+                end
+
+                if arg11.UserInputType ~= en.UserInputType.MouseButton3 then
+                    return
+                end
+
+                lib._choosing_keybind = true
+
+                function arg11(arg12, arg13)
+                    if arg13 then
+                        return
+                    end
+
+                    if arg12.KeyCode == en.KeyCode.Unknown then
+                        return
+                    end
+
+                    if arg12.KeyCode == en.KeyCode.Backspace then
+                        mod:scale_keybind(true)
+                        lib._config._keybinds[arg3.flag] = nil
+                        cfgs:save(g.GameId, lib._config)
+                        hdrlbl.Text = "None"
+                        conns:disconnect(arg3.flag .. "_keybind")
+                        conns:disconnect("keybind_choose_start")
+                        lib._choosing_keybind = false
+                        return
+                    end
+
+                    conns:disconnect("keybind_choose_start")
+                    lib._config._keybinds[arg3.flag] = tostring(arg12.KeyCode)
+                    cfgs:save(g.GameId, lib._config)
+                    conns:disconnect(arg3.flag .. "_keybind")
+                    mod:connect_keybind()
+                    mod:scale_keybind()
+                    lib._choosing_keybind = false
+                    hdrlbl.Text = lib._config._keybinds[arg3.flag]:gsub("Enum.KeyCode.", "")
+                end
+
+                conns.keybind_choose_start = uis.InputBegan:Connect(arg11)
+            end)
+
+            btn4.MouseButton1Click:Connect(function()
+                mod:change_state(not mod._state)
+            end)
+
+            function mod.create_slider(arg14, arg15)
+                n3 = n3 + 1
+
+                if arg14._size == 0 then
+                    arg14._size = 11
+                end
+
+                arg14._size = arg14._size + 28
+                fn8()
+                local decimals2 = arg15.decimals or 0
+                local n5 = 10 ^ decimals2
+
+                local function fn9(arg16)
+                    if decimals2 == 0 then
+                        return tostring(math.floor(arg16))
+                    end
+
+                    return string.format("%." .. decimals2 .. "f", arg16)
+                end
+
+                local btn5 = mk.new("TextButton")
+                btn5.Text = ""
+                btn5.AutoButtonColor = false
+                btn5.BackgroundTransparency = 1
+                btn5.Name = "Slider"
+                btn5.Size = ud2.new(0, 207, 0, 22)
+                btn5.BorderSizePixel = 0
+                btn5.Parent = frm16
+                btn5.LayoutOrder = n3
+                local lbl9 = mk.new("TextLabel")
+                lbl9.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                lbl9.TextSize = 11
+                lbl9.TextColor3 = pal.Text
+                lbl9.TextTransparency = 0.16
+                lbl9.Text = arg15.title
+                lbl9.Size = ud2.new(0, 153, 0, 13)
+                lbl9.Position = ud2.new(0, 0, 0.05, 0)
+                lbl9.BackgroundTransparency = 1
+                lbl9.TextXAlignment = en.TextXAlignment.Left
+                lbl9.Parent = btn5
+                local hint = mk.new("Frame")
+                hint.AnchorPoint = Vector2.new(0.5, 1)
+                hint.BackgroundTransparency = 0.78
+                hint.Position = ud2.new(0.5, 0, 0.95, 0)
+                hint.Name = "Drag"
+                hint.Size = ud2.new(0, 207, 0, 4)
+                hint.BorderSizePixel = 0
+                hint.BackgroundColor3 = pal.Stroke
+                hint.Parent = btn5
+                local cnr16 = mk.new("UICorner")
+                cnr16.CornerRadius = ud.new(0, 12)
+                cnr16.Parent = hint
+                local frm17 = mk.new("Frame")
+                frm17.AnchorPoint = Vector2.new(0, 0.5)
+                frm17.BackgroundTransparency = 0.05
+                frm17.Position = ud2.new(0, 0, 0.5, 0)
+                frm17.Name = "Fill"
+                frm17.Size = ud2.new(0, 103, 0, 4)
+                frm17.BorderSizePixel = 0
+                frm17.BackgroundColor3 = pal.Accent
+                frm17.Parent = hint
+                local cnr17 = mk.new("UICorner")
+                cnr17.CornerRadius = ud.new(0, 3)
+                cnr17.Parent = frm17
+                local grad7 = mk.new("UIGradient")
+                grad7.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, pal.AccentSoft), ColorSequenceKeypoint.new(1, pal.AccentDim)})
+                grad7.Parent = frm17
+                local frm18 = mk.new("Frame")
+                frm18.AnchorPoint = Vector2.new(1, 0.5)
+                frm18.Name = "Circle"
+                frm18.Position = ud2.new(1, 0, 0.5, 0)
+                frm18.Size = ud2.new(0, 7, 0, 7)
+                frm18.BorderSizePixel = 0
+                frm18.BackgroundColor3 = pal.AccentSoft
+                frm18.Parent = frm17
+                local cnr18 = mk.new("UICorner")
+                cnr18.CornerRadius = ud.new(0, 12)
+                cnr18.Parent = frm18
+                local hintlbl = mk.new("TextLabel")
+                hintlbl.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                hintlbl.TextColor3 = cl3.fromRGB(235, 235, 245)
+                hintlbl.TextTransparency = 0.2
+                hintlbl.Text = "0"
+                hintlbl.Name = "Value"
+                hintlbl.Size = ud2.new(0, 42, 0, 13)
+                hintlbl.AnchorPoint = Vector2.new(1, 0)
+                hintlbl.Position = ud2.new(1, 0, 0, 0)
+                hintlbl.BackgroundTransparency = 1
+                hintlbl.TextXAlignment = en.TextXAlignment.Right
+                hintlbl.TextSize = 10
+                hintlbl.Parent = btn5
+
+                local t6 = {
+                    set_percentage = function(arg17, arg18)
+                        local floor2 = math.floor(math.clamp(arg18, arg15.minimum_value, arg15.maximum_value) * n5 + 0.5) / n5
+                        local clamp2 = math.clamp((floor2 - arg15.minimum_value) / (arg15.maximum_value - arg15.minimum_value), 0.02, 1) * hint.Size.X.Offset
+                        lib._config._flags[arg15.flag] = floor2
+                        hintlbl.Text = fn9(floor2)
+                        tws:Create(frm17, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {Size = ud2.fromOffset(clamp2, hint.Size.Y.Offset)}):Play()
+                        arg15.callback(floor2)
+                    end,
+                    update = function(arg19)
+                        arg19:set_percentage(arg15.minimum_value + (arg15.maximum_value - arg15.minimum_value) * math.clamp((mse.X - hint.AbsolutePosition.X) / hint.Size.X.Offset, 0, 1))
+                    end,
+                    input = function(arg20)
+                        arg20:update()
+
+                        conns["slider_drag_" .. arg15.flag] = mse.Move:Connect(function()
+                            arg20:update()
+                        end)
+
+                        conns["slider_input_" .. arg15.flag] = uis.InputEnded:Connect(function(arg21)
+                            if arg21.UserInputType ~= en.UserInputType.MouseButton1 and arg21.UserInputType ~= en.UserInputType.Touch then
+                                return
+                            end
+
+                            conns:disconnect("slider_drag_" .. arg15.flag)
+                            conns:disconnect("slider_input_" .. arg15.flag)
+
+                            if not arg15.ignoresaved then
+                                cfgs:save(g.GameId, lib._config)
+                            end
+                        end)
+                    end
+                }
+
+                if lib:flag_type(arg15.flag, "number") and not arg15.ignoresaved then
+                    t6:set_percentage(lib._config._flags[arg15.flag])
+                else
+                    t6:set_percentage(arg15.value)
+                end
+
+                btn5.MouseButton1Down:Connect(function()
+                    t6:input()
+                end)
+
+                return t6
+            end
+
+            function mod.create_doubleslider(dsl, ds)
+                n3 = n3 + 1
+
+                if dsl._size == 0 then
+                    dsl._size = 11
+                end
+
+                dsl._size = dsl._size + 28
+                fn8()
+                local dec = ds.decimals or 0
+                local stp = 10 ^ dec
+
+                local function fmt(arg22)
+                    if dec == 0 then
+                        return tostring(math.floor(arg22))
+                    end
+
+                    return string.format("%." .. dec .. "f", arg22)
+                end
+
+                local vmin = ds.minimum_value
+                local vmax = ds.maximum_value
+                local sip, tip
+
+                if ds.value and type(ds.value) == "table" then
+                    sip = ds.value[1] or ds.value.L or vmin
+                    tip = ds.value[2] or ds.value.H or vmax
+                else
+                    sip = ds.value_low or vmin
+                    tip = ds.value_high or vmax
+                end
+
+                local wob, yak
+
+                if lib._config._flags[ds.flag] and type(lib._config._flags[ds.flag]) == "table" then
+                    local box = lib._config._flags[ds.flag]
+
+                    if box.L ~= nil and box.H ~= nil then
+                        wob = box.L
+                        yak = box.H
+                    elseif box[1] ~= nil and box[2] ~= nil then
+                        wob = box[1]
+                        yak = box[2]
+                    else
+                        wob = sip
+                        yak = tip
+                    end
+                else
+                    wob = sip
+                    yak = tip
+                end
+
+                local clamp3 = math.clamp(wob, vmin, vmax)
+                local clamp4 = math.clamp(yak, vmin, vmax)
+                local col2, row2
+
+                if clamp4 < clamp3 then
+                    col2 = clamp4
+                    row2 = clamp3
+                else
+                    col2 = clamp3
+                    row2 = clamp4
+                end
+
+                local btn6 = mk.new("TextButton")
+                btn6.Text = ""
+                btn6.AutoButtonColor = false
+                btn6.BackgroundTransparency = 1
+                btn6.Name = "DoubleSlider"
+                btn6.Size = ud2.new(0, 207, 0, 22)
+                btn6.BorderSizePixel = 0
+                btn6.Parent = frm16
+                btn6.LayoutOrder = n3
+                local lbl10 = mk.new("TextLabel")
+                lbl10.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                lbl10.TextSize = 11
+                lbl10.TextColor3 = pal.Text
+                lbl10.TextTransparency = 0.16
+                lbl10.Text = ds.title
+                lbl10.Size = ud2.new(0, 120, 0, 13)
+                lbl10.Position = ud2.new(0, 0, 0.05, 0)
+                lbl10.BackgroundTransparency = 1
+                lbl10.TextXAlignment = en.TextXAlignment.Left
+                lbl10.Parent = btn6
+                local track = mk.new("Frame")
+                track.Active = true
+                track.AnchorPoint = Vector2.new(0.5, 1)
+                track.BackgroundTransparency = 0.78
+                track.Position = ud2.new(0.5, 0, 0.95, 0)
+                track.Name = "Drag"
+                track.Size = ud2.new(0, 207, 0, 4)
+                track.BorderSizePixel = 0
+                track.BackgroundColor3 = pal.Stroke
+                track.Parent = btn6
+                local cnr19 = mk.new("UICorner")
+                cnr19.CornerRadius = ud.new(0, 12)
+                cnr19.Parent = track
+                local fill = mk.new("Frame")
+                fill.AnchorPoint = Vector2.new(0, 0.5)
+                fill.BackgroundTransparency = 0.05
+                fill.Name = "RangeFill"
+                fill.BorderSizePixel = 0
+                fill.BackgroundColor3 = pal.Accent
+                fill.Parent = track
+                local cnr20 = mk.new("UICorner")
+                cnr20.CornerRadius = ud.new(0, 3)
+                cnr20.Parent = fill
+                local grad8 = mk.new("UIGradient")
+                grad8.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, pal.AccentSoft), ColorSequenceKeypoint.new(1, pal.AccentDim)})
+                grad8.Parent = fill
+                local knl = mk.new("Frame")
+                knl.Active = true
+                knl.AnchorPoint = Vector2.new(0.5, 0.5)
+                knl.Name = "KnobL"
+                knl.Size = ud2.new(0, 7, 0, 7)
+                knl.BorderSizePixel = 0
+                knl.BackgroundColor3 = pal.AccentSoft
+                knl.ZIndex = 2
+                knl.Parent = track
+                local cnr21 = mk.new("UICorner")
+                cnr21.CornerRadius = ud.new(0, 12)
+                cnr21.Parent = knl
+                local knr = mk.new("Frame")
+                knr.Active = true
+                knr.AnchorPoint = Vector2.new(0.5, 0.5)
+                knr.Name = "KnobR"
+                knr.Size = ud2.new(0, 7, 0, 7)
+                knr.BorderSizePixel = 0
+                knr.BackgroundColor3 = pal.AccentSoft
+                knr.ZIndex = 2
+                knr.Parent = track
+                local cnr22 = mk.new("UICorner")
+                cnr22.CornerRadius = ud.new(0, 12)
+                cnr22.Parent = knr
+                local vlab = mk.new("TextLabel")
+                vlab.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                vlab.TextColor3 = pal.Text
+                vlab.TextTransparency = 0.2
+                vlab.Text = "0 - 0"
+                vlab.Name = "Value"
+                vlab.Size = ud2.new(0, 80, 0, 13)
+                vlab.AnchorPoint = Vector2.new(1, 0)
+                vlab.Position = ud2.new(1, 0, 0, 0)
+                vlab.BackgroundTransparency = 1
+                vlab.TextXAlignment = en.TextXAlignment.Right
+                vlab.TextSize = 9
+                vlab.Parent = btn6
+                local lock
+                local dsapi = {}
+
+                local function pct(arg23)
+                    return (arg23 - vmin) / (vmax - vmin)
+                end
+
+                function dsapi.set_range(arg24, arg25, arg26, arg27)
+                    local floor3 = math.floor(math.clamp(arg25, vmin, vmax) * stp + 0.5) / stp
+                    local floor4 = math.floor(math.clamp(arg26, vmin, vmax) * stp + 0.5) / stp
+
+                    if not (floor4 < floor3) then
+                        local hld = floor4
+                        floor4 = floor3
+                        floor3 = hld
+                    end
+
+                    local ref2 = dec == 0 and 1 or math.max((vmax - vmin) * (0.5 / math.max(stp, 1)), 1 / stp)
+                    local _dug = lock
+
+                    if lock and floor3 - floor4 < ref2 then
+                        if lock == "low" then
+                            floor4 = math.clamp(floor3 - ref2, vmin, vmax)
+                        else
+                            floor3 = math.clamp(floor4 + ref2, vmin, vmax)
+                        end
+                    end
+
+                    lib._config._flags[ds.flag] = {L = floor4, H = floor3}
+                    vlab.Text = fmt(floor4) .. " - " .. fmt(floor3)
+                    local giz = pct(floor4)
+                    local imp = pct(floor3)
+                    fill.Position = ud2.new(giz, 0, 0.5, 0)
+                    fill.Size = ud2.new(math.max(imp - giz, 0.02), 0, 1, 0)
+                    knl.Position = ud2.new(giz, 0, 0.5, 0)
+                    knr.Position = ud2.new(imp, 0, 0.5, 0)
+                    ds.callback(floor4, floor3)
+
+                    if not arg27 and not ds.ignoresaved then
+                        cfgs:save(g.GameId, lib._config)
+                    end
+                end
+
+                function dsapi.pick_which(arg28, arg29)
+                    local keg = vmin + (vmax - vmin) * math.clamp((arg29 - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+                    local lob = lib._config._flags[ds.flag].H
+
+                    if math.abs(keg - lib._config._flags[ds.flag].L) <= math.abs(keg - lob) then
+                        return "low"
+                    end
+
+                    return "high"
+                end
+
+                function dsapi.update_from_mouse(arg30)
+                    local mop = lib._config._flags[ds.flag]
+
+                    if not mop or not lock then
+                        return
+                    end
+
+                    local nod = vmin + (vmax - vmin) * math.clamp((mse.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+                    local l2 = mop.L
+                    local h2 = mop.H
+
+                    if lock == "low" then
+                        dsapi:set_range(math.min(nod, h2), h2, true)
+                    elseif lock == "high" then
+                        local max2 = math.max(nod, l2)
+                        dsapi:set_range(l2, max2, true)
+                    end
+                end
+
+                lib._config._flags[ds.flag] = {L = col2, H = row2}
+                dsapi:set_range(col2, row2, true)
+
+                local function fn10(arg31)
+                    conns:disconnect("dsl_drag_" .. ds.flag)
+                    conns:disconnect("dsl_end_" .. ds.flag)
+                    lock = arg31
+                    dsapi:update_from_mouse()
+
+                    local function fn11()
+                        dsapi:update_from_mouse()
+                    end
+
+                    conns["dsl_drag_" .. ds.flag] = mse.Move:Connect(fn11)
+
+                    local function fn12(arg32)
+                        if arg32.UserInputType ~= en.UserInputType.MouseButton1 and arg32.UserInputType ~= en.UserInputType.Touch then
+                            return
+                        end
+
+                        conns:disconnect("dsl_drag_" .. ds.flag)
+                        conns:disconnect("dsl_end_" .. ds.flag)
+                        lock = nil
+
+                        if not ds.ignoresaved then
+                            cfgs:save(g.GameId, lib._config)
+                        end
+                    end
+
+                    conns["dsl_end_" .. ds.flag] = uis.InputEnded:Connect(fn12)
+                end
+
+                knl.InputBegan:Connect(function(arg33)
+                    if arg33.UserInputType == en.UserInputType.MouseButton1 or arg33.UserInputType == en.UserInputType.Touch then
+                        fn10("low")
+                    end
+                end)
+
+                knr.InputBegan:Connect(function(arg34)
+                    if arg34.UserInputType == en.UserInputType.MouseButton1 or arg34.UserInputType == en.UserInputType.Touch then
+                        fn10("high")
+                    end
+                end)
+
+                track.InputBegan:Connect(function(arg35)
+                    if arg35.UserInputType ~= en.UserInputType.MouseButton1 and arg35.UserInputType ~= en.UserInputType.Touch then
+                        return
+                    end
+
+                    fn10(dsapi:pick_which(arg35.Position.X))
+                end)
+
+                return dsapi
+            end
+
+            function mod.create_dropdown(arg36, arg37)
+                if not arg37.Order then
+                    n3 = n3 + 1
+                end
+
+                local t7 = {_state = false, _size = 0}
+                local onoff = false
+                local orb = false
+                local sld = arg37.search and 26 or 0
+
+                if not arg37.Order then
+                    if arg36._size == 0 then
+                        arg36._size = 11
+                    end
+
+                    arg36._size = arg36._size + 45
+                    fn8()
+                end
+
+                if not lib._config._flags[arg37.flag] then
+                    lib._config._flags[arg37.flag] = {}
+                end
+
+                local sltags = {}
+                local sldbtn = mk.new("TextButton")
+                sldbtn.Text = ""
+                sldbtn.AutoButtonColor = false
+                sldbtn.BackgroundTransparency = 1
+                sldbtn.Name = "Dropdown"
+                sldbtn.Size = ud2.new(0, 207, 0, 39)
+                sldbtn.BorderSizePixel = 0
+                sldbtn.Parent = frm16
+                sldbtn.LayoutOrder = arg37.Order and arg37.OrderValue or n3
+                local lbl11 = mk.new("TextLabel")
+                lbl11.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                lbl11.TextSize = 11
+                lbl11.TextColor3 = pal.Text
+                lbl11.TextTransparency = 0.16
+                lbl11.Text = arg37.title
+                lbl11.Size = ud2.new(0, 207, 0, 13)
+                lbl11.BackgroundTransparency = 1
+                lbl11.TextXAlignment = en.TextXAlignment.Left
+                lbl11.Parent = sldbtn
+
+                if arg37.notify then
+                    local sldkey = arg37.flag .. "_dd_notify"
+
+                    if not lib._config._library then
+                        lib._config._library = {}
+                    end
+
+                    onoff = lib._config._library[sldkey] == true
+                    local bell = mk.new("ImageButton")
+                    bell.Name = "DDBell"
+                    bell.Size = ud2.new(0, 14, 0, 14)
+                    bell.AnchorPoint = Vector2.new(1, 0.5)
+                    bell.Position = ud2.new(1, 0, 0.5, 0)
+                    bell.BackgroundTransparency = 1
+                    bell.Image = ico("bell")
+                    bell.ImageColor3 = onoff and pal.Accent or pal.SubText
+                    bell.ImageTransparency = onoff and 0.05 or 0.48
+                    bell.BorderSizePixel = 0
+                    bell.ZIndex = 6
+                    bell.Parent = lbl11
+
+                    bell.MouseButton1Click:Connect(function()
+                        onoff = not onoff
+                        lib._config._library[sldkey] = onoff
+                        cfgs:save(g.GameId, lib._config)
+
+                        tws:Create(bell, TweenInfo.new(0.3, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                            ImageColor3 = onoff and pal.Accent or pal.SubText,
+                            ImageTransparency = onoff and 0.05 or 0.48
+                        }):Play()
+                    end)
+                end
+
+                local dd = mk.new("Frame")
+                dd.ClipsDescendants = true
+                dd.AnchorPoint = Vector2.new(0.5, 0)
+                dd.BackgroundTransparency = 0.9
+                dd.Position = ud2.new(0.5, 0, 1.2, 0)
+                dd.Name = "Box"
+                dd.Size = ud2.new(0, 207, 0, 22)
+                dd.BorderSizePixel = 0
+                dd.BackgroundColor3 = pal.Accent
+                dd.Parent = lbl11
+                local cnr23 = mk.new("UICorner")
+                cnr23.CornerRadius = ud.new(0, 6)
+                cnr23.Parent = dd
+                local strk5 = mk.new("UIStroke")
+                strk5.Color = pal.StrokeHot
+                strk5.Transparency = 0.42
+                strk5.Parent = dd
+                local list6 = mk.new("UIListLayout")
+                list6.SortOrder = en.SortOrder.LayoutOrder
+                list6.Parent = dd
+                local frm19 = mk.new("Frame")
+                frm19.AnchorPoint = Vector2.new(0.5, 0)
+                frm19.BackgroundTransparency = 1
+                frm19.Position = ud2.new(0.5, 0, 0, 0)
+                frm19.Size = ud2.new(0, 207, 0, 22)
+                frm19.BorderSizePixel = 0
+                frm19.LayoutOrder = 1
+                frm19.Parent = dd
+                local hdrlbl2 = mk.new("TextLabel")
+                hdrlbl2.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                hdrlbl2.TextColor3 = pal.Text
+                hdrlbl2.TextTransparency = 0.1
+                hdrlbl2.Name = "CurrentOption"
+                hdrlbl2.Size = ud2.new(0, 161, 0, 13)
+                hdrlbl2.AnchorPoint = Vector2.new(0, 0.5)
+                hdrlbl2.Position = ud2.new(0.05, 0, 0.5, 0)
+                hdrlbl2.BackgroundTransparency = 1
+                hdrlbl2.TextXAlignment = en.TextXAlignment.Left
+                hdrlbl2.TextSize = 10
+                hdrlbl2.Parent = frm19
+                local grad9 = mk.new("UIGradient")
+
+                grad9.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0),
+                    NumberSequenceKeypoint.new(0.704, 0),
+                    NumberSequenceKeypoint.new(0.872, 0.36),
+                    NumberSequenceKeypoint.new(1, 1)
+                })
+
+                grad9.Parent = hdrlbl2
+                local lbl12 = mk.new("TextLabel")
+                lbl12.Text = "⇅"
+                lbl12.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                lbl12.TextSize = 10
+                lbl12.TextColor3 = pal.Accent
+                lbl12.BackgroundTransparency = 1
+                lbl12.Size = ud2.new(0, 10, 0, 10)
+                lbl12.Position = ud2.new(0.91, 0, 0.5, 0)
+                lbl12.AnchorPoint = Vector2.new(0, 0.5)
+                lbl12.Parent = frm19
+                local tbx
+
+                if arg37.search then
+                    local frm20 = mk.new("Frame")
+                    frm20.Size = ud2.new(0, 207, 0, sld)
+                    frm20.BackgroundColor3 = pal.CardDeep
+                    frm20.BackgroundTransparency = 0.25
+                    frm20.BorderSizePixel = 0
+                    frm20.LayoutOrder = 2
+                    frm20.Parent = dd
+                    local frm21 = mk.new("Frame")
+                    frm21.Size = ud2.new(1, 0, 0, 1)
+                    frm21.Position = ud2.new(0, 0, 0, 0)
+                    frm21.BackgroundColor3 = pal.StrokeHot
+                    frm21.BackgroundTransparency = 0.5
+                    frm21.BorderSizePixel = 0
+                    frm21.Parent = frm20
+                    local img5 = mk.new("ImageLabel")
+                    img5.Size = ud2.new(0, 10, 0, 10)
+                    img5.Position = ud2.new(0, 7, 0.5, 0)
+                    img5.AnchorPoint = Vector2.new(0, 0.5)
+                    img5.BackgroundTransparency = 1
+                    img5.Image = ico("search")
+                    img5.ImageColor3 = pal.SubText
+                    img5.ImageTransparency = 0.25
+                    img5.Parent = frm20
+                    tbx = mk.new("TextBox")
+                    tbx.Size = ud2.new(1, -24, 1, -2)
+                    tbx.Position = ud2.new(0, 21, 0, 1)
+                    tbx.BackgroundTransparency = 1
+                    tbx.TextColor3 = pal.Text
+                    tbx.PlaceholderColor3 = pal.SubText
+                    tbx.PlaceholderText = "Search..."
+                    tbx.Text = ""
+                    tbx.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Regular)
+                    tbx.TextSize = 10
+                    tbx.TextXAlignment = en.TextXAlignment.Left
+                    tbx.ClearTextOnFocus = false
+                    tbx.AutomaticSize = en.AutomaticSize.None
+                    tbx.Parent = frm20
+                end
+
+                local ddscl = mk.new("ScrollingFrame")
+                ddscl.Active = true
+                ddscl.ScrollBarImageTransparency = 0.35
+                ddscl.ScrollBarImageColor3 = pal.SubText
+                ddscl.AutomaticCanvasSize = en.AutomaticSize.XY
+                ddscl.ScrollBarThickness = 3
+                ddscl.Name = "Options"
+                ddscl.Size = ud2.new(0, 207, 0, 0)
+                ddscl.BackgroundTransparency = 1
+                ddscl.Position = ud2.new(0, 0, 1, 0)
+                ddscl.BorderSizePixel = 0
+                ddscl.CanvasSize = ud2.new(0, 0, 0, 0)
+                ddscl.LayoutOrder = arg37.search and 3 or 2
+                ddscl.Parent = dd
+                local list7 = mk.new("UIListLayout")
+                list7.SortOrder = en.SortOrder.LayoutOrder
+                list7.Parent = ddscl
+                local pad4 = mk.new("UIPadding")
+                pad4.PaddingTop = ud.new(0, -1)
+                pad4.PaddingLeft = ud.new(0, 8)
+                pad4.Parent = ddscl
+
+                if tbx then
+                    tbx:GetPropertyChangedSignal("Text"):Connect(function()
+                        local lower3 = tbx.Text:lower()
+
+                        for val16, val17 in ipairs(ddscl:GetChildren()) do
+                            if (val17.Name == "Option" or val17.Name == "DDSlider") and val17.Name == "Option" then
+                                local btn7 = val17:IsA("TextButton") and val17 or val17:FindFirstChild("OptionBtn")
+
+                                if btn7 then
+                                    local pit = lower3 == ""
+
+                                    if lower3 ~= "" then
+                                        pit = btn7.Text:lower():find(lower3, 1, true) ~= nil
+                                    end
+
+                                    val17.Visible = pit
+                                end
+                            end
+                        end
+                    end)
+                end
+
+                local function fn13(arg38)
+                    if arg38:IsA("TextButton") then
+                        return arg38
+                    end
+
+                    return arg38:FindFirstChild("OptionBtn")
+                end
+
+                local function fn14()
+                    if arg37.multi_dropdown then
+                        if #sltags == 0 then
+                            hdrlbl2.Text = "None"
+                        else
+                            hdrlbl2.Text = table.concat(sltags, ", ")
+                        end
+
+                        for val18, val19 in ipairs(ddscl:GetChildren()) do
+                            if val19.Name == "Option" then
+                                local rib = fn13(val19)
+
+                                if rib then
+                                    local find2 = table.find(sltags, rib.Text)
+                                    rib.TextTransparency = find2 and 0.1 or 0.6
+
+                                    if find2 then
+                                        find2 = pal.AccentSoft
+                                    end
+
+                                    if not find2 then
+                                        find2 = pal.Text
+                                    end
+
+                                    rib.TextColor3 = find2
+                                end
+                            end
+                        end
+
+                        lib._config._flags[arg37.flag] = {unpack(sltags)}
+                    else
+                        for val20, val21 in ipairs(ddscl:GetChildren()) do
+                            if val21.Name == "Option" then
+                                local tug = fn13(val21)
+
+                                if tug then
+                                    local wad = tug.Text == hdrlbl2.Text
+                                    tug.TextTransparency = wad and 0.1 or 0.6
+
+                                    if wad then
+                                        wad = pal.AccentSoft
+                                    end
+
+                                    tug.TextColor3 = wad or pal.Text
+                                end
+                            end
+                        end
+                    end
+                end
+
+                function t7.update(arg39, arg40)
+                    if arg37.multi_dropdown then
+                        local yip = typeof(arg40) ~= "string" and arg40.Name or arg40
+                        local find3 = table.find(sltags, yip)
+
+                        if find3 then
+                            table.remove(sltags, find3)
+                        else
+                            table.insert(sltags, yip)
+                        end
+
+                        fn14()
+                        cfgs:save(g.GameId, lib._config)
+                        arg37.callback({unpack(sltags)})
+
+                        if onoff and orb then
+                            local n6 = 0 < #sltags and table.concat(sltags, ", ") or "None"
+
+                            lib.SendNotification({
+                                title = arg37.title or "Dropdown",
+                                text = n6,
+                                icon = "check",
+                                iconColor = pal.Accent,
+                                duration = 2.5
+                            })
+                        end
+                    else
+                        hdrlbl2.Text = typeof(arg40) == "string" and arg40 or arg40.Name
+                        fn14()
+                        lib._config._flags[arg37.flag] = arg40
+                        cfgs:save(g.GameId, lib._config)
+                        arg37.callback(arg40)
+
+                        if onoff and orb then
+                            local zap = typeof(arg40) == "string" and arg40 or arg40.Name
+
+                            lib.SendNotification({
+                                title = arg37.title or "Dropdown",
+                                text = zap,
+                                icon = "check",
+                                iconColor = pal.Accent,
+                                duration = 2.5
+                            })
+                        end
+                    end
+                end
+
+                local ddcfg = 0
+
+                function t7.unfold_settings(arg41)
+                    arg41._state = not arg41._state
+                    local bub = arg41._size + sld
+
+                    if arg41._state then
+                        local cad = mod
+                        cad._multiplier = cad._multiplier + bub
+                        ddcfg = bub
+                    else
+                        local dim = mod
+                        dim._multiplier = dim._multiplier - bub
+                        ddcfg = 0
+
+                        if tbx then
+                            tbx:ReleaseFocus()
+                            tbx.Text = ""
+                        end
+                    end
+
+                    tws:Create(tabbody, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.new(1, -8, 0, 93 + mod._size + mod._multiplier + 16)
+                    }):Play()
+
+                    tws:Create(tabbody.Options, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.new(1, -8, 0, mod._size + mod._multiplier)
+                    }):Play()
+
+                    tws:Create(sldbtn, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.fromOffset(207, arg41._state and 39 + bub or 39)
+                    }):Play()
+
+                    tws:Create(dd, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.fromOffset(207, arg41._state and 22 + bub or 22)
+                    }):Play()
+
+                    tws:Create(lbl12, TweenInfo.new(0.5, en.EasingStyle.Quint, en.EasingDirection.Out), {Rotation = arg41._state and 180 or 0}):Play()
+                end
+
+                local function fn15(ddsel, arg42)
+                    local elf = typeof(ddsel) == "string" and ddsel or ddsel.Name
+                    local ddval = arg37.flag .. "_" .. elf
+
+                    if arg37.keybind then
+                        local frm22 = mk.new("Frame")
+                        frm22.Size = ud2.new(0, 186, 0, 16)
+                        frm22.BackgroundTransparency = 1
+                        frm22.Name = "Option"
+                        frm22.BorderSizePixel = 0
+                        frm22.Parent = ddscl
+                        local btn8 = mk.new("TextButton")
+                        btn8.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                        btn8.Active = false
+                        btn8.TextTransparency = 0.6
+                        btn8.TextSize = 10
+                        btn8.Size = ud2.new(1, -44, 1, 0)
+                        btn8.Position = ud2.new(0, 0, 0, 0)
+                        btn8.TextColor3 = pal.Text
+                        btn8.Text = elf
+                        btn8.AutoButtonColor = false
+                        btn8.Name = "OptionBtn"
+                        btn8.BackgroundTransparency = 1
+                        btn8.TextXAlignment = en.TextXAlignment.Left
+                        btn8.Selectable = false
+                        btn8.BorderSizePixel = 0
+                        btn8.Parent = frm22
+
+                        local grad10 = mk.new("UIGradient")
+
+                        grad10.Transparency = NumberSequence.new({
+                            NumberSequenceKeypoint.new(0, 0),
+                            NumberSequenceKeypoint.new(0.704, 0),
+                            NumberSequenceKeypoint.new(0.872, 0.36),
+                            NumberSequenceKeypoint.new(1, 1)
+                        })
+
+                        grad10.Parent = btn8
+
+                        local fig = lib._config._keybinds[ddval]
+                        local gum = fig and fig:gsub("Enum.KeyCode.", "") or "..."
+                        local ddarr = mk.new("TextButton")
+                        ddarr.AnchorPoint = Vector2.new(1, 0.5)
+                        ddarr.Position = ud2.new(1, 0, 0.5, 0)
+                        ddarr.BackgroundColor3 = pal.Accent
+                        ddarr.BackgroundTransparency = 0.6
+                        ddarr.TextColor3 = pal.AccentSoft
+                        ddarr.TextSize = 9
+                        ddarr.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                        ddarr.Text = gum
+                        ddarr.BorderSizePixel = 0
+                        ddarr.AutoButtonColor = false
+                        ddarr.Parent = frm22
+                        local cnr24 = mk.new("UICorner")
+                        cnr24.CornerRadius = ud.new(0, 3)
+                        cnr24.Parent = ddarr
+
+                        local function tbx2(arg43)
+                            if arg43 == "..." or arg43 == "?" then
+                                ddarr.Size = ud2.fromOffset(22, 14)
+                                return
+                            end
+
+                            local tbp3 = mk.new("GetTextBoundsParams")
+                            tbp3.Text = arg43
+                            tbp3.Font = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                            tbp3.Size = 9
+                            tbp3.Width = 10000
+                            local tbounds3 = txs:GetTextBoundsAsync(tbp3)
+                            ddarr.Size = ud2.fromOffset(math.max(22, tbounds3.X + 8), 14)
+                        end
+
+                        tbx2(gum)
+
+                        if fig then
+                            conns["dd_kb_" .. ddval] = uis.InputBegan:Connect(function(arg44, arg45)
+                                if arg45 then
+                                    return
+                                end
+
+                                if tostring(arg44.KeyCode) ~= lib._config._keybinds[ddval] then
+                                    return
+                                end
+
+                                t7:update(ddsel)
+                            end)
+                        end
+
+                        ddarr.InputBegan:Connect(function(tbkey)
+                            if tbkey.UserInputType ~= en.UserInputType.MouseButton3 then
+                                return
+                            end
+
+                            if lib._choosing_keybind then
+                                return
+                            end
+
+                            lib._choosing_keybind = true
+                            ddarr.Text = "?"
+                            tbx2("?")
+                            local tbfin
+
+                            function tbkey(arg46, arg47)
+                                if arg47 then
+                                    return
+                                end
+
+                                if arg46.UserInputType ~= en.UserInputType.Keyboard then
+                                    return
+                                end
+
+                                if arg46.KeyCode == en.KeyCode.Unknown then
+                                    return
+                                end
+
+                                tbfin:Disconnect()
+
+                                if arg46.KeyCode == en.KeyCode.Backspace then
+                                    lib._config._keybinds[ddval] = nil
+                                    cfgs:save(g.GameId, lib._config)
+                                    ddarr.Text = "..."
+                                    tbx2("...")
+                                    conns:disconnect("dd_kb_" .. ddval)
+                                else
+                                    lib._config._keybinds[ddval] = tostring(arg46.KeyCode)
+                                    cfgs:save(g.GameId, lib._config)
+                                    ddarr.Text = arg46.KeyCode.Name
+                                    tbx2(arg46.KeyCode.Name)
+                                    conns:disconnect("dd_kb_" .. ddval)
+                                    local hen = "dd_kb_" .. ddval
+
+                                    conns[hen] = uis.InputBegan:Connect(function(arg48, arg49)
+                                        if arg49 then
+                                            return
+                                        end
+
+                                        if tostring(arg48.KeyCode) ~= lib._config._keybinds[ddval] then
+                                            return
+                                        end
+
+                                        t7:update(ddsel)
+                                    end)
+                                end
+
+                                lib._choosing_keybind = false
+                            end
+
+                            tbfin = uis.InputBegan:Connect(tbkey)
+                        end)
+
+                        btn8.MouseButton1Click:Connect(function()
+                            t7:update(ddsel)
+                        end)
+
+                        if arg42 <= arg37.maximum_options then
+                            local ivy = t7
+                            ivy._size = ivy._size + 16
+                            ddscl.Size = ud2.fromOffset(207, t7._size)
+                        end
+                    else
+                        local btn9 = mk.new("TextButton")
+                        btn9.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                        btn9.Active = false
+                        btn9.TextTransparency = 0.6
+                        btn9.TextSize = 10
+                        btn9.Size = ud2.new(0, 186, 0, 16)
+                        btn9.TextColor3 = pal.Text
+                        btn9.Text = elf
+                        btn9.AutoButtonColor = false
+                        btn9.Name = "Option"
+                        btn9.BackgroundTransparency = 1
+                        btn9.TextXAlignment = en.TextXAlignment.Left
+                        btn9.Selectable = false
+                        btn9.BorderSizePixel = 0
+                        btn9.Parent = ddscl
+                        local grad11 = mk.new("UIGradient")
+
+                        grad11.Transparency = NumberSequence.new({
+                            NumberSequenceKeypoint.new(0, 0),
+                            NumberSequenceKeypoint.new(0.704, 0),
+                            NumberSequenceKeypoint.new(0.872, 0.36),
+                            NumberSequenceKeypoint.new(1, 1)
+                        })
+
+                        grad11.Parent = btn9
+
+                        btn9.MouseButton1Click:Connect(function()
+                            t7:update(ddsel)
+                        end)
+
+                        if arg42 <= arg37.maximum_options then
+                            local jaw = t7
+                            jaw._size = jaw._size + 16
+                            ddscl.Size = ud2.fromOffset(207, t7._size)
+                        end
+                    end
+                end
+
+                if #arg37.options > 0 then
+                    t7._size = 3
+
+                    for val22, val23 in ipairs(arg37.options) do
+                        fn15(val23, val22)
+                    end
+                end
+
+                function t7.set_options(arg50, arg51)
+                    if arg50._state then
+                        local kob = arg50._size + sld
+                        arg50._state = false
+                        local lad = mod
+                        lad._multiplier = lad._multiplier - kob
+                        ddcfg = 0
+                        sldbtn.Size = ud2.fromOffset(207, 39)
+                        dd.Size = ud2.fromOffset(207, 22)
+                        lbl12.Rotation = 0
+
+                        if tbx then
+                            tbx:ReleaseFocus()
+                            tbx.Text = ""
+                        end
+                    end
+
+                    for val24, val25 in ipairs(ddscl:GetChildren()) do
+                        if val25.Name == "Option" then
+                            val25:Destroy()
+                        end
+                    end
+
+                    local text2 = hdrlbl2.Text
+                    local t8 = {}
+
+                    if arg37.multi_dropdown then
+                        for val26, val27 in ipairs(sltags) do
+                            t8[val27] = true
+                        end
+                    end
+
+                    sltags = {}
+                    arg50._size = #arg51 > 0 and 3 or 0
+                    arg37.options = arg51
+                    arg37.maximum_options = #arg51
+
+                    for val28, val29 in ipairs(arg51) do
+                        fn15(val29, val28)
+                    end
+
+                    if arg37.multi_dropdown then
+                        local t9 = {}
+
+                        for val30, val31 in ipairs(arg51) do
+                            local mix = typeof(val31) == "string" and val31 or val31.Name
+
+                            if t8[mix] then
+                                table.insert(t9, mix)
+                            end
+                        end
+
+                        sltags = t9
+
+                        if #sltags == 0 then
+                            hdrlbl2.Text = "None"
+                            lib._config._flags[arg37.flag] = {}
+                        else
+                            hdrlbl2.Text = table.concat(sltags, ", ")
+                            lib._config._flags[arg37.flag] = {unpack(sltags)}
+                        end
+
+                        fn14()
+                    else
+                        local oak = false
+
+                        for val32, val33 in ipairs(arg51) do
+                            local pad22 = typeof(val33) == "string" and val33 or val33.Name
+
+                            if pad22 == text2 then
+                                hdrlbl2.Text = pad22
+                                lib._config._flags[arg37.flag] = val33
+                                oak = true
+                                break
+                            end
+                        end
+
+                        if not oak then
+                            if arg51[1] then
+                                hdrlbl2.Text = typeof(arg51[1]) == "string" and arg51[1] or arg51[1].Name
+                                lib._config._flags[arg37.flag] = arg51[1]
+                            else
+                                hdrlbl2.Text = "None"
+                                lib._config._flags[arg37.flag] = "None"
+                            end
+                        end
+
+                        fn14()
+                    end
+
+                    cfgs:save(g.GameId, lib._config)
+                    ddscl.Size = ud2.fromOffset(207, arg50._size)
+
+                    if mod._state then
+                        tws:Create(tabbody, TweenInfo.new(0.4, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                            Size = ud2.new(1, -8, 0, 93 + mod._size + mod._multiplier + 16)
+                        }):Play()
+
+                        tws:Create(tabbody.Options, TweenInfo.new(0.4, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                            Size = ud2.new(1, -8, 0, mod._size + mod._multiplier)
+                        }):Play()
+                    end
+                end
+
+                function t7.New(arg52, arg53)
+                    sldbtn:Destroy()
+                    arg53.OrderValue = sldbtn.LayoutOrder
+                    local bit2 = mod
+                    bit2._multiplier = bit2._multiplier - ddcfg
+                    return mod:create_dropdown(arg53)
+                end
+
+                if arg37.multi_dropdown then
+                    local cog = lib._config._flags[arg37.flag]
+
+                    if typeof(cog) == "table" and #cog > 0 then
+                        for val34, val35 in ipairs(cog) do
+                            local dud = typeof(val35) ~= "string" and val35.Name or val35
+
+                            if not table.find(sltags, dud) then
+                                table.insert(sltags, dud)
+                            end
+                        end
+
+                        fn14()
+                        arg37.callback({unpack(sltags)})
+                    else
+                        hdrlbl2.Text = "None"
+                    end
+                elseif lib:flag_type(arg37.flag, "string") then
+                    t7:update(lib._config._flags[arg37.flag])
+                elseif arg37.options[1] then
+                    hdrlbl2.Text = typeof(arg37.options[1]) == "string" and arg37.options[1] or arg37.options[1].Name
+                    fn14()
+                    lib._config._flags[arg37.flag] = arg37.options[1]
+                    cfgs:save(g.GameId, lib._config)
+                    arg37.callback(arg37.options[1])
+                end
+
+                orb = true
+
+                sldbtn.MouseButton1Click:Connect(function()
+                    t7:unfold_settings()
+                end)
+
+                return t7
+            end
+
+            function mod.create_checkbox(lblb, lblt)
+                n3 = n3 + 1
+                local t10 = {_state = false}
+
+                if lblb._size == 0 then
+                    lblb._size = 11
+                end
+
+                lblb._size = lblb._size + 21
+                fn8()
+                local btn10 = mk.new("TextButton")
+                btn10.Text = ""
+                btn10.AutoButtonColor = false
+                btn10.BackgroundTransparency = 1
+                btn10.Name = "Checkbox"
+                btn10.Size = ud2.new(0, 207, 0, 15)
+                btn10.BorderSizePixel = 0
+                btn10.Parent = frm16
+                btn10.LayoutOrder = n3
+                local lbl13 = mk.new("TextLabel")
+                lbl13.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                lbl13.TextSize = 11
+                lbl13.TextColor3 = pal.Text
+                lbl13.TextTransparency = 0.16
+                lbl13.Text = lblt.title or ""
+                lbl13.Size = ud2.new(0, 142, 0, 13)
+                lbl13.AnchorPoint = Vector2.new(0, 0.5)
+                lbl13.Position = ud2.new(0, 0, 0.5, 0)
+                lbl13.BackgroundTransparency = 1
+                lbl13.TextXAlignment = en.TextXAlignment.Left
+                lbl13.Parent = btn10
+                local frm23 = mk.new("Frame")
+                frm23.Size = ud2.fromOffset(14, 14)
+                frm23.Position = ud2.new(1, -20, 0.5, 0)
+                frm23.AnchorPoint = Vector2.new(1, 0.5)
+                frm23.BackgroundColor3 = pal.Accent
+                frm23.BackgroundTransparency = 0.6
+                frm23.BorderSizePixel = 0
+                frm23.Parent = btn10
+                local cnr25 = mk.new("UICorner")
+                cnr25.CornerRadius = ud.new(0, 4)
+                cnr25.Parent = frm23
+                local lbl14 = mk.new("TextLabel")
+                lbl14.Size = ud2.new(1, 0, 1, 0)
+                lbl14.BackgroundTransparency = 1
+                lbl14.TextColor3 = pal.AccentSoft
+                lbl14.TextSize = 10
+                lbl14.Font = en.Font.SourceSans
+                lbl14.Text = lib._config._keybinds[lblt.flag] and lib._config._keybinds[lblt.flag]:gsub("Enum.KeyCode.", "") or "..."
+                lbl14.Parent = frm23
+
+                local function tog(arg54)
+                    if arg54 == "..." or arg54 == "?" then
+                        frm23.Size = ud2.fromOffset(14, 14)
+                        return
+                    end
+
+                    local tbp4 = mk.new("GetTextBoundsParams")
+                    tbp4.Text = arg54
+                    tbp4.Font = Font.fromEnum(en.Font.SourceSans)
+                    tbp4.Size = 10
+                    tbp4.Width = 10000
+                    local tbounds4 = txs:GetTextBoundsAsync(tbp4)
+                    frm23.Size = ud2.fromOffset(math.max(14, tbounds4.X + 6), 14)
+                end
+
+                tog(lbl14.Text)
+                local frm24 = mk.new("Frame")
+                frm24.AnchorPoint = Vector2.new(1, 0.5)
+                frm24.BackgroundTransparency = 0.86
+                frm24.Position = ud2.new(1, 0, 0.5, 0)
+                frm24.Name = "Box"
+                frm24.Size = ud2.new(0, 15, 0, 15)
+                frm24.BorderSizePixel = 0
+                frm24.BackgroundColor3 = pal.Accent
+                frm24.Parent = btn10
+                local cnr26 = mk.new("UICorner")
+                cnr26.CornerRadius = ud.new(0, 4)
+                cnr26.Parent = frm24
+                local strk6 = mk.new("UIStroke")
+                strk6.Color = pal.StrokeHot
+                strk6.Transparency = 0.3
+                strk6.Parent = frm24
+                local togui = mk.new("Frame")
+                togui.AnchorPoint = Vector2.new(0.5, 0.5)
+                togui.BackgroundTransparency = 0.08
+                togui.Position = ud2.new(0.5, 0, 0.5, 0)
+                togui.Name = "Fill"
+                togui.Size = ud2.fromOffset(0, 0)
+                togui.BorderSizePixel = 0
+                togui.BackgroundColor3 = pal.Accent
+                togui.Parent = frm24
+                local cnr27 = mk.new("UICorner")
+                cnr27.CornerRadius = ud.new(0, 3)
+                cnr27.Parent = togui
+
+                function t10.change_state(arg55, arg56)
+                    arg55._state = arg56
+                    tws:Create(frm24, TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out), {BackgroundTransparency = arg56 and 0.62 or 0.86}):Play()
+                    local elm = tws
+                    local create5 = elm.Create
+                    local new6 = TweenInfo.new(0.45, en.EasingStyle.Quint, en.EasingDirection.Out)
+                    local t11 = {}
+
+                    if arg56 then
+                        arg56 = ud2.fromOffset(9, 9)
+                    end
+
+                    if not arg56 then
+                        arg56 = ud2.fromOffset(0, 0)
+                    end
+
+                    t11.Size = arg56
+                    create5(elm, togui, new6, t11):Play()
+                    lib._config._flags[lblt.flag] = arg55._state
+                    cfgs:save(g.GameId, lib._config)
+                    lblt.callback(arg55._state)
+                end
+
+                if lib:flag_type(lblt.flag, "boolean") then
+                    t10:change_state(lib._config._flags[lblt.flag])
+                end
+
+                btn10.MouseButton1Click:Connect(function()
+                    t10:change_state(not t10._state)
+                end)
+
+                btn10.InputBegan:Connect(function(arg57, arg58)
+                    if arg58 or arg57.UserInputType ~= en.UserInputType.MouseButton3 or lib._choosing_keybind then
+                        return
+                    end
+
+                    lib._choosing_keybind = true
+                    local togbtn
+                    local togkey = uis.InputBegan
+
+                    togbtn = togkey:Connect(function(arg59, arg60)
+                        if arg60 or arg59.UserInputType ~= en.UserInputType.Keyboard or arg59.KeyCode == en.KeyCode.Unknown then
+                            return
+                        end
+
+                        togbtn:Disconnect()
+
+                        if arg59.KeyCode == en.KeyCode.Backspace then
+                            lib._config._keybinds[lblt.flag] = nil
+                            cfgs:save(g.GameId, lib._config)
+                            lbl14.Text = "..."
+                            tog("...")
+                            conns:disconnect(lblt.flag .. "_keybind")
+                        else
+                            lib._config._keybinds[lblt.flag] = tostring(arg59.KeyCode)
+                            cfgs:save(g.GameId, lib._config)
+                            conns:disconnect(lblt.flag .. "_keybind")
+                            local togfin = uis.InputBegan
+
+                            local function fn16(arg61, arg62)
+                                if arg62 then
+                                    return
+                                end
+
+                                if tostring(arg61.KeyCode) == lib._config._keybinds[lblt.flag] then
+                                    t10:change_state(not t10._state)
+                                end
+                            end
+
+                            conns[lblt.flag .. "_keybind"] = togfin:Connect(fn16)
+                            togfin = "Enum.KeyCode."
+                            lbl14.Text = lib._config._keybinds[lblt.flag]:gsub(togfin, "")
+                            tog(lbl14.Text)
+                        end
+
+                        lib._choosing_keybind = false
+                    end)
+                end)
+
+                conns[lblt.flag .. "_keypress"] = uis.InputBegan:Connect(function(arg63, arg64)
+                    if arg64 or arg63.UserInputType ~= en.UserInputType.Keyboard then
+                        return
+                    end
+
+                    local fry = lib._config._keybinds[lblt.flag]
+
+                    if fry and tostring(arg63.KeyCode) == fry then
+                        t10:change_state(not t10._state)
+                    end
+                end)
+
+                return t10
+            end
+
+            function mod.create_divider(arg65, arg66)
+                n3 = n3 + 1
+
+                if arg65._size == 0 then
+                    arg65._size = 11
+                end
+
+                arg65._size = arg65._size + 27
+                fn8()
+                local frm25 = mk.new("Frame")
+                frm25.Size = ud2.new(0, 207, 0, 20)
+                frm25.BackgroundTransparency = 1
+                frm25.Name = "DividerRow"
+                frm25.Parent = frm16
+                frm25.LayoutOrder = n3
+
+                if arg66 and arg66.showtopic then
+                    local lbl15 = mk.new("TextLabel")
+                    lbl15.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                    lbl15.TextColor3 = cl3.fromRGB(235, 235, 245)
+                    lbl15.TextTransparency = 0.2
+                    lbl15.Text = arg66.title
+                    lbl15.Size = ud2.new(0, 153, 0, 13)
+                    lbl15.Position = ud2.new(0.5, 0, 0.501, 0)
+                    lbl15.BackgroundTransparency = 1
+                    lbl15.TextXAlignment = en.TextXAlignment.Center
+                    lbl15.AnchorPoint = Vector2.new(0.5, 0.5)
+                    lbl15.TextSize = 11
+                    lbl15.ZIndex = 3
+                    lbl15.TextStrokeTransparency = 0
+                    lbl15.Parent = frm25
+                end
+
+                local gap = not arg66
+
+                if gap then
+                    arg66 = gap
+                elseif arg66 then
+                    arg66 = not arg66.disableline
+                end
+
+                if arg66 then
+                    local frm26 = mk.new("Frame")
+                    frm26.Size = ud2.new(1, 0, 0, 1)
+                    frm26.BackgroundColor3 = cl3.fromRGB(235, 235, 245)
+                    frm26.BorderSizePixel = 0
+                    frm26.ZIndex = 2
+                    frm26.BackgroundTransparency = 0.55
+                    frm26.Position = ud2.new(0, 0, 0.5, -0.5)
+                    frm26.Parent = frm25
+                    local cnr28 = mk.new("UICorner")
+                    cnr28.CornerRadius = ud.new(0, 2)
+                    cnr28.Parent = frm26
+                    local grad12 = mk.new("UIGradient")
+
+                    grad12.Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0, 1),
+                        NumberSequenceKeypoint.new(0.5, 0),
+                        NumberSequenceKeypoint.new(1, 1)
+                    })
+
+                    grad12.Parent = frm26
+                end
+
+                return true
+            end
+
+            function mod.create_textbox(arg67, arg68)
+                n3 = n3 + 1
+
+                if arg67._size == 0 then
+                    arg67._size = 11
+                end
+
+                arg67._size = arg67._size + 45
+                fn8()
+                local lbl16 = mk.new("TextLabel")
+                lbl16.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                lbl16.TextColor3 = pal.Text
+                lbl16.TextTransparency = 0.16
+                lbl16.Text = arg68.title or "Textbox"
+                lbl16.Size = ud2.new(0, 207, 0, 13)
+                lbl16.BackgroundTransparency = 1
+                lbl16.TextXAlignment = en.TextXAlignment.Left
+                lbl16.TextSize = 10
+                lbl16.Parent = frm16
+                lbl16.LayoutOrder = n3
+                local inp = mk.new("TextBox")
+                inp.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", en.FontWeight.Regular)
+                inp.TextColor3 = pal.Text
+                inp.PlaceholderText = arg68.placeholder or "Enter text..."
+                inp.PlaceholderColor3 = pal.SubText
+                inp.Text = lib._config._flags[arg68.flag] or ""
+                inp.Name = "Textbox"
+                inp.Size = ud2.new(0, 207, 0, 20)
+                inp.BorderSizePixel = 0
+                inp.TextSize = 11
+                inp.BackgroundColor3 = cl3.fromRGB(22, 22, 35)
+                inp.BackgroundTransparency = 0
+                inp.ClearTextOnFocus = false
+                inp.Parent = frm16
+                inp.LayoutOrder = n3
+                local cnr29 = mk.new("UICorner")
+                cnr29.CornerRadius = ud.new(0, 5)
+                cnr29.Parent = inp
+                local strk7 = mk.new("UIStroke")
+                strk7.Color = pal.Accent
+                strk7.Transparency = 0.55
+                strk7.Parent = inp
+                local pad5 = mk.new("UIPadding")
+                pad5.PaddingLeft = ud.new(0, 7)
+                pad5.Parent = inp
+
+                inp.Focused:Connect(function()
+                    tws:Create(inp:FindFirstChildOfClass("UIStroke"), TweenInfo.new(0.2), {Transparency = 0.1}):Play()
+                end)
+
+                inp.FocusLost:Connect(function()
+                    tws:Create(inp:FindFirstChildOfClass("UIStroke"), TweenInfo.new(0.2), {Transparency = 0.55}):Play()
+                end)
+
+                local inpbtn = {
+                    _text = "",
+                    update_text = function(arg69, arg70)
+                        arg69._text = arg70
+                        lib._config._flags[arg68.flag] = arg70
+                        cfgs:save(g.GameId, lib._config)
+                        arg68.callback(arg70)
+                    end
+                }
+
+                if lib:flag_type(arg68.flag, "string") then
+                    inpbtn:update_text(lib._config._flags[arg68.flag])
+                end
+
+                inp.FocusLost:Connect(function()
+                    tws:Create(inp:FindFirstChildOfClass("UIStroke"), TweenInfo.new(0.2), {Transparency = 0.55}):Play()
+                    inpbtn:update_text(inp.Text)
+                end)
+
+                return inpbtn
+            end
+
+            function mod.create_paragraph(arg71, arg72)
+                n3 = n3 + 1
+
+                if arg71._size == 0 then
+                    arg71._size = 11
+                end
+
+                arg71._size = arg71._size + (arg72.customScale or 70)
+                fn8()
+                local inpkey = mk.new("Frame")
+                inpkey.BackgroundColor3 = pal.CardDeep
+                inpkey.BackgroundTransparency = 0.15
+                inpkey.Size = ud2.new(1, -16, 0, 30)
+                inpkey.BorderSizePixel = 0
+                inpkey.Name = "Paragraph"
+                inpkey.AutomaticSize = en.AutomaticSize.Y
+                inpkey.Parent = frm16
+                inpkey.LayoutOrder = n3
+                local cnr30 = mk.new("UICorner")
+                cnr30.CornerRadius = ud.new(0, 6)
+                cnr30.Parent = inpkey
+                local strk8 = mk.new("UIStroke")
+                strk8.Color = pal.Stroke
+                strk8.Transparency = 0.25
+                strk8.Parent = inpkey
+                local lbl17 = mk.new("TextLabel")
+                lbl17.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Bold)
+                lbl17.TextColor3 = pal.Text
+                lbl17.TextTransparency = 0.08
+                lbl17.Text = arg72.title or "Title"
+                lbl17.Size = ud2.new(1, -10, 0, 20)
+                lbl17.Position = ud2.new(0, 5, 0, 5)
+                lbl17.BackgroundTransparency = 1
+                lbl17.TextXAlignment = en.TextXAlignment.Left
+                lbl17.TextSize = 12
+                lbl17.AutomaticSize = en.AutomaticSize.XY
+                lbl17.Parent = inpkey
+                local lbl18 = mk.new("TextLabel")
+                lbl18.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Regular)
+                lbl18.TextColor3 = pal.SubText
+                local hub = not arg72.rich
+
+                if hub then
+                    hub = arg72.text or ""
+                elseif not hub then
+                    hub = nil
+                end
+
+                lbl18.Text = hub
+
+                if arg72.rich then
+                    lbl18.RichText = true
+                    lbl18.Text = arg72.richtext or ""
+                end
+
+                lbl18.Size = ud2.new(1, -10, 0, 20)
+                lbl18.Position = ud2.new(0, 5, 0, 30)
+                lbl18.BackgroundTransparency = 1
+
+                lbl18.TextXAlignment = en.TextXAlignment.Left
+                lbl18.TextYAlignment = en.TextYAlignment.Top
+                lbl18.TextSize = 11
+                lbl18.TextWrapped = true
+                lbl18.AutomaticSize = en.AutomaticSize.XY
+                lbl18.Parent = inpkey
+
+                inpkey.MouseEnter:Connect(function()
+                    tws:Create(inpkey, TweenInfo.new(0.25, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        BackgroundColor3 = cl3.fromRGB(20, 20, 32),
+                        BackgroundTransparency = 0.08
+                    }):Play()
+                end)
+
+                inpkey.MouseLeave:Connect(function()
+                    tws:Create(inpkey, TweenInfo.new(0.25, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        BackgroundColor3 = pal.CardDeep,
+                        BackgroundTransparency = 0.15
+                    }):Play()
+                end)
+
+                return {}
+            end
+
+            function mod.create_text(arg73, arg74)
+                n3 = n3 + 1
+
+                if arg73._size == 0 then
+                    arg73._size = 11
+                end
+
+                arg73._size = arg73._size + (arg74.customScale or 50)
+                fn8()
+                local inpui = mk.new("Frame")
+                inpui.BackgroundColor3 = pal.CardDeep
+                inpui.BackgroundTransparency = 0.15
+                inpui.Size = ud2.new(0, 207, 0, arg74.CustomYSize or 20)
+                inpui.BorderSizePixel = 0
+                inpui.Name = "Text"
+                inpui.AutomaticSize = en.AutomaticSize.Y
+                inpui.Parent = frm16
+                inpui.LayoutOrder = n3
+                local cnr31 = mk.new("UICorner")
+                cnr31.CornerRadius = ud.new(0, 6)
+                cnr31.Parent = inpui
+                local strk9 = mk.new("UIStroke")
+                strk9.Color = pal.Stroke
+                strk9.Transparency = 0.25
+                strk9.Parent = inpui
+                local inpcb = mk.new("TextLabel")
+                inpcb.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Regular)
+                inpcb.TextColor3 = pal.SubText
+                local ink = not arg74.rich and (arg74.text or "")
+
+                if not ink then
+                    ink = nil
+                end
+
+                inpcb.Text = ink
+
+                if arg74.rich then
+                    inpcb.RichText = true
+                    inpcb.Text = arg74.richtext or ""
+                end
+
+                inpcb.Size = ud2.new(1, -10, 1, 0)
+                inpcb.Position = ud2.new(0, 5, 0, 5)
+                inpcb.BackgroundTransparency = 1
+                inpcb.TextXAlignment = en.TextXAlignment.Left
+                inpcb.TextYAlignment = en.TextYAlignment.Top
+                inpcb.TextSize = 10
+                inpcb.TextWrapped = true
+                inpcb.AutomaticSize = en.AutomaticSize.XY
+                inpcb.Parent = inpui
+
+                inpui.MouseEnter:Connect(function()
+                    tws:Create(inpui, TweenInfo.new(0.25, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        BackgroundColor3 = cl3.fromRGB(20, 20, 32),
+                        BackgroundTransparency = 0.08
+                    }):Play()
+                end)
+
+                inpui.MouseLeave:Connect(function()
+                    tws:Create(inpui, TweenInfo.new(0.25, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        BackgroundColor3 = pal.CardDeep,
+                        BackgroundTransparency = 0.15
+                    }):Play()
+                end)
+
+                return {
+                    Set = function(arg75, arg76)
+                        local jet = inpcb
+                        local lid = not arg76.rich
+                        local map2
+
+                        if lid then
+                            lid = arg76.text
+
+                            if lid then
+                                map2 = lid
+                            else
+                                lid = ""
+                                map2 = lid
+                            end
+                        else
+                            map2 = lid or nil
+                        end
+
+                        jet.Text = map2
+
+                        if arg76.rich then
+                            inpcb.RichText = true
+                            inpcb.Text = arg76.richtext or ""
+                        end
+                    end
+                }
+            end
+
+            function mod.create_feature(arg77, opt)
+                n3 = n3 + 1
+                local _nub = false
+
+                if arg77._size == 0 then
+                    arg77._size = 11
+                end
+
+                arg77._size = arg77._size + 20
+                fn8()
+                local frm27 = mk.new("Frame")
+                frm27.Size = ud2.new(0, 207, 0, 16)
+                frm27.BackgroundTransparency = 1
+                frm27.Parent = frm16
+                frm27.LayoutOrder = n3
+                local list8 = mk.new("UIListLayout")
+                list8.FillDirection = en.FillDirection.Horizontal
+                list8.SortOrder = en.SortOrder.LayoutOrder
+                list8.Parent = frm27
+                local btn11 = mk.new("TextButton")
+                btn11.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                btn11.TextSize = 11
+                btn11.Size = ud2.new(1, -50, 0, 16)
+                btn11.BackgroundColor3 = pal.CardDeep
+                btn11.BackgroundTransparency = 0.38
+                btn11.TextColor3 = pal.Text
+                btn11.Text = "  " .. (opt.title or "Feature")
+                btn11.AutoButtonColor = false
+                btn11.TextXAlignment = en.TextXAlignment.Left
+                btn11.TextTransparency = 0.12
+                btn11.Parent = frm27
+                local cnr32 = mk.new("UICorner")
+                cnr32.CornerRadius = ud.new(0, 4)
+                cnr32.Parent = btn11
+                local frm28 = mk.new("Frame")
+                frm28.Size = ud2.new(0, 45, 0, 16)
+                frm28.BackgroundTransparency = 1
+                frm28.Parent = frm27
+                local list9 = mk.new("UIListLayout")
+                list9.Padding = ud.new(0.1, 0)
+                list9.FillDirection = en.FillDirection.Horizontal
+                list9.HorizontalAlignment = en.HorizontalAlignment.Right
+                list9.SortOrder = en.SortOrder.LayoutOrder
+                list9.Parent = frm28
+                local bnd = mk.new("TextLabel")
+                bnd.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                bnd.Size = ud2.new(0, 15, 0, 15)
+                bnd.BackgroundColor3 = pal.Accent
+                bnd.TextColor3 = pal.AccentSoft
+                bnd.TextSize = 11
+                bnd.BackgroundTransparency = 0.62
+                bnd.LayoutOrder = 2
+                bnd.Parent = frm28
+                local cnr33 = mk.new("UICorner")
+                cnr33.CornerRadius = ud.new(0, 3)
+                cnr33.Parent = bnd
+                local strk10 = mk.new("UIStroke")
+                strk10.Color = pal.Accent
+                strk10.Transparency = 0.4
+                strk10.Thickness = 1
+                strk10.ApplyStrokeMode = en.ApplyStrokeMode.Border
+                strk10.Parent = bnd
+                local btn12 = mk.new("TextButton")
+                btn12.Size = ud2.new(1, 0, 1, 0)
+                btn12.BackgroundTransparency = 1
+                btn12.TextTransparency = 1
+                btn12.Parent = bnd
+
+                if not lib._config._flags then
+                    lib._config._flags = {}
+                end
+
+                if not lib._config._flags[opt.flag] then
+                    lib._config._flags[opt.flag] = {checked = false, BIND = opt.default or "Unknown"}
+                end
+
+                local chk = lib._config._flags[opt.flag].checked
+                bnd.Text = lib._config._flags[opt.flag].BIND == "Unknown" and "..." or lib._config._flags[opt.flag].BIND
+                local oar
+
+                if not opt.disablecheck then
+                    local chkbtn = mk.new("TextButton")
+                    chkbtn.Size = ud2.new(0, 15, 0, 15)
+                    chkbtn.BackgroundColor3 = chk and pal.Accent or pal.CardDeep
+                    chkbtn.BackgroundTransparency = chk and 0.32 or 0.5
+                    chkbtn.Text = ""
+                    chkbtn.LayoutOrder = 1
+                    chkbtn.Parent = frm28
+                    local cnr34 = mk.new("UICorner")
+                    cnr34.CornerRadius = ud.new(0, 3)
+                    cnr34.Parent = chkbtn
+                    local strk11 = mk.new("UIStroke")
+                    strk11.Color = pal.Accent
+                    strk11.Transparency = 0.35
+                    strk11.Thickness = 1
+                    strk11.ApplyStrokeMode = en.ApplyStrokeMode.Border
+                    strk11.Parent = chkbtn
+
+                    function oar()
+                        chk = not chk
+
+                        tws:Create(chkbtn, TweenInfo.new(0.3), {
+                            BackgroundColor3 = chk and pal.Accent or pal.CardDeep,
+                            BackgroundTransparency = chk and 0.32 or 0.5
+                        }):Play()
+
+                        lib._config._flags[opt.flag].checked = chk
+                        cfgs:save(g.GameId, lib._config)
+
+                        if opt.callback then
+                            opt.callback(chk)
+                        end
+                    end
+
+                    chkbtn.MouseButton1Click:Connect(oar)
+                else
+                    function oar()
+                        if opt.button_callback then
+                            opt.button_callback()
+                        end
+                    end
+                end
+
+                btn12.MouseButton1Click:Connect(function()
+                    bnd.Text = "..."
+                    local bcn
+
+                    bcn = uis.InputBegan:Connect(function(arg78, arg79)
+                        if arg79 then
+                            return
+                        end
+
+                        if arg78.UserInputType == en.UserInputType.Keyboard then
+                            local nm = arg78.KeyCode.Name
+                            lib._config._flags[opt.flag].BIND = nm
+                            bnd.Text = nm ~= "Unknown" and nm or "..."
+                            cfgs:save(g.GameId, lib._config)
+                            bcn:Disconnect()
+                        elseif arg78.UserInputType == en.UserInputType.MouseButton3 then
+                            lib._config._flags[opt.flag].BIND = "Unknown"
+                            bnd.Text = "..."
+                            cfgs:save(g.GameId, lib._config)
+                            bcn:Disconnect()
+                        end
+                    end)
+
+                    conns["feat_keybind_input_" .. opt.flag] = bcn
+                end)
+
+                conns["feat_keybind_press_" .. opt.flag] = uis.InputBegan:Connect(function(arg80, arg81)
+                    if arg81 or arg80.UserInputType ~= en.UserInputType.Keyboard then
+                        return
+                    end
+
+                    if arg80.KeyCode.Name == lib._config._flags[opt.flag].BIND then
+                        oar()
+                    end
+                end)
+
+                btn11.MouseButton1Click:Connect(function()
+                    if opt.button_callback then
+                        opt.button_callback()
+                    end
+                end)
+
+                if not opt.disablecheck and opt.callback then
+                    opt.callback(chk)
+                end
+
+                return frm27
+            end
+
+            function mod.create_colorpicker(colrow, colopt)
+                n3 = n3 + 1
+                local hsv = {_h = 0, _s = 1, _v = 1}
+
+                if lib._config._flags[colopt.flag] then
+                    local pin = lib._config._flags[colopt.flag]
+
+                    if type(pin) == "table" and pin.H ~= nil then
+                        local h3 = pin.H
+                        local s2 = pin.S
+                        pin = pin.V
+                        hsv._h = h3
+                        hsv._s = s2
+                        hsv._v = pin
+                    end
+                elseif colopt.color then
+                    local toHSV2, toHSV3, toHSV4 = cl3.toHSV(colopt.color)
+                    hsv._h = toHSV2
+                    hsv._s = toHSV3
+                    hsv._v = toHSV4
+                end
+
+                if colrow._size == 0 then
+                    colrow._size = 11
+                end
+
+                colrow._size = colrow._size + 32
+                fn8()
+                local btn13 = mk.new("TextButton")
+                btn13.Size = ud2.new(0, 207, 0, 20)
+                btn13.BackgroundTransparency = 1
+                btn13.Text = ""
+                btn13.AutoButtonColor = false
+                btn13.Parent = frm16
+                btn13.LayoutOrder = n3
+                local lbl19 = mk.new("TextLabel")
+                lbl19.Text = colopt.title or "Color"
+                lbl19.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+                lbl19.TextSize = 11
+                lbl19.TextColor3 = pal.Text
+                lbl19.TextTransparency = 0.16
+                lbl19.BackgroundTransparency = 1
+                lbl19.Size = ud2.new(0, 150, 1, 0)
+                lbl19.TextXAlignment = en.TextXAlignment.Left
+                lbl19.Parent = btn13
+                local frm29 = mk.new("Frame")
+                frm29.Size = ud2.new(0, 44, 0, 14)
+                frm29.AnchorPoint = Vector2.new(1, 0.5)
+                frm29.Position = ud2.new(1, 0, 0.5, 0)
+                frm29.BorderSizePixel = 0
+                frm29.BackgroundColor3 = cl3.fromHSV(hsv._h, hsv._s, hsv._v)
+                frm29.Parent = btn13
+                local cnr35 = mk.new("UICorner")
+                cnr35.CornerRadius = ud.new(0, 5)
+                cnr35.Parent = frm29
+                local strk12 = mk.new("UIStroke")
+                strk12.Color = pal.StrokeHot
+                strk12.Transparency = 0.38
+                strk12.Parent = frm29
+                local cpick = mk.new("TextLabel")
+                cpick.Text = "›"
+                cpick.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Bold)
+                cpick.TextSize = 14
+                cpick.TextColor3 = pal.Accent
+                cpick.BackgroundTransparency = 1
+                cpick.Size = ud2.new(0, 12, 1, 0)
+                cpick.AnchorPoint = Vector2.new(1, 0.5)
+                cpick.Position = ud2.new(1, -50, 0.5, 0)
+                cpick.Rotation = 90
+                cpick.Parent = btn13
+                local colkey = mk.new("Frame")
+                colkey.Size = ud2.new(0, 207, 0, 0)
+                colkey.BackgroundTransparency = 1
+                colkey.ClipsDescendants = true
+                colkey.BorderSizePixel = 0
+                colkey.Parent = frm16
+                colkey.LayoutOrder = n3
+                local colui = mk.new("Frame")
+                colui.Size = ud2.new(1, 0, 0, 62)
+                colui.Position = ud2.new(0, 0, 0, 4)
+                colui.BorderSizePixel = 0
+                colui.BackgroundColor3 = cl3.fromHSV(hsv._h, 1, 1)
+                colui.ClipsDescendants = true
+                colui.Parent = colkey
+                local cnr36 = mk.new("UICorner")
+                cnr36.CornerRadius = ud.new(0, 7)
+                cnr36.Parent = colui
+                local frm30 = mk.new("Frame")
+                frm30.Size = ud2.new(1, 0, 1, 0)
+                frm30.BackgroundColor3 = cl3.new(1, 1, 1)
+                frm30.BorderSizePixel = 0
+                frm30.ZIndex = 2
+                frm30.Parent = colui
+                local grad13 = mk.new("UIGradient")
+                grad13.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)})
+                grad13.Parent = frm30
+                local frm31 = mk.new("Frame")
+                frm31.Size = ud2.new(1, 0, 1, 0)
+                frm31.BackgroundColor3 = cl3.new(0, 0, 0)
+                frm31.BorderSizePixel = 0
+                frm31.ZIndex = 3
+                frm31.Parent = colui
+                local grad14 = mk.new("UIGradient")
+                grad14.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)})
+                grad14.Rotation = 90
+                grad14.Parent = frm31
+                local colfin = mk.new("Frame")
+                colfin.Size = ud2.new(0, 12, 0, 12)
+                colfin.AnchorPoint = Vector2.new(0.5, 0.5)
+                colfin.BackgroundColor3 = cl3.fromRGB(0, 0, 0)
+                colfin.BorderSizePixel = 0
+                colfin.ZIndex = 5
+                colfin.Visible = false
+                colfin.Position = ud2.new(hsv._s, 0, 1 - hsv._v, 0)
+                colfin.Parent = colui
+                local cnr37 = mk.new("UICorner")
+                cnr37.CornerRadius = ud.new(1, 0)
+
+                cnr37.Parent = colfin
+                local frm32 = mk.new("Frame")
+                frm32.Size = ud2.new(0, 8, 0, 8)
+                frm32.AnchorPoint = Vector2.new(0.5, 0.5)
+                frm32.Position = ud2.new(0.5, 0, 0.5, 0)
+                frm32.BackgroundColor3 = cl3.new(1, 1, 1)
+                frm32.BorderSizePixel = 0
+                frm32.ZIndex = 6
+                frm32.Parent = colfin
+                local cnr38 = mk.new("UICorner")
+                cnr38.CornerRadius = ud.new(1, 0)
+                cnr38.Parent = frm32
+                local frm33 = mk.new("Frame")
+                frm33.Size = ud2.new(1, 0, 0, 12)
+                frm33.Position = ud2.new(0, 0, 0, 72)
+                frm33.BorderSizePixel = 0
+                frm33.BackgroundColor3 = cl3.new(1, 1, 1)
+                frm33.Parent = colkey
+                local cnr39 = mk.new("UICorner")
+                cnr39.CornerRadius = ud.new(0, 5)
+                cnr39.Parent = frm33
+                local grad15 = mk.new("UIGradient")
+
+                grad15.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, cl3.fromHSV(0, 1, 1)),
+                    ColorSequenceKeypoint.new(0.167, cl3.fromHSV(0.167, 1, 1)),
+                    ColorSequenceKeypoint.new(0.333, cl3.fromHSV(0.333, 1, 1)),
+                    ColorSequenceKeypoint.new(0.5, cl3.fromHSV(0.5, 1, 1)),
+                    ColorSequenceKeypoint.new(0.667, cl3.fromHSV(0.667, 1, 1)),
+                    ColorSequenceKeypoint.new(0.833, cl3.fromHSV(0.833, 1, 1)),
+                    ColorSequenceKeypoint.new(1, cl3.fromHSV(0, 1, 1))
+                })
+
+                grad15.Parent = frm33
+                local cbar = mk.new("Frame")
+                cbar.Size = ud2.new(0, 6, 1, 4)
+                cbar.AnchorPoint = Vector2.new(0.5, 0.5)
+                cbar.Position = ud2.new(hsv._h, 0, 0.5, 0)
+                cbar.BackgroundColor3 = cl3.fromRGB(0, 0, 0)
+                cbar.BorderSizePixel = 0
+                cbar.ZIndex = 4
+                cbar.Visible = false
+                cbar.Parent = frm33
+                local cnr40 = mk.new("UICorner")
+                cnr40.CornerRadius = ud.new(0, 3)
+                cnr40.Parent = cbar
+                local frm34 = mk.new("Frame")
+                frm34.Size = ud2.new(0, 4, 1, 0)
+                frm34.AnchorPoint = Vector2.new(0.5, 0.5)
+                frm34.Position = ud2.new(0.5, 0, 0.5, 0)
+                frm34.BackgroundColor3 = cl3.new(1, 1, 1)
+                frm34.BorderSizePixel = 0
+                frm34.ZIndex = 5
+                frm34.Parent = cbar
+                local cnr41 = mk.new("UICorner")
+                cnr41.CornerRadius = ud.new(0, 2)
+                cnr41.Parent = frm34
+
+                local function csat()
+
+                    return cl3.fromHSV(hsv._h, hsv._s, hsv._v)
+                end
+
+                local function chue()
+                    frm29.BackgroundColor3 = csat()
+                    colui.BackgroundColor3 = cl3.fromHSV(hsv._h, 1, 1)
+                    colfin.Position = ud2.new(hsv._s, 0, 1 - hsv._v, 0)
+                    cbar.Position = ud2.new(hsv._h, 0, 0.5, 0)
+                end
+
+                local function cpipe()
+                    lib._config._flags[colopt.flag] = {H = hsv._h, S = hsv._s, V = hsv._v}
+                    cfgs:save(g.GameId, lib._config)
+
+                    if colopt.callback then
+                        colopt.callback(csat())
+                    end
+                end
+
+                local cdot = false
+                local chex = false
+
+                colui.InputBegan:Connect(function(arg82)
+                    if arg82.UserInputType == en.UserInputType.MouseButton1 then
+                        cdot = true
+                        lib._blocking_drag = true
+                    end
+                end)
+
+                frm33.InputBegan:Connect(function(arg83)
+                    if arg83.UserInputType == en.UserInputType.MouseButton1 then
+                        chex = true
+                        lib._blocking_drag = true
+                    end
+                end)
+
+                conns["cp_moved_" .. colopt.flag] = uis.InputChanged:Connect(function(arg84)
+                    if arg84.UserInputType ~= en.UserInputType.MouseMovement then
+                        return
+                    end
+
+                    if cdot then
+                        hsv._s = math.clamp((arg84.Position.X - colui.AbsolutePosition.X) / colui.AbsoluteSize.X, 0, 1)
+                        hsv._v = 1 - math.clamp((arg84.Position.Y - colui.AbsolutePosition.Y) / colui.AbsoluteSize.Y, 0, 1)
+                        chue()
+
+                        if colopt.callback then
+                            colopt.callback(cl3.fromHSV(hsv._h, hsv._s, hsv._v))
+                        end
+                    end
+
+                    if not chex then
+                        return
+                    end
+
+                    hsv._h = math.clamp((arg84.Position.X - frm33.AbsolutePosition.X) / frm33.AbsoluteSize.X, 0, 1)
+                    chue()
+
+                    if colopt.callback then
+                        colopt.callback(cl3.fromHSV(hsv._h, hsv._s, hsv._v))
+                    end
+                end)
+
+                conns["cp_ended_" .. colopt.flag] = uis.InputEnded:Connect(function(arg85)
+                    if arg85.UserInputType ~= en.UserInputType.MouseButton1 then
+                        return
+                    end
+
+                    local quo = cdot
+                    local rim
+
+                    if cdot then
+                        rim = quo
+                    else
+                        rim = chex
+                    end
+
+                    if rim then
+                        cdot = false
+                        chex = false
+                        lib._blocking_drag = false
+                        cpipe()
+                    end
+                end)
+
+                local sap = false
+
+                btn13.MouseButton1Click:Connect(function()
+                    sap = not sap
+                    colfin.Visible = sap
+                    cbar.Visible = sap
+                    colrow._size = sap and colrow._size + 90 or colrow._size - 90
+
+                    tws:Create(colkey, TweenInfo.new(0.35, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                        Size = ud2.new(0, 207, 0, sap and 90 or 0)
+                    }):Play()
+
+                    tws:Create(cpick, TweenInfo.new(0.3), {Rotation = sap and -90 or 90}):Play()
+
+                    if mod._state then
+                        tabbody.Size = ud2.new(1, -8, 0, 93 + colrow._size + colrow._multiplier + 16)
+                    end
+
+                    frm16.Size = ud2.new(1, -8, 0, colrow._size + colrow._multiplier)
+                end)
+
+                chue()
+
+                if colopt.callback then
+                    colopt.callback(csat())
+                end
+
+                function hsv.Set(arg86, arg87)
+                    local toHSV5, toHSV6, toHSV7 = cl3.toHSV(arg87)
+                    arg86._h = toHSV5
+                    arg86._s = toHSV6
+                    arg86._v = toHSV7
+                    chue()
+                    cpipe()
+                end
+
+                return hsv
+            end
+
+            return mod
+        end
+
+        t5._left = sL
+        t5._right = sR
+        return t5
+    end
+
+    local function fn17(arg88, arg89, arg90)
+        return cl3.new(arg88.R + (arg89.R - arg88.R) * arg90, arg88.G + (arg89.G - arg88.G) * arg90, arg88.B + (arg89.B - arg88.B) * arg90)
+    end
+
+    local function fn18()
+        local colors4 = th.Colors
+
+        for val36, val37 in ipairs(lib._all_modules) do
+            local frame2 = val37.frame
+            frame2.BackgroundColor3 = colors4.Card
+            local strk13 = frame2:FindFirstChildOfClass("UIStroke")
+
+            if strk13 then
+                if frame2:GetAttribute("pinned") == true then
+                    strk13.Color = colors4.Accent
+                    strk13.Transparency = 0.55
+                elseif frame2:GetAttribute("expanded") == true then
+                    strk13.Color = colors4.Accent
+                    strk13.Transparency = 0.68
+                else
+                    strk13.Color = colors4.Stroke
+                    strk13.Transparency = 0.32
+                end
+            end
+
+            local kid3 = frame2:FindFirstChild("Header")
+
+            if kid3 then
+                kid3.BackgroundColor3 = colors4.CardDeep
+                local manager2 = val37.manager
+                local toy2 = manager2 and manager2._accent_bar
+
+                if toy2 then
+                    if manager2._ab_tween then
+                        manager2._ab_tween:Cancel()
+                        manager2._ab_tween = nil
+                    end
+
+                    if frame2:GetAttribute("expanded") == true then
+                        toy2.BackgroundColor3 = colors4.Accent
+                        toy2.BackgroundTransparency = 0.08
+                    else
+                        toy2.BackgroundColor3 = colors4.AccentDim
+                        toy2.BackgroundTransparency = 0.45
+                    end
+                end
+
+                local kid4 = kid3:FindFirstChild("ModuleName")
+
+                if kid4 then
+                    kid4.TextColor3 = colors4.Text
+                end
+
+                local kid5 = kid3:FindFirstChild("Description")
+
+                if kid5 then
+                    kid5.TextColor3 = colors4.SubText
+                end
+
+                local kid6 = kid3:FindFirstChild("Icon")
+
+                if kid6 and kid6:IsA("GuiObject") then
+                    kid6.ImageColor3 = colors4.AccentSoft
+                end
+
+                local kid7 = kid3:FindFirstChild("Keybind")
+
+                if kid7 then
+                    kid7.BackgroundColor3 = colors4.Accent
+                    local lbl20 = kid7:FindFirstChildOfClass("TextLabel")
+
+                    if lbl20 then
+                        lbl20.TextColor3 = colors4.AccentSoft
+                    end
+
+                    local strk14 = kid7:FindFirstChildOfClass("UIStroke")
+
+                    if strk14 then
+                        strk14.Color = colors4.Accent
+                    end
+                end
+
+                local kid8 = kid3:FindFirstChild("Bell")
+
+                if kid8 and kid8:IsA("GuiObject") then
+                    local urn = lib._config._library[val37.flag .. "_notify"] == true
+                    kid8.ImageColor3 = urn and colors4.Accent or colors4.SubText
+
+                    if urn then
+                        urn = 0.05
+                    end
+
+                    kid8.ImageTransparency = urn or 0.45
+                end
+
+                local kid9 = kid3:FindFirstChild("PinBtn")
+
+                if kid9 and kid9:IsA("GuiObject") then
+                    if frame2:GetAttribute("pinned") == true then
+                        kid9.ImageColor3 = colors4.Accent
+                        kid9.ImageTransparency = 0.08
+                    else
+                        kid9.ImageColor3 = colors4.SubText
+                        kid9.ImageTransparency = 0.55
+                    end
+                end
+
+                local kid10 = kid3:FindFirstChild("Toggle")
+
+                if kid10 then
+                    local vet = kid10.BackgroundTransparency < 0.4
+                    local new7 = cl3.new(math.clamp(colors4.Card.R * 0.48, 0, 1), math.clamp(colors4.Card.G * 0.48, 0, 1), math.clamp(colors4.Card.B * 0.52, 0, 1))
+                    kid10.BackgroundColor3 = vet and colors4.Accent or new7
+                    local strk15 = kid10:FindFirstChildOfClass("UIStroke")
+
+                    if strk15 then
+                        strk15.Color = colors4.Stroke
+                    end
+
+                    local kid11 = kid10:FindFirstChild("Circle")
+
+                    if kid11 then
+                        if vet then
+                            vet = colors4.Background
+                        end
+
+                        if not vet then
+                            vet = colors4.SubText
+                        end
+
+                        kid11.BackgroundColor3 = vet
+                    end
+                end
+
+                for val38, val39 in ipairs(kid3:GetChildren()) do
+                    if val39:IsA("Frame") and val39:FindFirstChildOfClass("UIGradient") then
+                        val39.BackgroundColor3 = colors4.CardDeep
+                        break
+                    end
+                end
+
+                for val40, val41 in ipairs(kid3:GetChildren()) do
+                    local frm35 = val41:IsA("Frame")
+                    local wig
+
+                    if frm35 then
+                        local offset = val41.Size.Y.Offset
+                        frm35 = offset == 1
+
+                        if offset == 1 then
+                            wig = val41.Name ~= "AccentBar"
+                        else
+                            wig = frm35
+                        end
+                    else
+                        wig = frm35
+                    end
+
+                    if wig and val41.Name ~= "Underline" then
+                        val41.BackgroundColor3 = colors4.Stroke
+                    end
+                end
+            end
+
+            local kid12 = frame2:FindFirstChild("Options")
+
+            if kid12 then
+                for val42, val43 in ipairs(kid12:GetChildren()) do
+                    if val43.Name == "Slider" or val43.Name == "DoubleSlider" then
+                        local kid13 = val43:FindFirstChild("Drag")
+
+                        if kid13 then
+                            kid13.BackgroundColor3 = colors4.Stroke
+                            local kid14 = kid13:FindFirstChild("Fill")
+
+                            if kid14 then
+                                kid14.BackgroundColor3 = colors4.Accent
+                                local grad16 = kid14:FindFirstChildOfClass("UIGradient")
+
+                                if grad16 then
+                                    grad16.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, colors4.AccentSoft), ColorSequenceKeypoint.new(1, colors4.AccentDim)})
+                                end
+
+                                local kid15 = kid14:FindFirstChild("Circle")
+
+                                if kid15 then
+                                    kid15.BackgroundColor3 = colors4.AccentSoft
+                                end
+                            end
+
+                            local kid16 = kid13:FindFirstChild("RangeFill")
+
+                            if kid16 then
+                                kid16.BackgroundColor3 = colors4.Accent
+                                local grad17 = kid16:FindFirstChildOfClass("UIGradient")
+
+                                if grad17 then
+                                    grad17.Color = ColorSequence.new({
+                                        ColorSequenceKeypoint.new(0, colors4.AccentSoft),
+                                        ColorSequenceKeypoint.new(1, colors4.AccentDim)
+                                    })
+                                end
+                            end
+
+                            for val44, val45 in ipairs({"KnobL", "KnobR"}) do
+                                local kid17 = kid13:FindFirstChild(val45)
+
+                                if kid17 then
+                                    kid17.BackgroundColor3 = colors4.AccentSoft
+                                end
+                            end
+                        end
+
+                        for val46, val47 in ipairs(val43:GetChildren()) do
+                            if val47:IsA("TextLabel") then
+                                val47.TextColor3 = colors4.Text
+                            end
+                        end
+                    elseif val43.Name == "Checkbox" then
+                        for val48, val49 in ipairs(val43:GetChildren()) do
+                            if val49:IsA("TextLabel") and val49.Name ~= "Value" then
+                                val49.TextColor3 = colors4.Text
+                            end
+
+                            if val49.Name == "Box" then
+                                val49.BackgroundColor3 = colors4.Accent
+                                local strk16 = val49:FindFirstChildOfClass("UIStroke")
+
+                                if strk16 then
+                                    strk16.Color = colors4.StrokeHot
+                                end
+                            elseif val49.Name == "Fill" then
+                                val49.BackgroundColor3 = colors4.Accent
+                            elseif val49.Name == "CBKey" then
+                                val49.BackgroundColor3 = colors4.Accent
+                                local strk17 = val49:FindFirstChildOfClass("UIStroke")
+
+                                if strk17 then
+                                    strk17.Color = colors4.Accent
+                                end
+                            end
+                        end
+                    elseif val43.Name == "Dropdown" then
+                        for val50, val51 in ipairs(val43:GetDescendants()) do
+                            if val51:IsA("TextLabel") and val51.Text == "⇅" then
+                                val51.TextColor3 = colors4.Accent
+                            elseif val51:IsA("TextLabel") then
+                                val51.TextColor3 = colors4.Text
+                            elseif val51:IsA("TextButton") and (val51.Name == "Option" or val51.Name == "OptionBtn") then
+                                val51.TextColor3 = colors4.Text
+                            elseif val51:IsA("Frame") and val51.Name == "Box" then
+                                val51.BackgroundColor3 = colors4.Accent
+                                local strk18 = val51:FindFirstChildOfClass("UIStroke")
+
+                                if strk18 then
+                                    strk18.Color = colors4.StrokeHot
+                                end
+                            elseif val51:IsA("ImageLabel") and val51.Name == "DDIcon" then
+                                val51.ImageColor3 = colors4.AccentSoft
+                            elseif val51:IsA("TextButton") and val51.Name == "DDSlider" then
+                                for val52, val53 in ipairs(val51:GetChildren()) do
+                                    if val53:IsA("TextLabel") then
+                                        val53.TextColor3 = colors4.Text
+                                    end
+                                end
+
+                                local kid18 = val51:FindFirstChild("Drag")
+
+                                if kid18 then
+                                    kid18.BackgroundColor3 = colors4.Stroke
+                                    local kid19 = kid18:FindFirstChild("Fill")
+
+                                    if kid19 then
+                                        kid19.BackgroundColor3 = colors4.Accent
+                                        local grad18 = kid19:FindFirstChildOfClass("UIGradient")
+
+                                        if grad18 then
+                                            grad18.Color = ColorSequence.new({
+                                                ColorSequenceKeypoint.new(0, colors4.AccentSoft),
+                                                ColorSequenceKeypoint.new(1, colors4.AccentDim)
+                                            })
+                                        end
+
+                                        local kid20 = kid19:FindFirstChild("Circle")
+
+                                        if kid20 then
+                                            kid20.BackgroundColor3 = colors4.AccentSoft
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+
+                for val54, val55 in ipairs(kid12:GetDescendants()) do
+                    if val55:IsA("UIStroke") then
+                        local par = val55.Parent
+
+                        if par then
+                            local yam = par.Name == "Box"
+                            local zen
+
+                            if yam then
+                                zen = yam
+                            else
+                                local nm2 = par.Name
+                                yam = nm2 == "Swatch"
+
+                                if nm2 == "Swatch" then
+                                    zen = yam
+                                else
+                                    local nm3 = par.Name
+                                    yam = nm3 == "Keybind"
+
+                                    if nm3 == "Keybind" then
+                                        zen = yam
+                                    else
+                                        zen = par.Name == "CBKey"
+                                    end
+                                end
+                            end
+
+                            if zen or par.Name == "FCB" then
+                                val55.Color = colors4.StrokeHot
+                            end
+                        end
+                    elseif val55:IsA("Frame") and val55.Name == "PickerBox" then
+                        local strk19 = val55:FindFirstChildOfClass("UIStroke")
+
+                        if strk19 then
+                            strk19.Color = colors4.StrokeHot
+                        end
+                    elseif val55:IsA("TextLabel") and val55.Name == "PickerArrow" then
+                        val55.TextColor3 = colors4.Accent
+                    elseif val55:IsA("TextLabel") and val55.Parent and val55.Parent.Name == "Row" then
+                        val55.TextColor3 = colors4.Text
+                    end
+                end
+            end
+        end
+    end
+
+    function ui.apply_gui_theme_fast(arg91)
+        task.defer(function()
+            local colors5 = th.Colors
+
+            if arg91._theme_container then
+                arg91._theme_container.BackgroundColor3 = colors5.Background
+            end
+
+            if arg91._theme_container_stroke then
+                arg91._theme_container_stroke.Color = colors5.StrokeHot
+            end
+
+            if arg91._theme_search then
+                arg91._theme_search.BackgroundColor3 = colors5.CardDeep
+            end
+
+            if arg91._theme_client_grad then
+                arg91._theme_client_grad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, colors5.Accent),
+                    ColorSequenceKeypoint.new(0.42, colors5.Accent),
+                    ColorSequenceKeypoint.new(1, colors5.Accent)
+                })
+            end
+
+            if arg91._theme_pin then
+                arg91._theme_pin.BackgroundColor3 = colors5.Accent
+            end
+
+            if arg91._theme_logo then
+                arg91._theme_logo.ImageColor3 = cl3.new(1, 1, 1)
+            end
+
+            local ref3 = arg91._theme_tabs_ref
+
+            if ref3 then
+                for val56, val57 in ipairs(ref3:GetChildren()) do
+                    if val57.Name == "Tab" then
+                        local kid21 = val57:FindFirstChild("Indicator")
+
+                        if kid21 then
+                            kid21.BackgroundColor3 = colors5.Accent
+                        end
+                    end
+                end
+            end
+
+            if arg91._active_tab_ref then
+                arg91:update_tabs(arg91._active_tab_ref, false)
+            end
+        end)
+    end
+
+    function ui.apply_gui_theme(minki)
+        if minki._theme_debounce then
+            minki._theme_debounce:Disconnect()
+            minki._theme_debounce = nil
+        end
+
+        minki._theme_pending = true
+
+        minki._theme_debounce = task.delay(0.05, function()
+            minki._theme_debounce = nil
+
+            if not minki._theme_pending then
+                return
+            end
+
+            minki._theme_pending = false
+
+            if minki._applying_theme then
+                return
+            end
+
+            minki._applying_theme = true
+            local colors7 = th.Colors
+            local _gui3 = lib._config._gui
+
+            if minki._theme_container then
+                minki._theme_container.BackgroundColor3 = colors7.Background
+
+                if _gui3 and _gui3.bg_transparency ~= nil then
+                    minki._theme_container.BackgroundTransparency = _gui3.bg_transparency
+                end
+            end
+
+            if minki._theme_container_stroke then
+                minki._theme_container_stroke.Color = colors7.StrokeHot
+            end
+
+            if minki._theme_vert_div then
+                minki._theme_vert_div.BackgroundColor3 = colors7.Stroke
+            end
+
+            if minki._theme_search then
+                minki._theme_search.BackgroundColor3 = colors7.CardDeep
+            end
+
+            if minki._theme_search_stroke then
+                minki._theme_search_stroke.Color = colors7.StrokeHot
+            end
+
+            if minki._theme_search_icon then
+                minki._theme_search_icon.ImageColor3 = colors7.Accent
+            end
+
+            if minki._theme_search_box then
+                minki._theme_search_box.PlaceholderColor3 = colors7.SubText
+                minki._theme_search_box.TextColor3 = colors7.Text
+            end
+
+            if minki._theme_client_name then
+                minki._theme_client_name.TextColor3 = colors7.Accent
+            end
+
+            if minki._theme_client_grad then
+                minki._theme_client_grad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, colors7.Accent),
+                    ColorSequenceKeypoint.new(0.42, colors7.Accent),
+                    ColorSequenceKeypoint.new(1, colors7.Accent)
+                })
+            end
+
+            if minki._theme_pin then
+                minki._theme_pin.BackgroundColor3 = colors7.Accent
+            end
+
+            if minki._theme_logo then
+                minki._theme_logo.ImageColor3 = cl3.new(1, 1, 1)
+            end
+
+            local ref5 = minki._theme_tabs_ref
+
+            if ref5 then
+                for val60, val61 in ipairs(ref5:GetChildren()) do
+                    if val61.Name == "Tab" then
+                        local kid23 = val61:FindFirstChild("Indicator")
+
+                        if kid23 then
+                            kid23.BackgroundColor3 = colors7.Accent
+                        end
+
+                        local lbl21 = val61:FindFirstChildOfClass("TextLabel")
+
+                        if lbl21 then
+                            local grad19 = lbl21:FindFirstChildOfClass("UIGradient")
+
+                            if grad19 then
+                                grad19.Color = ColorSequence.new({
+                                    ColorSequenceKeypoint.new(0, colors7.Text),
+                                    ColorSequenceKeypoint.new(0.65, fn17(colors7.Text, colors7.SubText, 0.45)),
+                                    ColorSequenceKeypoint.new(1, fn17(colors7.Text, colors7.SubText, 0.78))
+                                })
+                            end
+                        end
+
+                        local kid24 = val61:FindFirstChild("Icon")
+
+                        if kid24 and kid24:IsA("GuiObject") then
+                            kid24.ImageColor3 = val61 == minki._active_tab_ref and colors7.Accent or colors7.Text
+                        end
+                    end
+                end
+            end
+
+            if minki._gui_tr then
+                local _gui_tr2 = minki._gui_tr
+
+                if _gui_tr2.drag then
+                    _gui_tr2.drag.BackgroundColor3 = colors7.Stroke
+                end
+
+                if _gui_tr2.fill then
+                    _gui_tr2.fill.BackgroundColor3 = colors7.Accent
+                    local grad20 = _gui_tr2.fill:FindFirstChildOfClass("UIGradient")
+
+                    if grad20 then
+                        grad20.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, colors7.AccentSoft), ColorSequenceKeypoint.new(1, colors7.AccentDim)})
+                    end
+                end
+
+                if _gui_tr2.circle then
+                    _gui_tr2.circle.BackgroundColor3 = colors7.AccentSoft
+                end
+
+                if _gui_tr2.title then
+                    _gui_tr2.title.TextColor3 = colors7.Text
+                end
+
+                if _gui_tr2.val then
+                    _gui_tr2.val.TextColor3 = colors7.Text
+                end
+            end
+
+            if minki._gui_sections then
+                for val62, val63 in ipairs(minki._gui_sections) do
+                    for val64, val65 in ipairs(val63:GetDescendants()) do
+                        if val65:IsA("TextLabel") then
+                            if val65:GetAttribute("GUICardHead") then
+                                val65.TextColor3 = colors7.AccentSoft
+                            elseif val65.Name == "Value" then
+                                val65.TextColor3 = colors7.Text
+                            elseif val65.Text == "›" then
+                                val65.TextColor3 = colors7.Accent
+                            elseif val65.Parent and val65.Parent.Name == "resetBtn" then
+                                val65.TextColor3 = colors7.AccentSoft
+                            else
+                                val65.TextColor3 = colors7.Text
+                            end
+                        end
+                    end
+                end
+            end
+
+            local kids = frm7:GetChildren()
+
+            for val66, val67 in ipairs(kids) do
+                if val67.Name == "ThemeDivider" then
+                    val67.BackgroundColor3 = colors7.Stroke
+                end
+            end
+
+            local descs = frm7:GetDescendants()
+
+            for val68, val69 in ipairs(descs) do
+                if val69.Name == "GUICard" then
+                    local strk20 = val69:FindFirstChildOfClass("UIStroke")
+
+                    if strk20 then
+                        strk20.Color = colors7.Stroke
+                    end
+
+                    val69.BackgroundColor3 = colors7.Card
+                end
+            end
+
+            fn18()
+
+            if minki._active_tab_ref then
+                minki:update_tabs(minki._active_tab_ref, false)
+            end
+
+            if minki._gui_reset_btn then
+                local btn14 = minki._gui_reset_btn
+
+                if btn14.btn then
+                    btn14.btn.BackgroundColor3 = colors7.CardDeep
+                end
+
+                if btn14.stroke then
+                    btn14.stroke.Color = colors7.StrokeHot
+                end
+
+                if btn14.lbl then
+                    btn14.lbl.TextColor3 = colors7.AccentSoft
+                end
+            end
+
+            if minki._gui_hide_toggle then
+                local toggle2 = minki._gui_hide_toggle
+                local arc = lib._config._gui.hide_minimized == true
+                local new8 = cl3.new(math.clamp(colors7.Card.R * 0.48, 0, 1), math.clamp(colors7.Card.G * 0.48, 0, 1), math.clamp(colors7.Card.B * 0.52, 0, 1))
+
+                if toggle2.toggle then
+                    toggle2.toggle.BackgroundColor3 = arc and colors7.Accent or new8
+                end
+
+                if toggle2.circ then
+                    toggle2 = toggle2.circ
+
+                    if arc then
+                        arc = colors7.Background
+                    end
+
+                    if not arc then
+                        arc = colors7.SubText
+                    end
+
+                    toggle2.BackgroundColor3 = arc
+                end
+            end
+
+            if minki._gui_kb then
+                local _gui_kb2 = minki._gui_kb
+
+                if _gui_kb2.btn then
+                    _gui_kb2.btn.BackgroundColor3 = colors7.CardDeep
+                end
+
+                if _gui_kb2.stroke then
+                    _gui_kb2.stroke.Color = colors7.StrokeHot
+                end
+
+                if _gui_kb2.lbl then
+                    _gui_kb2.lbl.TextColor3 = colors7.AccentSoft
+                end
+            end
+
+            minki._applying_theme = false
+        end)
+    end
+
+    function ui.bind_gui_toggle_key(minlbl)
+        conns:disconnect("library_visibility")
+        local bin = (lib._config._gui and lib._config._gui.toggle_key or "Enum.KeyCode.RightControl"):gsub("Enum.KeyCode%.", "")
+        local minkc = en.KeyCode.RightControl
+
+        for val70, val71 in en.KeyCode:GetEnumItems() do
+            if val71.Name == bin then
+                minkc = val71
+                break
+            end
+        end
+
+        conns["library_visibility"] = uis.InputBegan:Connect(function(arg93, arg94)
+            if arg94 then
+                return
+            end
+
+            if arg93.KeyCode ~= minkc then
+                return
+            end
+
+            if not gui.Enabled then
+                gui.Enabled = true
+            end
+
+            minlbl._ui_open = not minlbl._ui_open
+            minlbl:change_visiblity(minlbl._ui_open)
+        end)
+    end
+
+    local function tickui()
+        local create_tab2 = ui:create_tab("Settings", "settings", {layout_order = 999999, no_activate = true})
+        local secMain = create_tab2._left
+        local _right2 = create_tab2._right
+        local sec2 = 0
+        local sec3 = 0
+
+        local function sec4(arg95)
+            if arg95 == "left" then
+                sec2 = sec2 + 1
+                return sec2
+            end
+
+            sec3 = sec3 + 1
+            return sec3
+        end
+
+        local function fn19(arg96, arg97)
+            local frm36 = mk.new("Frame")
+            frm36.Name = "GUICard"
+            frm36.BackgroundColor3 = pal.Card
+            frm36.BackgroundTransparency = 0.68
+            frm36.BorderSizePixel = 0
+            frm36.Size = ud2.new(1, -8, 0, 0)
+            frm36.AutomaticSize = en.AutomaticSize.Y
+            local cup = sec4
+            local dot = arg96 == secMain
+            local elm2
+
+            if dot then
+                elm2 = "left"
+            else
+                local _fin = dot
+                elm2 = "right"
+            end
+
+            frm36.LayoutOrder = cup(elm2)
+            frm36.Parent = arg96
+            local cnr42 = mk.new("UICorner")
+            cnr42.CornerRadius = ud.new(0, 12)
+            cnr42.Parent = frm36
+            local strk21 = mk.new("UIStroke")
+            strk21.Color = pal.Stroke
+            strk21.Transparency = 0.35
+            strk21.Parent = frm36
+            local pad6 = mk.new("UIPadding")
+            pad6.PaddingLeft = ud.new(0, 12)
+            pad6.PaddingRight = ud.new(0, 12)
+            pad6.PaddingTop = ud.new(0, 10)
+            pad6.PaddingBottom = ud.new(0, 12)
+            pad6.Parent = frm36
+            local list10 = mk.new("UIListLayout")
+            list10.Padding = ud.new(0, 10)
+            list10.SortOrder = en.SortOrder.LayoutOrder
+            list10.Parent = frm36
+            local lbl22 = mk.new("TextLabel")
+            lbl22.BackgroundTransparency = 1
+            lbl22.Size = ud2.new(1, 0, 0, 16)
+            lbl22.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Bold)
+            lbl22.TextSize = 12
+            lbl22.TextColor3 = pal.AccentSoft
+            lbl22.TextTransparency = 0.1
+            lbl22.TextXAlignment = en.TextXAlignment.Left
+            lbl22.Text = arg97
+            lbl22.LayoutOrder = 0
+            lbl22:SetAttribute("GUICardHead", true)
+            lbl22.Parent = frm36
+            return frm36
+        end
+
+        local gag = fn19(secMain, "Interaction")
+        local holder2 = fn19(_right2, "Theme")
+        local frm37 = mk.new("Frame")
+        frm37.BackgroundTransparency = 1
+        frm37.Size = ud2.new(1, 0, 0, 22)
+        frm37.LayoutOrder = 1
+        frm37.Parent = gag
+        local lbl23 = mk.new("TextLabel")
+        lbl23.Size = ud2.new(0, 120, 1, 0)
+        lbl23.BackgroundTransparency = 1
+        lbl23.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+        lbl23.TextSize = 11
+        lbl23.TextColor3 = pal.Text
+        lbl23.TextTransparency = 0.14
+        lbl23.TextXAlignment = en.TextXAlignment.Left
+        lbl23.Text = "Toggle UI"
+        lbl23.Parent = frm37
+        local btn15 = mk.new("TextButton")
+        btn15.Size = ud2.new(0, 72, 0, 20)
+        btn15.AnchorPoint = Vector2.new(1, 0.5)
+        btn15.Position = ud2.new(1, 0, 0.5, 0)
+        btn15.BackgroundColor3 = pal.CardDeep
+        btn15.BackgroundTransparency = 0.35
+        btn15.Text = ""
+        btn15.AutoButtonColor = false
+        btn15.Parent = frm37
+        local cnr43 = mk.new("UICorner")
+        cnr43.CornerRadius = ud.new(0, 6)
+        cnr43.Parent = btn15
+        local strk22 = mk.new("UIStroke")
+        strk22.Color = pal.StrokeHot
+        strk22.Transparency = 0.45
+        strk22.Parent = btn15
+        local menuk = mk.new("TextLabel")
+        menuk.BackgroundTransparency = 1
+        menuk.Size = ud2.new(1, -6, 1, 0)
+        menuk.Position = ud2.new(0, 3, 0, 0)
+        menuk.FontFace = Font.new("rbxasset://fonts/families/Montserrat.json", en.FontWeight.Bold)
+        menuk.TextSize = 10
+        menuk.TextColor3 = pal.AccentSoft
+        menuk.Parent = btn15
+
+        local function grab()
+            menuk.Text = (lib._config._gui.toggle_key or "Enum.KeyCode.RightControl"):gsub("Enum.KeyCode.", "")
+        end
+
+        grab()
+        ui._gui_kb = {btn = btn15, stroke = btn15:FindFirstChildOfClass("UIStroke"), lbl = menuk}
+
+        btn15.MouseButton1Click:Connect(function()
+            local rbar
+            local inputbegan = uis.InputBegan
+            local pin = inputbegan.Connect
+
+            pin = pin(inputbegan, function(arg98, arg99)
+                if arg99 then
+                    return
+                end
+
+                if arg98.KeyCode == en.KeyCode.Unknown then
+                    return
+                end
+
+                if arg98.KeyCode == en.KeyCode.Backspace then
+                    lib._config._gui.toggle_key = "Enum.KeyCode.RightControl"
+                    cfgs:save(g.GameId, lib._config)
+                    grab()
+                    ui:bind_gui_toggle_key()
+                    rbar:Disconnect()
+                    return
+                end
+
+                lib._config._gui.toggle_key = tostring(arg98.KeyCode)
+                cfgs:save(g.GameId, lib._config)
+                grab()
+                ui:bind_gui_toggle_key()
+                rbar:Disconnect()
+            end)
+
+            rbar = pin
+        end)
+
+        local frm38 = mk.new("Frame")
+        frm38.BackgroundTransparency = 1
+        frm38.Size = ud2.new(1, 0, 0, 22)
+        frm38.LayoutOrder = 2
+        frm38.Parent = gag
+        local lbl24 = mk.new("TextLabel")
+        lbl24.Size = ud2.new(1, -50, 1, 0)
+        lbl24.BackgroundTransparency = 1
+        lbl24.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+        lbl24.TextSize = 11
+        lbl24.TextColor3 = pal.Text
+        lbl24.TextTransparency = 0.14
+        lbl24.TextXAlignment = en.TextXAlignment.Left
+        lbl24.Text = "Hide When Minimized"
+        lbl24.Parent = frm38
+        local pinbtn2 = mk.new("TextButton")
+        pinbtn2.Size = ud2.new(0, 36, 0, 18)
+        pinbtn2.AnchorPoint = Vector2.new(1, 0.5)
+        pinbtn2.Position = ud2.new(1, 0, 0.5, 0)
+        pinbtn2.BackgroundColor3 = cl3.fromRGB(8, 8, 14)
+        pinbtn2.BackgroundTransparency = 0.6
+        pinbtn2.Text = ""
+        pinbtn2.AutoButtonColor = false
+        pinbtn2.Parent = frm38
+        local cnr44 = mk.new("UICorner")
+        cnr44.CornerRadius = ud.new(1, 0)
+        cnr44.Parent = pinbtn2
+        local frm39 = mk.new("Frame")
+        frm39.Size = ud2.new(0, 9, 0, 9)
+        frm39.Position = ud2.new(0, 2, 0.5, 0)
+        frm39.AnchorPoint = Vector2.new(0, 0.5)
+        frm39.BackgroundColor3 = pal.SubText
+        frm39.BorderSizePixel = 0
+        frm39.Parent = pinbtn2
+        local cnr45 = mk.new("UICorner")
+        cnr45.CornerRadius = ud.new(1, 0)
+        cnr45.Parent = frm39
+        local minimized = lib._config._gui.hide_minimized
+        local rwrap = minimized == true
+        frm38.Visible = ui._device == "PC"
+        ui._gui_hide_toggle = {toggle = pinbtn2, circ = frm39}
+
+        local function rtagrow(arg100)
+            rwrap = arg100
+            lib._config._gui.hide_minimized = arg100
+            cfgs:save(g.GameId, lib._config)
+            local colors8 = th.Colors
+            local new9 = cl3.new(math.clamp(colors8.Card.R * 0.48, 0, 1), math.clamp(colors8.Card.G * 0.48, 0, 1), math.clamp(colors8.Card.B * 0.52, 0, 1))
+            tws:Create(pinbtn2, TweenInfo.new(0.35), {BackgroundColor3 = arg100 and colors8.Accent or new9, BackgroundTransparency = arg100 and 0.3 or 0.6}):Play()
+            local hem = tws
+            local create6 = hem.Create
+            local new10 = TweenInfo.new(0.3)
+            local t12 = {Position = arg100 and ud2.new(1, -11, 0.5, 0) or ud2.new(0, 2, 0.5, 0)}
+
+            if arg100 then
+                arg100 = colors8.Background
+            end
+
+            if not arg100 then
+                arg100 = colors8.SubText
+            end
+
+            t12.BackgroundColor3 = arg100
+            create6(hem, frm39, new10, t12):Play()
+        end
+
+        if minimized == true then
+            rtagrow(true)
+        end
+
+        pinbtn2.MouseButton1Click:Connect(function()
+            rtagrow(not rwrap)
+        end)
+
+        local btn16 = mk.new("TextButton")
+        btn16.Text = ""
+        btn16.AutoButtonColor = false
+        btn16.BackgroundTransparency = 1
+        btn16.Size = ud2.new(1, 0, 0, 22)
+        btn16.LayoutOrder = 3
+        btn16.Parent = gag
+        local lbl25 = mk.new("TextLabel")
+        lbl25.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+        lbl25.TextSize = 11
+        lbl25.TextColor3 = pal.Text
+        lbl25.TextTransparency = 0.16
+        lbl25.Text = "Window Transparency"
+        lbl25.Size = ud2.new(0, 153, 0, 13)
+        lbl25.Position = ud2.new(0, 0, 0.05, 0)
+        lbl25.BackgroundTransparency = 1
+        lbl25.TextXAlignment = en.TextXAlignment.Left
+        lbl25.Parent = btn16
+        local grip = mk.new("Frame")
+        grip.Active = true
+        grip.AnchorPoint = Vector2.new(0.5, 1)
+        grip.BackgroundTransparency = 0.78
+        grip.Position = ud2.new(0.5, 0, 0.95, 0)
+        grip.Name = "Drag"
+        grip.Size = ud2.new(1, 0, 0, 4)
+        grip.BorderSizePixel = 0
+        grip.BackgroundColor3 = pal.Stroke
+        grip.Parent = btn16
+        local cnr46 = mk.new("UICorner")
+        cnr46.CornerRadius = ud.new(0, 12)
+        cnr46.Parent = grip
+        local gripin = mk.new("Frame")
+        gripin.AnchorPoint = Vector2.new(0, 0.5)
+        gripin.BackgroundTransparency = 0.05
+        gripin.Position = ud2.new(0, 0, 0.5, 0)
+        gripin.Name = "Fill"
+        gripin.Size = ud2.new(0.5, 0, 1, 0)
+        gripin.BorderSizePixel = 0
+        gripin.BackgroundColor3 = pal.Accent
+        gripin.Parent = grip
+        local cnr47 = mk.new("UICorner")
+        cnr47.CornerRadius = ud.new(0, 3)
+        cnr47.Parent = gripin
+        local grad21 = mk.new("UIGradient")
+        grad21.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, pal.AccentSoft), ColorSequenceKeypoint.new(1, pal.AccentDim)})
+        grad21.Parent = gripin
+        local frm40 = mk.new("Frame")
+        frm40.AnchorPoint = Vector2.new(1, 0.5)
+        frm40.Name = "Circle"
+        frm40.Position = ud2.new(1, 0, 0.5, 0)
+        frm40.Size = ud2.new(0, 7, 0, 7)
+        frm40.BorderSizePixel = 0
+        frm40.BackgroundColor3 = pal.AccentSoft
+        frm40.Parent = gripin
+        local cnr48 = mk.new("UICorner")
+        cnr48.CornerRadius = ud.new(0, 12)
+        cnr48.Parent = frm40
+        local griptxt = mk.new("TextLabel")
+        griptxt.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+        griptxt.TextColor3 = pal.Text
+        griptxt.TextTransparency = 0.2
+        griptxt.Name = "Value"
+        griptxt.Size = ud2.new(0, 42, 0, 13)
+        griptxt.AnchorPoint = Vector2.new(1, 0)
+        griptxt.Position = ud2.new(1, 0, 0, 0)
+        griptxt.BackgroundTransparency = 1
+        griptxt.TextXAlignment = en.TextXAlignment.Right
+        griptxt.TextSize = 10
+        griptxt.Parent = btn16
+
+        ui._gui_tr = {
+            drag = grip,
+            fill = gripin,
+            val = griptxt,
+            title = lbl25,
+            circle = frm40
+        }
+
+        local function hsvapi(arg101)
+            local clamp5 = math.clamp(arg101, 0, 1)
+            lib._config._gui.bg_transparency = clamp5
+            cfgs:save(g.GameId, lib._config)
+
+            if ui._theme_container then
+                ui._theme_container.BackgroundTransparency = clamp5
+            end
+
+            gripin.Size = ud2.new(math.clamp(clamp5, 0.02, 1), 0, 1, 0)
+            griptxt.Text = string.format("%.2f", clamp5)
+        end
+
+        local dsep = nil
+        hsvapi(lib._config._gui.bg_transparency ~= dsep and lib._config._gui.bg_transparency or 0.04)
+
+        local function hsvui(arg102)
+            local x2 = grip.AbsoluteSize.X
+
+            if x2 < 1 then
+                return
+            end
+
+            local clamp6 = math.clamp((arg102 - grip.AbsolutePosition.X) / x2, 0, 1)
+            hsvapi(clamp6)
+        end
+
+        btn16.MouseButton1Down:Connect(function()
+            conns:disconnect("gui_tr_drag")
+            conns:disconnect("gui_tr_end")
+            hsvui(mse.X)
+
+            conns.gui_tr_drag = uis.InputChanged:Connect(function(arg103)
+                if arg103.UserInputType == en.UserInputType.MouseMovement or arg103.UserInputType == en.UserInputType.Touch then
+                    hsvui(arg103.Position.X)
+                end
+            end)
+
+            conns.gui_tr_end = uis.InputEnded:Connect(function(arg104)
+                if arg104.UserInputType ~= en.UserInputType.MouseButton1 and arg104.UserInputType ~= en.UserInputType.Touch then
+                    return
+                end
+
+                conns:disconnect("gui_tr_drag")
+                conns:disconnect("gui_tr_end")
+                cfgs:save(g.GameId, lib._config)
+            end)
+        end)
+
+        local colpick = {}
+
+        local coldefs = {
+            {title = "Main Color", key = "Background", flag = "_gui_col_bg"},
+            {title = "Secondary", key = "Card", flag = "_gui_col_card"},
+            {title = "Accent", key = "Accent", flag = "_gui_col_accent"},
+            {title = "Stroke", key = "Stroke", flag = "_gui_col_stroke"},
+            {title = "Text", key = "Text", flag = "_gui_col_text"},
+            {title = "SubText", key = "SubText", flag = "_gui_col_sub"}
+        }
+
+        if not lib._config._gui.colors then
+            lib._config._gui.colors = {}
+        end
+
+        for val72, val73 in ipairs(coldefs) do
+            if not lib._config._gui.colors[val73.key] then
+                local toHSV8, toHSV9, toHSV10 = cl3.toHSV(th.DefaultColors[val73.key])
+                lib._config._gui.colors[val73.key] = {H = toHSV8, S = toHSV9, V = toHSV10}
+            end
+        end
+
+        cfgs:save(g.GameId, lib._config)
+
+        local function fn20(arg105, arg106, arg107)
+            local hsvbuf = {_h = 0, _s = 1, _v = 1}
+            local ion = lib._config._gui.colors[arg106]
+
+            if ion then
+                local h4 = ion.H
+                local s3 = ion.S
+                ion = ion.V
+                hsvbuf._h = h4
+                hsvbuf._s = s3
+                hsvbuf._v = ion
+            end
+
+            local btn17 = mk.new("TextButton")
+            btn17.Size = ud2.new(1, 0, 0, 20)
+            btn17.BackgroundTransparency = 1
+            btn17.Text = ""
+            btn17.AutoButtonColor = false
+            btn17.LayoutOrder = arg107 * 2
+            btn17.Parent = holder2
+            local lbl26 = mk.new("TextLabel")
+            lbl26.Text = arg105
+            lbl26.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+            lbl26.TextSize = 11
+            lbl26.TextColor3 = pal.Text
+            lbl26.TextTransparency = 0.14
+            lbl26.BackgroundTransparency = 1
+            lbl26.Size = ud2.new(0, 130, 1, 0)
+            lbl26.TextXAlignment = en.TextXAlignment.Left
+            lbl26.Parent = btn17
+            local slw = mk.new("Frame")
+            slw.Size = ud2.new(0, 44, 0, 14)
+            slw.AnchorPoint = Vector2.new(1, 0.5)
+            slw.Position = ud2.new(1, 0, 0.5, 0)
+            slw.BorderSizePixel = 0
+            slw.BackgroundColor3 = cl3.fromHSV(hsvbuf._h, hsvbuf._s, hsvbuf._v)
+            slw.Parent = btn17
+            local cnr49 = mk.new("UICorner")
+            cnr49.CornerRadius = ud.new(0, 5)
+            cnr49.Parent = slw
+            local strk23 = mk.new("UIStroke")
+            strk23.Color = pal.StrokeHot
+            strk23.Transparency = 0.64
+            strk23.Parent = slw
+            local slf = mk.new("TextLabel")
+            slf.Text = "›"
+            slf.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.Bold)
+            slf.TextSize = 14
+            slf.TextColor3 = pal.Accent
+            slf.BackgroundTransparency = 1
+            slf.Size = ud2.new(0, 12, 1, 0)
+            slf.AnchorPoint = Vector2.new(1, 0.5)
+            slf.Position = ud2.new(1, -50, 0.5, 0)
+            slf.Rotation = 90
+            slf.Parent = btn17
+            local slk = mk.new("Frame")
+            slk.Size = ud2.new(1, 0, 0, 0)
+            slk.BackgroundTransparency = 1
+            slk.ClipsDescendants = true
+            slk.BorderSizePixel = 0
+            slk.LayoutOrder = arg107 * 2 + 1
+            slk.Parent = holder2
+            local slui = mk.new("Frame")
+            slui.Size = ud2.new(1, 0, 0, 62)
+            slui.Position = ud2.new(0, 0, 0, 4)
+            slui.BorderSizePixel = 0
+            slui.BackgroundColor3 = cl3.fromHSV(hsvbuf._h, 1, 1)
+            slui.ClipsDescendants = true
+            slui.Parent = slk
+            local cnr50 = mk.new("UICorner")
+            cnr50.CornerRadius = ud.new(0, 7)
+            cnr50.Parent = slui
+            local frm41 = mk.new("Frame")
+            frm41.Size = ud2.new(1, 0, 1, 0)
+            frm41.BackgroundColor3 = cl3.new(1, 1, 1)
+            frm41.BorderSizePixel = 0
+            frm41.ZIndex = 2
+            frm41.Parent = slui
+            local grad22 = mk.new("UIGradient")
+            local new11 = NumberSequence.new
+            local new12 = NumberSequenceKeypoint.new(0, 0)
+            local new13 = NumberSequenceKeypoint.new(1, 1)
+            grad22.Transparency = new11({new12, new13})
+            grad22.Parent = frm41
+            local frm42 = mk.new("Frame")
+            frm42.Size = ud2.new(1, 0, 1, 0)
+            frm42.BackgroundColor3 = cl3.new(0, 0, 0)
+            frm42.BorderSizePixel = 0
+            frm42.ZIndex = 3
+            frm42.Parent = slui
+            local grad23 = mk.new("UIGradient")
+            local new14 = NumberSequence.new
+            local new15 = NumberSequenceKeypoint.new(0, 1)
+            local new16 = NumberSequenceKeypoint.new(1, 0)
+            grad23.Transparency = new14({new15, new16})
+            grad23.Rotation = 90
+            grad23.Parent = frm42
+            local sbk = mk.new("Frame")
+            sbk.Size = ud2.new(0, 12, 0, 12)
+            sbk.AnchorPoint = Vector2.new(0.5, 0.5)
+            sbk.BackgroundColor3 = cl3.fromRGB(0, 0, 0)
+            sbk.BorderSizePixel = 0
+            sbk.ZIndex = 5
+            sbk.Visible = false
+            sbk.Position = ud2.new(hsvbuf._s, 0, 1 - hsvbuf._v, 0)
+            sbk.Parent = slui
+            local cnr51 = mk.new("UICorner")
+            cnr51.CornerRadius = ud.new(1, 0)
+            cnr51.Parent = sbk
+            local frm43 = mk.new("Frame")
+            frm43.Size = ud2.new(0, 8, 0, 8)
+            frm43.AnchorPoint = Vector2.new(0.5, 0.5)
+            frm43.Position = ud2.new(0.5, 0, 0.5, 0)
+            frm43.BackgroundColor3 = cl3.new(1, 1, 1)
+            frm43.BorderSizePixel = 0
+            frm43.ZIndex = 6
+            frm43.Parent = sbk
+            local cnr52 = mk.new("UICorner")
+            cnr52.CornerRadius = ud.new(1, 0)
+            cnr52.Parent = frm43
+            local sbi = mk.new("Frame")
+            sbi.Size = ud2.new(1, 0, 0, 12)
+            sbi.Position = ud2.new(0, 0, 0, 72)
+            sbi.BorderSizePixel = 0
+            sbi.BackgroundColor3 = cl3.new(1, 1, 1)
+            sbi.Parent = slk
+
+            local cnr53 = mk.new("UICorner")
+            cnr53.CornerRadius = ud.new(0, 5)
+            cnr53.Parent = sbi
+            local grad24 = mk.new("UIGradient")
+
+            grad24.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, cl3.fromHSV(0, 1, 1)),
+                ColorSequenceKeypoint.new(0.167, cl3.fromHSV(0.167, 1, 1)),
+                ColorSequenceKeypoint.new(0.333, cl3.fromHSV(0.333, 1, 1)),
+                ColorSequenceKeypoint.new(0.5, cl3.fromHSV(0.5, 1, 1)),
+                ColorSequenceKeypoint.new(0.667, cl3.fromHSV(0.667, 1, 1)),
+                ColorSequenceKeypoint.new(0.833, cl3.fromHSV(0.833, 1, 1)),
+                ColorSequenceKeypoint.new(1, cl3.fromHSV(0, 1, 1))
+            })
+
+            grad24.Parent = sbi
+            local svf = mk.new("Frame")
+            svf.Size = ud2.new(0, 6, 1, 4)
+            svf.AnchorPoint = Vector2.new(0.5, 0.5)
+            svf.Position = ud2.new(hsvbuf._h, 0, 0.5, 0)
+            svf.BackgroundColor3 = cl3.fromRGB(0, 0, 0)
+            svf.BorderSizePixel = 0
+            svf.ZIndex = 4
+            svf.Visible = false
+            svf.Parent = sbi
+            local cnr54 = mk.new("UICorner")
+            cnr54.CornerRadius = ud.new(0, 3)
+            cnr54.Parent = svf
+            local frm44 = mk.new("Frame")
+            frm44.Size = ud2.new(0, 4, 1, 0)
+            frm44.AnchorPoint = Vector2.new(0.5, 0.5)
+            frm44.Position = ud2.new(0.5, 0, 0.5, 0)
+            frm44.BackgroundColor3 = cl3.new(1, 1, 1)
+            frm44.BorderSizePixel = 0
+            frm44.ZIndex = 5
+            frm44.Parent = svf
+            local cnr55 = mk.new("UICorner")
+            cnr55.CornerRadius = ud.new(0, 2)
+            cnr55.Parent = frm44
+
+            local function svk()
+                return cl3.fromHSV(hsvbuf._h, hsvbuf._s, hsvbuf._v)
+            end
+
+            local function svui()
+                slw.BackgroundColor3 = svk()
+                slui.BackgroundColor3 = cl3.fromHSV(hsvbuf._h, 1, 1)
+                sbk.Position = ud2.new(hsvbuf._s, 0, 1 - hsvbuf._v, 0)
+                svf.Position = ud2.new(hsvbuf._h, 0, 0.5, 0)
+            end
+
+            local function fn21()
+                lib._config._gui.colors[arg106] = {H = hsvbuf._h, S = hsvbuf._s, V = hsvbuf._v}
+                local jug = svk()
+                th.Colors[arg106] = jug
+
+                if arg106 == "Stroke" then
+                    th.Colors.StrokeHot = cl3.new(math.clamp(jug.R * 1.2 + 0.05, 0, 1), math.clamp(jug.G * 1.2 + 0.05, 0, 1), math.clamp(jug.B * 1.22 + 0.06, 0, 1))
+                end
+
+                if arg106 == "Accent" then
+                    th.Colors.AccentSoft = cl3.new(math.clamp(jug.R * 0.55 + 0.42, 0, 1), math.clamp(jug.G * 0.55 + 0.42, 0, 1), math.clamp(jug.B * 0.58 + 0.45, 0, 1))
+                    th.Colors.AccentDim = cl3.new(math.clamp(jug.R * 0.42, 0, 1), math.clamp(jug.G * 0.42, 0, 1), math.clamp(jug.B * 0.48, 0, 1))
+                    th.Colors.AccentGlow = jug
+                end
+
+                if arg106 == "Card" then
+                    th.Colors.CardDeep = cl3.new(jug.R * 0.78, jug.G * 0.78, jug.B * 0.8)
+                end
+
+                cfgs:save(g.GameId, lib._config)
+            end
+
+            local n7 = 0
+            local kat = false
+            local lap = false
+
+            slui.InputBegan:Connect(function(arg108)
+                if arg108.UserInputType == en.UserInputType.MouseButton1 then
+                    kat = true
+                    lib._blocking_drag = true
+                end
+            end)
+
+            sbi.InputBegan:Connect(function(arg109)
+                if arg109.UserInputType == en.UserInputType.MouseButton1 then
+                    lap = true
+                    lib._blocking_drag = true
+                end
+            end)
+
+            conns["gcp_m_" .. arg106] = uis.InputChanged:Connect(function(arg110)
+                if arg110.UserInputType ~= en.UserInputType.MouseMovement then
+                    return
+                end
+
+                local mat = tk()
+
+                if kat then
+                    hsvbuf._s = math.clamp((arg110.Position.X - slui.AbsolutePosition.X) / slui.AbsoluteSize.X, 0, 1)
+                    hsvbuf._v = 1 - math.clamp((arg110.Position.Y - slui.AbsolutePosition.Y) / slui.AbsoluteSize.Y, 0, 1)
+                    svui()
+                    fn21()
+
+                    if mat - n7 >= 0.08 then
+                        n7 = mat
+                        ui:apply_gui_theme_fast()
+                    end
+                end
+
+                if not lap then
+                    return
+                end
+
+                hsvbuf._h = math.clamp((arg110.Position.X - sbi.AbsolutePosition.X) / sbi.AbsoluteSize.X, 0, 1)
+                svui()
+                fn21()
+
+                if mat - n7 >= 0.08 then
+                    n7 = mat
+                    ui:apply_gui_theme_fast()
+                end
+            end)
+
+            conns["gcp_e_" .. arg106] = uis.InputEnded:Connect(function(arg111)
+                if arg111.UserInputType ~= en.UserInputType.MouseButton1 then
+                    return
+                end
+
+                if kat or lap then
+                    kat = false
+                    lap = false
+                    lib._blocking_drag = false
+                    fn21()
+                    ui:apply_gui_theme()
+                end
+            end)
+
+            local net = false
+
+            btn17.MouseButton1Click:Connect(function()
+                net = not net
+                sbk.Visible = net
+                svf.Visible = net
+
+                tws:Create(slk, TweenInfo.new(0.35, en.EasingStyle.Quint, en.EasingDirection.Out), {
+                    Size = ud2.new(1, 0, 0, net and 90 or 0)
+                }):Play()
+
+                tws:Create(slf, TweenInfo.new(0.3), {Rotation = net and -90 or 90}):Play()
+            end)
+
+            svui()
+
+            function hsvbuf.updateVisuals(arg112)
+                slw.BackgroundColor3 = svk()
+                slui.BackgroundColor3 = cl3.fromHSV(hsvbuf._h, 1, 1)
+                sbk.Position = ud2.new(hsvbuf._s, 0, 1 - hsvbuf._v, 0)
+                svf.Position = ud2.new(hsvbuf._h, 0, 0.5, 0)
+            end
+
+            function hsvbuf.SetFromColor(arg113, arg114)
+                local oat = hsvbuf
+                local pup = hsvbuf
+                local toHSV11, toHSV12, toHSV13 = cl3.toHSV(arg114)
+                hsvbuf._h = toHSV11
+                oat._s = toHSV12
+                pup._v = toHSV13
+                hsvbuf:updateVisuals()
+                lib._config._gui.colors[arg106] = {H = hsvbuf._h, S = hsvbuf._s, V = hsvbuf._v}
+                th.Colors[arg106] = arg114
+
+                if arg106 == "Stroke" then
+                    th.Colors.StrokeHot = cl3.new(math.clamp(arg114.R * 1.2 + 0.05, 0, 1), math.clamp(arg114.G * 1.2 + 0.05, 0, 1), math.clamp(arg114.B * 1.22 + 0.06, 0, 1))
+                end
+
+                if arg106 == "Accent" then
+                    th.Colors.AccentSoft = cl3.new(math.clamp(arg114.R * 0.55 + 0.42, 0, 1), math.clamp(arg114.G * 0.55 + 0.42, 0, 1), math.clamp(arg114.B * 0.58 + 0.45, 0, 1))
+                    th.Colors.AccentDim = cl3.new(math.clamp(arg114.R * 0.42, 0, 1), math.clamp(arg114.G * 0.42, 0, 1), math.clamp(arg114.B * 0.48, 0, 1))
+                    th.Colors.AccentGlow = arg114
+                end
+
+                if arg106 == "Card" then
+                    th.Colors.CardDeep = cl3.new(arg114.R * 0.78, arg114.G * 0.78, arg114.B * 0.8)
+                end
+            end
+
+            colpick[arg106] = hsvbuf
+        end
+
+        for val74, val75 in ipairs(coldefs) do
+            fn20(val75.title, val75.key, val74)
+        end
+
+        local btn18 = mk.new("TextButton")
+        btn18.Name = "resetBtn"
+        btn18.Size = ud2.new(1, 0, 0, 32)
+        btn18.BackgroundColor3 = pal.CardDeep
+        btn18.BackgroundTransparency = 0.25
+        btn18.Text = ""
+        btn18.AutoButtonColor = false
+        btn18.LayoutOrder = 900
+        btn18.Parent = holder2
+        local cnr56 = mk.new("UICorner")
+        cnr56.CornerRadius = ud.new(0, 8)
+        cnr56.Parent = btn18
+        local strk24 = mk.new("UIStroke")
+        strk24.Color = pal.StrokeHot
+        strk24.Transparency = 0.4
+        strk24.Parent = btn18
+        local lbl27 = mk.new("TextLabel")
+        lbl27.BackgroundTransparency = 1
+        lbl27.Size = ud2.new(1, 0, 1, 0)
+        lbl27.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", en.FontWeight.SemiBold)
+        lbl27.TextSize = 11
+        lbl27.TextColor3 = pal.AccentSoft
+        lbl27.Text = "Restore Default Theme"
+        lbl27.Parent = btn18
+        ui._gui_reset_btn = {btn = btn18, stroke = btn18:FindFirstChildOfClass("UIStroke"), lbl = lbl27}
+
+        btn18.MouseButton1Click:Connect(function()
+            lib._config._gui.bg_transparency = 0.04
+            lib._config._gui.colors = {}
+
+            for val76, val77 in pairs(th.DefaultColors) do
+                local toHSV14, toHSV15, toHSV16 = cl3.toHSV(val77)
+                lib._config._gui.colors[val76] = {H = toHSV14, S = toHSV15, V = toHSV16}
+                th.Colors[val76] = val77
+            end
+
+            local colors9 = th.Colors
+            local stroke3 = colors9.Stroke
+            colors9.StrokeHot = cl3.new(math.clamp(stroke3.R * 1.2 + 0.05, 0, 1), math.clamp(stroke3.G * 1.2 + 0.05, 0, 1), math.clamp(stroke3.B * 1.22 + 0.06, 0, 1))
+            local accent2 = colors9.Accent
+            colors9.AccentSoft = cl3.new(math.clamp(accent2.R * 0.55 + 0.42, 0, 1), math.clamp(accent2.G * 0.55 + 0.42, 0, 1), math.clamp(accent2.B * 0.58 + 0.45, 0, 1))
+            colors9.AccentDim = cl3.new(math.clamp(accent2.R * 0.42, 0, 1), math.clamp(accent2.G * 0.42, 0, 1), math.clamp(accent2.B * 0.48, 0, 1))
+            colors9.AccentGlow = accent2
+            local card2 = colors9.Card
+            colors9.CardDeep = cl3.new(card2.R * 0.78, card2.G * 0.78, card2.B * 0.8)
+            cfgs:save(g.GameId, lib._config)
+            hsvapi(0.04)
+
+            for val78, val79 in ipairs(coldefs) do
+                if colpick[val79.key] then
+                    colpick[val79.key]:SetFromColor(th.DefaultColors[val79.key])
+                end
+            end
+
+            ui:apply_gui_theme()
+        end)
+
+        ui._gui_sections = {secMain, _right2}
+    end
+
+    task.defer(function()
+        ui:get_device()
+        tickui()
+        ui:apply_gui_theme()
+    end)
+
+    ui:bind_gui_toggle_key()
+
+    gui.Container.Handler.Minimize.MouseButton1Click:Connect(function()
+        if not gui.Enabled then
+            gui.Enabled = true
+        end
+
+        ui._ui_open = not ui._ui_open
+        ui:change_visiblity(ui._ui_open)
+    end)
+
+    return ui
+end
+
+slot[84] = lib.new()
+slot[84]:load()
+local plr = cref(g:GetService("Players"))
+local runs = cref(g:GetService("RunService"))
+local uins = cref(g:GetService("UserInputService"))
+local rs = cref(g:GetService("ReplicatedStorage"))
+local wsp = cref(g:GetService("Workspace"))
+local sts = cref(g:GetService("Stats"))
+local vim = inst.new("VirtualInputManager")
+cref(g:GetService("InsertService"))
+local lp = plr.LocalPlayer
+local cam = wsp.CurrentCamera
+local hb = runs.Heartbeat
+local rstep = runs.RenderStepped
+local presim = runs.PreSimulation
+ws = wsp
+local clock = osz.clock
+local rtinst = ws:FindFirstChild("Runtime")
+local place0 = g.PlaceId == 0
+local uix = {}
+
+local P: {[string]: any} = {
+    config = {
+        auto_parry = false,
+        accuracy = 75,
+        randomize_accuracy = false,
+        random_accuracy_min = 1,
+        random_accuracy_max = 100,
+        curve_mode = 2,
+        parry_mode = "Remote",
+        is_mobile = uins.TouchEnabled and not uins.MouseEnabled,
+        target_player_enabled = false,
+        target_player_name = nil,
+        kill_pre_click = false,
+        kill_pre_click_range = 30,
+        kill_pre_click_speed = 1
+    },
+    detections = {
+        infinity = false,
+        deathslash = false,
+        tornado_time = 0,
+        slashesoffury = false,
+        timehole = false
+    },
+    state = {
+        grab_track = nil,
+        ball_tracking = {},
+        parried = false,
+        infinity_active = false,
+        deathslash_active = false,
+        slashesoffury_active = false,
+        timehole_active = false
+    },
+    curve_detection = {
+        per_ball = {},
+        curve_time = 0,
+        velocity_history = {},
+        dot_histories = {}
+    },
+    cache = {
+        ping = 50,
+        ping_t = 0,
+        emotes_shared = nil,
+        trove_module = nil
+    },
+    parry_cooldown = {
+        failed_at = 0,
+        duration = 2,
+        last_parrying = nil,
+        conn = nil,
+        pending_id = 0,
+        success_window = 0.75
+    },
+    triggerbot = {enabled = false, is_parrying = false, connection = nil},
+    spam = {
+        manual_enabled = false,
+        auto_enabled = false,
+        parries = 0,
+        threshold = 1.5,
+        sensitivity_multiplier = 1,
+        connection_manual = nil,
+        connection_auto = nil,
+        animation_fix_manual = false,
+        animation_fix_auto = false,
+        manual_mode = "Remote",
+        auto_mode = "Remote",
+        remote_list = {},
+        remote_list_dirty = true,
+        auto_decay_at = {},
+        ping_cache = 0,
+        ping_cache_t = 0,
+        balls_ref = nil,
+        alive_ref = nil
+    },
+    ability = {cooldown_protection = false, auto_ability = false},
+    mobile_guis = {triggerbot = nil, manual_spam = nil},
+    ability_esp = {
+        active = false,
+        drawings = {},
+        connection = nil,
+        mode = "Text",
+        show_name = false,
+        name_mode = "Display Name",
+        name_size = 18,
+        name_color = cl3.fromRGB(255, 255, 255),
+        ability_size = 16,
+        ability_color = cl3.fromRGB(120, 200, 255),
+        show_cd = true,
+        cd_size = 15,
+        cd_color = cl3.fromRGB(180, 180, 180),
+        show_timer = true,
+        active_size = 15,
+        active_color = cl3.fromRGB(255, 200, 80)
+    },
+    ball_velocity = {
+        active = false,
+        gui = nil,
+        peak = {},
+        connection = nil
+    },
+    ball_indicator = {
+        active = false,
+        gui = nil,
+        position = Vector2.new(0, 0),
+        rotation = 0,
+        connection = nil,
+        size = uins.TouchEnabled and not uins.MouseEnabled and 30 or 40,
+        distance = uins.TouchEnabled and not uins.MouseEnabled and 70 or 90
+    },
+    no_render = {active = false, connection = nil},
+    plushies = {
+        active = false,
+        active_types = {},
+        folder = nil,
+        connection = nil,
+        loaded_models = {},
+        models = {
+            Reimu = "rbxassetid://17657672380",
+            Youmou = "rbxassetid://13242826151",
+            Shion = "rbxassetid://12124164278",
+            Yuuka = "rbxassetid://12181667428",
+            Flandre = "rbxassetid://12136125365",
+            Ayanami = "rbxassetid://11965563704",
+            Padoru = "rbxassetid://11905337091"
+        },
+        scales = {
+            Reimu = 1.5,
+            Youmou = 2.3,
+            Shion = 2.3,
+            Yuuka = 1.5,
+            Flandre = 3.3,
+            Ayanami = 1.5,
+            Padoru = 1.5
+        },
+        rotations = {
+            Reimu = cf.Angles(0, mt.rad(0), 0),
+            Youmou = cf.Angles(0, mt.rad(-90), 0),
+            Shion = cf.Angles(mt.rad(110), 0, mt.rad(90)),
+            Yuuka = cf.Angles(mt.rad(-90), mt.rad(180), 0),
+            Flandre = cf.Angles(0, mt.rad(-40), 0),
+            Ayanami = cf.Angles(0, 0, 0),
+            Padoru = cf.Angles(0, 0, 0)
+        },
+        positions = {
+            v3.new(2.5, 2, 0),
+            v3.new(-2.5, 2, 0),
+            v3.new(0, 4, 2.5),
+            v3.new(0, 4, -2.5),
+            v3.new(2.5, 2, 2.5),
+            v3.new(-2.5, 2, 2.5),
+            v3.new(2.5, 2, -2.5)
+        }
+    },
+    remote = {},
+    animation = {},
+    ball = {},
+    player = {},
+    curve = {},
+    parry = {},
+    sword_changer = {
+        original = {model = nil, saved = false},
+        model_cache = {},
+        swords_controller = nil,
+        parry_func = nil,
+        loaded = false,
+        enabled = false,
+        model = "",
+        animations = "",
+        fx = "",
+        slash_name = "SlashEffect",
+        update = nil
+    },
+    avatar_changer = {
+        applying = false,
+        applied_id = nil,
+        cache = {},
+        original_desc = nil,
+        enabled = false,
+        target = "",
+        respawn_token = 0,
+        expected_accessories = 0
+    },
+    emotes = {
+        storage = {},
+        current = nil,
+        trove = nil,
+        enabled = false,
+        auto_stop = false,
+        paused = false,
+        _replay_t = 0,
+        _loop_t = 0,
+        connection = nil
+    },
+    avatar = {
+        korblox_enabled = false,
+        headless_enabled = false,
+        korblox_conn = nil,
+        headless_conn = nil
+    },
+    parry_visualizer = {
+        active = false,
+        color = cl3.fromRGB(255, 255, 255),
+        parts = {},
+        connection = nil,
+        char_conn = nil,
+        sphere = nil,
+        weld = nil
+    },
+    parry_hits = {active = false, color = cl3.fromRGB(255, 255, 255), parts = {}},
+    player_mods = {
+        fov_enabled = false,
+        fov = 70,
+        speed_enabled = false,
+        speed = 16,
+        gravity_enabled = false,
+        gravity = 196.2,
+        jump_power_enabled = false,
+        jump_power = 50,
+        infinite_jump_enabled = false,
+        infinite_jump_conn = nil,
+        speed_conn = nil,
+        jump_conn = nil
+    },
+    ball_trail = {
+        active = false,
+        color = cl3.fromRGB(0, 255, 255),
+        num_trails = 8,
+        attachments = {},
+        connection = nil
+    },
+    orbit_ball = {
+        active = false,
+        speed = 50,
+        height = 5,
+        distance = 15,
+        angle = 0,
+        connection = nil
+    },
+    winstreak = {
+        enabled = false,
+        streak = "1",
+        conn = nil,
+        enabled_conn = nil,
+        char_conn = nil,
+        original_text = nil,
+        original_icon = nil,
+        original_enabled = nil
+    },
+    custom_win = {
+        enabled = false,
+        win_message = "by zeryxia",
+        kill_message = "by zeryxia",
+        connections = {}
+    },
+    immortal = {
+        config = {
+            radius = 25,
+            height = 30,
+            angles = 360,
+            visualizer_enabled = false,
+            visualizer_color = cl3.fromRGB(255, 0, 0)
+        },
+        state = {
+            enabled = false,
+            notify = false,
+            connections = {},
+            cache = {
+                character = nil,
+                hrp = nil,
+                head = nil,
+                alive = nil,
+                original_cframe = nil,
+                original_velocity = nil
+            },
+            visualizer = {parts = {}, folder = nil}
+        },
+        constants = {empty_cframe = cf.new(), velocity = v3.new(1, 1, 1)}
+    },
+    staff_detection = {mode = "Notify"},
+    slashesoffury_detection = {max_parries = 36, parry_delay = 0.05},
+    phantom = {
+        enabled = false,
+        mode = "Ability",
+        range = 130,
+        active = false
+    }
+}
+
+P.immortal.update_cache = function()
+    local ch = lp.Character
+
+    if ch == P.immortal.state.cache.character then
+        return
+    end
+
+    P.immortal.state.cache.character = ch
+
+    if ch then
+        P.immortal.state.cache.hrp = ch:FindFirstChild("HumanoidRootPart")
+        P.immortal.state.cache.head = ch:FindFirstChild("Head")
+        P.immortal.state.cache.alive = ws:FindFirstChild("Alive")
+    else
+        P.immortal.state.cache.hrp = nil
+        P.immortal.state.cache.head = nil
+    end
+end
+
+P.immortal.is_in_alive = function()
+    return P.immortal.state.cache.alive and P.immortal.state.cache.character and P.immortal.state.cache.character.Parent == P.immortal.state.cache.alive
+end
+
+P.immortal.get_random_position = function()
+    if not P.immortal.state.cache.hrp then
+        return cf.new()
+    end
+
+    local hrp2 = P.immortal.state.cache.hrp
+    local pos = hrp2.Position
+    local rag = math.rad(math.random(0, P.immortal.config.angles))
+    local radius2 = P.immortal.config.radius
+    local floor5 = math.floor(tk() * 11.9) % 2 == 0 and 0 or P.immortal.config.height
+    local set2 = pos.X + math.cos(rag) * radius2
+    floor5 = pos.Y - hrp2.Size.Y * 0.5 + 5 + floor5
+    local tin = pos.Z + math.sin(rag) * radius2
+    return cf.new(set2, floor5, tin)
+end
+
+P.immortal.create_visualizer = function()
+    if P.immortal.state.visualizer.folder then
+        P.immortal.state.visualizer.folder:Destroy()
+    end
+
+    local fld = inst.new("Folder")
+    fld.Name = "ImmortalVisualizer"
+    fld.Parent = ws
+    P.immortal.state.visualizer.folder = fld
+end
+
+P.immortal.update_visualizer = function(arg115)
+    if not P.immortal.config.visualizer_enabled or not P.immortal.state.visualizer.folder then
+        return
+    end
+
+    for val80, val81 in ipairs(P.immortal.state.visualizer.parts) do
+        if val81 and val81.Parent then
+            val81:Destroy()
+        end
+    end
+
+    P.immortal.state.visualizer.parts = {}
+    local prt = inst.new("Part")
+    prt.Size = Vector3.new(2, 0.5, 2)
+    prt.CFrame = arg115
+    prt.Anchored = true
+    prt.CanCollide = false
+    prt.Material = en.Material.Neon
+    prt.Color = P.immortal.config.visualizer_color
+    prt.Transparency = 0.5
+    prt.Parent = P.immortal.state.visualizer.folder
+    table.insert(P.immortal.state.visualizer.parts, prt)
+    g:GetService("Debris"):AddItem(prt, 0.1)
+end
+
+P.immortal.destroy_visualizer = function()
+    if P.immortal.state.visualizer.folder then
+        P.immortal.state.visualizer.folder:Destroy()
+        P.immortal.state.visualizer.folder = nil
+    end
+
+    P.immortal.state.visualizer.parts = {}
+end
+
+P.immortal.perform_desync = function()
+    P.immortal.update_cache()
+
+    if not P.immortal.state.enabled or not P.immortal.state.cache.hrp or not P.immortal.is_in_alive() then
+        return
+    end
+
+    local hrp3 = P.immortal.state.cache.hrp
+    P.immortal.state.cache.original_cframe = hrp3.CFrame
+    P.immortal.state.cache.original_velocity = hrp3.AssemblyLinearVelocity
+    local position2 = P.immortal.get_random_position()
+    hrp3.CFrame = position2
+    hrp3.AssemblyLinearVelocity = P.immortal.constants.velocity
+
+    if P.immortal.config.visualizer_enabled then
+        P.immortal.update_visualizer(position2)
+    end
+
+    rstep:Wait()
+    hrp3.CFrame = P.immortal.state.cache.original_cframe
+    hrp3.AssemblyLinearVelocity = P.immortal.state.cache.original_velocity
+end
+
+P.immortal.reset_cache = function()
+    P.immortal.state.cache.character = nil
+    P.immortal.state.cache.hrp = nil
+
+    P.immortal.state.cache.head = nil
+    P.immortal.state.cache.alive = nil
+    P.immortal.state.cache.original_cframe = nil
+    P.immortal.state.cache.original_velocity = nil
+end
+
+P.immortal.start = function()
+    if P.immortal.state.enabled then
+        return
+    end
+
+    P.immortal.state.enabled = true
+
+    if P.immortal.config.visualizer_enabled then
+        P.immortal.create_visualizer()
+    end
+
+    if not P.immortal.state.connections.heartbeat then
+        P.immortal.state.connections.heartbeat = hb:Connect(P.immortal.perform_desync)
+    end
+end
+
+P.immortal.stop = function()
+    if not P.immortal.state.enabled then
+        return
+    end
+
+    P.immortal.state.enabled = false
+
+    if P.immortal.state.connections.heartbeat then
+        P.immortal.state.connections.heartbeat:Disconnect()
+        P.immortal.state.connections.heartbeat = nil
+    end
+
+    P.immortal.destroy_visualizer()
+    P.immortal.reset_cache()
+end
+
+lp.CharacterAdded:Connect(function(arg116)
+    if not P.immortal.state.enabled then
+        return
+    end
+
+    task.wait(1)
+    P.immortal.reset_cache()
+
+    if P.immortal.state.connections.heartbeat then
+        P.immortal.state.connections.heartbeat:Disconnect()
+    end
+
+    P.immortal.state.connections.heartbeat = hb:Connect(P.immortal.perform_desync)
+
+    if P.immortal.config.visualizer_enabled then
+        P.immortal.create_visualizer()
+    end
+end)
+
+local urn2
+
+local function immortal_index_hook(arg117, arg118)
+    if not P.immortal.state.enabled or (ccall()) or arg118 ~= "CFrame" or not P.immortal.state.cache.hrp or not P.immortal.is_in_alive() then
+        return urn2(arg117, arg118)
+    end
+
+    if arg117 == P.immortal.state.cache.hrp then
+        return P.immortal.state.cache.original_cframe or P.immortal.constants.empty_cframe
+    elseif arg117 == P.immortal.state.cache.head and P.immortal.state.cache.original_cframe then
+        local new17 = v3.new(0, P.immortal.state.cache.hrp.Size.Y * 0.5 + 0.5, 0)
+        return P.immortal.state.cache.original_cframe + new17
+    end
+
+    return urn2(arg117, arg118)
+end
+
+urn2 = slot[10](g, "__index", slot[11](immortal_index_hook))
+
+P.emotes.load_animations = function()
+    local kid25 = rs:FindFirstChild("Misc")
+
+    if not kid25 then
+        return
+    end
+
+    local kid26 = kid25:FindFirstChild("Emotes")
+
+    if not kid26 then
+        return
+    end
+
+    local kids2 = kid26:GetChildren()
+
+    for val82, val83 in pairs(kids2) do
+        if val83:IsA("Animation") and val83:GetAttribute("EmoteName") then
+            local attr2 = val83:GetAttribute("EmoteName")
+            P.emotes.storage[attr2] = val83
+        end
+    end
+end
+
+P.emotes.get_emotes_list = function()
+    local t13 = {}
+
+    for val84, val85 in pairs(P.emotes.storage) do
+        table.insert(t13, val84)
+    end
+
+    table.sort(t13)
+    return t13
+end
+
+P.emotes.get_shared = function()
+    if P.cache.emotes_shared ~= nil then
+        return P.cache.emotes_shared or nil
+    end
+
+    local kid27 = rs:FindFirstChild("Shared")
+    local vat = kid27 and (kid27:FindFirstChild("EmotesShared"))
+
+    if not vat then
+        P.cache.emotes_shared = false
+        return nil
+    end
+
+    kid27 = getthreadidentity()
+    setthreadidentity(6)
+    local won, yam2 = pc(require, vat)
+    setthreadidentity(kid27)
+
+    if won and ty(yam2) == "table" and ty(yam2.Play) == "function" then
+        P.cache.emotes_shared = yam2
+    end
+
+    if not (won and ty(yam2) == "table" and ty(yam2.Play) == "function") then
+        P.cache.emotes_shared = false
+    end
+
+    return P.cache.emotes_shared or nil
+end
+
+P.emotes.get_trove_module = function()
+    if P.cache.trove_module ~= nil then
+        return P.cache.trove_module or nil
+    end
+
+    local kid28 = rs:FindFirstChild("Packages")
+    local zig = kid28 and (kid28:FindFirstChild("Trove"))
+
+    if not zig then
+        P.cache.trove_module = false
+        return nil
+    end
+
+    local tmp2, itm2 = pc(require, zig)
+
+    if tmp2 and ty(itm2) == "table" and ty(itm2.new) == "function" then
+        P.cache.trove_module = itm2
+    end
+
+    if not (tmp2 and ty(itm2) == "table" and ty(itm2.new) == "function") then
+        P.cache.trove_module = false
+    end
+
+    return P.cache.trove_module or nil
+end
+
+P.emotes._stop_track = function(arg119)
+    local emotes2 = P.emotes
+
+    if emotes2.trove then
+        pcall(function()
+            emotes2.trove:Destroy()
+        end)
+
+        emotes2.trove = nil
+    end
+
+    if not arg119 then
+        emotes2.current = nil
+        emotes2.paused = false
+    end
+end
+
+P.emotes.play = function(arg120)
+    local thg2 = P.emotes.storage[arg120]
+
+    if not thg2 then
+        return false
+    end
+
+    local ch2 = lp.Character
+
+    if not ch2 or not ch2.PrimaryPart then
+        return false
+    end
+
+    if not ch2:FindFirstChildWhichIsA("Humanoid") then
+        return false
+    end
+
+    local shared, shared2 = P.emotes.get_shared(), P.emotes.get_trove_module()
+
+    if not shared or not shared2 then
+        return false
+    end
+
+    P.emotes._stop_track(false)
+    P.emotes.paused = false
+    P.emotes.trove = shared2.new()
+    P.emotes.current = arg120
+
+    if not pc(function()
+        shared:Play(ch2, P.emotes.trove, thg2.Name, true, wsp:GetServerTimeNow(), nil)
+    end) then
+        P.emotes._stop_track(false)
+        return false
+    end
+
+    return true
+end
+
+P.emotes.play_internal = function(arg121)
+    if ty(arg121) ~= "string" or arg121 == "" then
+        return false
+    end
+
+    local ch3 = lp.Character
+
+    if not ch3 or not ch3.PrimaryPart then
+        return false
+    end
+
+    if not ch3:FindFirstChildWhichIsA("Humanoid") then
+        return false
+    end
+
+    local shared3, shared4 = P.emotes.get_shared(), P.emotes.get_trove_module()
+
+    if not shared3 or not shared4 then
+        return false
+    end
+
+    P.emotes._stop_track(false)
+    P.emotes.paused = false
+    P.emotes.trove = shared4.new()
+    P.emotes.current = arg121
+
+    if not pc(function()
+        shared3:Play(ch3, P.emotes.trove, arg121, true, wsp:GetServerTimeNow(), nil)
+    end) then
+        P.emotes._stop_track(false)
+        return false
+    end
+
+    return true
+end
+
+P.emotes.stop = function()
+    P.emotes._stop_track(false)
+end
+
+P.emotes.update_loop = function()
+    local emotes3 = P.emotes
+
+    if not emotes3.enabled or not emotes3.current then
+        return
+    end
+
+    local nit2 = clock()
+
+    if nit2 - emotes3._loop_t < 0.08 then
+        return
+    end
+
+    emotes3._loop_t = nit2
+    local ch4 = lp.Character
+
+    if not ch4 then
+        return
+    end
+
+    local primarypart = ch4.PrimaryPart
+
+    if not primarypart then
+        return
+    end
+
+    ch4 = primarypart.AssemblyLinearVelocity.Magnitude > 2
+
+    if emotes3.auto_stop then
+        if ch4 then
+            if not emotes3.paused then
+                emotes3._stop_track(true)
+                emotes3.paused = true
+            end
+        elseif emotes3.paused then
+            emotes3.paused = false
+            emotes3.play(emotes3.current)
+        end
+
+        return
+    end
+
+    if not emotes3.trove then
+        if nit2 - emotes3._replay_t >= 0.3 then
+            emotes3._replay_t = nit2
+            emotes3.play(emotes3.current)
+        end
+    end
+end
+
+P.emotes.start = function()
+    P.emotes.enabled = true
+
+    if not P.emotes.connection then
+        local function fn22()
+            if P.emotes.enabled then
+                P.emotes.update_loop()
+            end
+        end
+
+        P.emotes.connection = runs.Heartbeat:Connect(fn22)
+    end
+
+    if P.emotes.current then
+        P.emotes.play(P.emotes.current)
+    end
+end
+
+P.emotes.cleanup = function()
+    P.emotes.enabled = false
+    local current2 = P.emotes.current
+    P.emotes.stop()
+    P.emotes.current = current2
+
+    if P.emotes.connection then
+        P.emotes.connection:Disconnect()
+        P.emotes.connection = nil
+    end
+end
+
+P.emotes.load_animations()
+
+local function fn23()
+    local function fn24()
+        return sts.Network.ServerStatsItem["Data Ping"]:GetValue()
+    end
+
+    local bit3, hat2 = pcall(fn24)
+    return bit3 and hat2 or 50
+end
+
+P.cache.get_ping = function()
+    local cache2 = P.cache
+    local fob2 = clock()
+
+    if fob2 - cache2.ping_t >= 0.12 then
+        cache2.ping = fn23()
+        cache2.ping_t = fob2
+    end
+
+    return cache2.ping
+end
+
+local function fn25()
+    if P.config.is_mobile then
+        vim:SendMouseButtonEvent(0, 0, 0, true, g, 0)
+        vim:SendMouseButtonEvent(0, 0, 0, false, g, 0)
+    else
+        vim:SendKeyEvent(true, en.KeyCode.F, false, g)
+        vim:SendKeyEvent(false, en.KeyCode.F, false, g)
+    end
+end
+
+local function fn26()
+    if P.config.curve_mode == 1 and P.config.parry_mode == "Keypress" then
+        fn25()
+        return
+    end
+
+    local cframe = P.curve.get_cframe()
+    local cfr = cam.CFrame
+    cam.CFrame = cframe
+
+    if P.config.is_mobile then
+        vim:SendMouseButtonEvent(0, 0, 0, true, g, 0)
+        vim:SendMouseButtonEvent(0, 0, 0, false, g, 0)
+    else
+        vim:SendKeyEvent(true, en.KeyCode.F, false, g)
+        vim:SendKeyEvent(false, en.KeyCode.F, false, g)
+    end
+
+    rstep:Wait()
+    cam.CFrame = cfr
+end
+
+local function fn27(arg122)
+    local jig2 = tonumber(arg122)
+
+    if jig2 then
+        return jig2
+    end
+
+    local function fn28()
+        return plr:GetUserIdFromNameAsync(tostring(arg122))
+    end
+
+    local lug2, mug2 = pcall(fn28)
+    return lug2 and mug2 or nil
+end
+
+local function fn29(arg123, arg124, arg125)
+    local nip2 = mkaux()
+    local btn19 = mkn("TextButton")
+    btn19.Size = ud2.new(0, 120, 0, 48)
+    btn19.Position = ud2.new(0.5, -60, arg124, 0)
+    btn19.BackgroundTransparency = 1
+    btn19.AnchorPoint = Vector2.new(0.5, 0)
+    btn19.AutoButtonColor = false
+    btn19.ZIndex = 2
+    btn19.Text = ""
+    btn19.Parent = nip2
+    local frm45 = mkn("Frame")
+    frm45.Size = ud2.new(1, 0, 1, 0)
+    frm45.BackgroundColor3 = cl3.fromRGB(18, 18, 24)
+    frm45.BorderSizePixel = 0
+    frm45.Parent = btn19
+    local cnr57 = mkn("UICorner")
+    cnr57.CornerRadius = ud.new(0, 10)
+    cnr57.Parent = frm45
+    local strk25 = mkn("UIStroke")
+    strk25.Color = arg125
+    strk25.Thickness = 1.5
+    strk25.Transparency = 0.3
+    strk25.Parent = frm45
+    local lbl28 = mkn("TextLabel")
+    lbl28.Size = ud2.new(1, 0, 1, 0)
+    lbl28.BackgroundTransparency = 1
+    lbl28.Text = arg123
+    lbl28.Font = en.Font.GothamBold
+    lbl28.TextSize = 14
+    lbl28.TextColor3 = cl3.fromRGB(235, 235, 245)
+    lbl28.ZIndex = 3
+    lbl28.Parent = btn19
+    local odd2 = false
+    local peg2
+    local pod2
+
+    btn19.InputBegan:Connect(function(arg126)
+        if arg126.UserInputType == en.UserInputType.Touch then
+            odd2 = true
+            peg2 = arg126.Position
+            pod2 = btn19.Position
+        end
+    end)
+
+    btn19.InputChanged:Connect(function(arg127)
+        local _sod2 = odd2
+
+        if not odd2 or arg127.UserInputType ~= en.UserInputType.Touch then
+            return
+        end
+
+        local tap2 = arg127.Position - peg2
+
+        if tap2.Magnitude > 8 then
+            btn19.Position = ud2.new(pod2.X.Scale, pod2.X.Offset + tap2.X, pod2.Y.Scale, pod2.Y.Offset + tap2.Y)
+        end
+    end)
+
+    btn19.InputEnded:Connect(function(arg128)
+        if arg128.UserInputType == en.UserInputType.Touch then
+            odd2 = false
+        end
+    end)
+
+    return {gui = nip2, button = btn19, label = lbl28}
+end
+
+local wag2 = rs
+
+pc(function()
+    wag2.Remotes.DeathBall.OnClientEvent:Connect(function(arg129, arg130)
+        P.state.deathslash_active = arg130 or false
+    end)
+end)
+
+pc(function()
+    wag2.Remotes.InfinityBall.OnClientEvent:Connect(function(arg131, arg132)
+        P.state.infinity_active = arg132 or false
+    end)
+end)
+
+pc(function()
+    local onclientevent = wag2.Remotes.ParrySuccessAll.OnClientEvent
+    local connect = onclientevent.Connect
+
+    connect(onclientevent, function(arg133, arg134)
+        local ch5 = lp.Character
+
+        if not ch5 or not ch5.PrimaryPart then
+            return
+        end
+
+        local primarypart2 = ch5.PrimaryPart
+        local kid29 = ws:FindFirstChild("Balls")
+
+        if not kid29 then
+            return
+        end
+
+        local kids3 = kid29:GetChildren()
+
+        for val86, val87 in ipairs(kids3) do
+            if val87:IsA("BasePart") then
+                local kid30 = val87:FindFirstChild("zoomies")
+
+                if kid30 then
+                    local mag = kid30.VectorVelocity.Magnitude
+                    local kit2 = (primarypart2.Position - val87.Position).Magnitude
+                    local ping2 = P.cache.get_ping()
+                    local jot2 = kit2 / math.max(mag, 1) - ping2 / 1000
+                    local min2 = math.min(mag / 100, 40)
+                    min2 = 15 - math.min(kit2 / 1000, 15) + min2
+
+                    if mag > 1 and ping2 / 10 < jot2 then
+                        min2 = math.max(min2 - 15, 15)
+                    end
+
+                    if arg134 == primarypart2 then
+                        break
+                    end
+
+                    if not (min2 < kit2) then
+                        break
+                    end
+
+                    P.curve_detection.curve_time = tk()
+                    break
+                end
+            end
+        end
+    end)
+end)
+
+pc(function()
+    lp.AttributeChanged:Connect(function(arg135)
+        if arg135 == "TimeHoleActivate" then
+            P.state.timehole_active = lp:GetAttribute("TimeHoleActivate") ~= nil
+        end
+    end)
+end)
+
+pc(function()
+    local abilitybuttonpress = wag2.Remotes.AbilityButtonPress
+    local onclientevent2 = wag2.Remotes.Phantom.OnClientEvent
+    local connect2 = onclientevent2.Connect
+
+    connect2(onclientevent2, function(...)
+        local t15 = {...}
+        local dab2 = t15[2]
+
+        if typeof(dab2) ~= "Instance" then
+            return
+        end
+
+        if dab2.Name ~= lp.Name then
+            return
+        end
+
+        if not P.phantom.enabled then
+            return
+        end
+
+        local ch6 = lp.Character
+
+        if not ch6 then
+            return
+        end
+
+        local kid31 = ch6:FindFirstChild("HumanoidRootPart")
+
+        if not kid31 then
+            return
+        end
+
+        local range2 = P.phantom.range
+        local all = P.ball.get_all()
+        local gob2
+
+        for val88, val89 in ipairs(all) do
+            local hop2 = (val89.part.Position - kid31.Position).Magnitude
+
+            if hop2 <= range2 then
+                range2 = hop2
+                gob2 = val89
+            end
+        end
+
+        if not gob2 then
+            return
+        end
+
+        P.phantom.active = true
+
+        if P.phantom.mode == "Ability" then
+            abilitybuttonpress:Fire()
+
+            task.delay(1, function()
+                P.phantom.active = false
+            end)
+        elseif P.phantom.mode == "Teleport" then
+            P.parry.execute()
+            kid31.CFrame = cf.new(gob2.part.Position)
+
+            task.delay(0.5, function()
+                P.phantom.active = false
+            end)
+        end
+    end)
+end)
+
+local kip2
+
+local function fn30(arg136)
+    if kip2 then
+        kip2:Disconnect()
+        kip2 = nil
+    end
+
+    kip2 = arg136.AttributeChanged:Connect(function(arg137)
+        if arg137 == "AbilityActive" then
+            local attr22 = arg136:GetAttribute("AbilityActive")
+
+            if lp:GetAttribute("CurrentlyEquippedAbility") == "Slashes of Fury" and attr22 == true then
+                P.state.slashesoffury_active = true
+            else
+                P.state.slashesoffury_active = false
+            end
+        end
+
+        if arg137 ~= "FuryCatch" then
+            return
+        end
+
+        if arg136:GetAttribute("FuryCatch") == nil then
+            return
+        end
+
+        if not P.detections.slashesoffury then
+            return
+        end
+
+        task.spawn(function()
+            local n8 = 0
+
+            while P.state.slashesoffury_active and n8 < P.slashesoffury_detection.max_parries and P.detections.slashesoffury do
+                n8 = n8 + 1
+                P.parry.execute()
+                task.wait(P.slashesoffury_detection.parry_delay)
+            end
+        end)
+    end)
+end
+
+if lp.Character then
+    pc(fn30, lp.Character)
+end
+
+lp.CharacterAdded:Connect(function(arg138)
+    pcall(fn30, arg138)
+end)
+
+local fn33
+local fn34
+local sword_ok = false
+
+pcall(function()
+    local lop2 = rs
+    local sw_shared = lop2:WaitForChild("Shared", 30)
+    local sw_repl = sw_shared and sw_shared:WaitForChild("ReplicatedInstances", 30)
+    local sw_mod = sw_repl and sw_repl:WaitForChild("Swords", 30)
+
+    if not sw_mod then
+        wn("sword internals unavailable (Swords module missing); sword changer disabled")
+        return
+    end
+
+    slot[49] = sw_mod
+
+    if not lop2:FindFirstChild("Remotes") then
+        wn("sword internals unavailable (Remotes missing); sword changer disabled")
+        return
+    end
+
+    local ok_swords, mob2 = pcall(require, slot[49])
+
+    if not ok_swords or ty(mob2) ~= "table" then
+        wn("sword internals unavailable (Swords module not loadable); sword changer disabled")
+        return
+    end
+
+    tsk.spawn(function()
+        local deadline = osz.clock() + 120
+
+        while osz.clock() < deadline and not P.sword_changer.swords_controller do
+            task.wait()
+
+            for val90, val91 in gcx(lop2.Remotes.FireSwordInfo.OnClientEvent) do
+                if val91.Function and islc(val91.Function) then
+                    local nag2 = ups(val91.Function)
+
+                    if #nag2 == 1 and type(nag2[1]) == "table" then
+                        P.sword_changer.swords_controller = nag2[1]
+                        break
+                    end
+                end
+            end
+        end
+    end)
+
+    tsk.spawn(function()
+        local pig2
+        local deadline = osz.clock() + 120
+
+        while osz.clock() < deadline and not pig2 do
+            task.wait()
+
+            for val92, val93 in gcx(lop2.Remotes.ParrySuccessAll.OnClientEvent) do
+                if val93.Function and nfo(val93.Function).name == "parrySuccessAll" then
+                    P.sword_changer.parry_func = val93.Function
+                    val93:Disable()
+                    pig2 = val93
+                    break
+                end
+            end
+        end
+
+        local sip2
+
+        while osz.clock() < deadline and not sip2 do
+            task.wait()
+
+            for val94, val95 in gcx(lop2.Remotes.ParrySuccessClient.Event) do
+                if val95.Function and nfo(val95.Function).name == "parrySuccessAll" then
+                    val95:Disable()
+                    sip2 = val95
+                    break
+                end
+            end
+        end
+
+        lop2.Remotes.ParrySuccessAll.OnClientEvent:Connect(function(...)
+            if not P.sword_changer.loaded then
+                if P.sword_changer.parry_func then
+                    return P.sword_changer.parry_func(...)
+                end
+
+                return
+            end
+
+            setthreadidentity(2)
+            local t16 = {...}
+            local tip2 = select("#", ...)
+
+            if P.sword_changer.enabled and P.sword_changer.fx ~= "" then
+                if 4 <= tip2 and typeof(t16[4]) == "Instance" and t16[4]:IsA("Player") then
+                    if t16[4] == lp then
+                        t16[1] = P.sword_changer.slash_name
+                        t16[3] = P.sword_changer.fx
+                    end
+                else
+                    local ch7 = lp.Character
+
+                    if ch7 and typeof(t16[2]) == "Instance" then
+                        local wob2 = t16[2]
+
+                        if wob2 ~= ch7 then
+                            wob2 = t16[2].Parent
+                            local _yak2 = wob2 == ch7
+                        end
+
+                        if wob2 == ch7 then
+                            t16[1] = P.sword_changer.slash_name
+                            t16[3] = P.sword_changer.fx
+                        end
+                    end
+                end
+            end
+
+            if not P.sword_changer.parry_func then
+                return
+            end
+
+            return P.sword_changer.parry_func(unpack(t16, 1, tip2))
+        end)
+    end)
+
+    local equipfn = slot[19](mob2, "EquipSwordTo")
+    local equip
+
+    for val96, val97 in ips(ups(equipfn)) do
+        if ty(val97) == "table" and ty(slot[19](val97, "getInstance")) == "function" then
+            equip = val97
+            break
+        end
+    end
+
+    if not equip then
+        wn("sword internals changed (equip table missing); sword changer disabled")
+        return
+    end
+    local box2
+    slot[7] = nil
+
+    for val98, val99 in ips(ups(equip.getInstance)) do
+        if ty(val99) == "table" then
+            if slot[19](val99, "Collections") and not box2 then
+                box2 = val99
+            end
+
+            if ty(slot[19](val99, "deserialize")) == "function" and not slot[7] then
+                slot[7] = val99.deserialize
+            end
+        end
+    end
+
+    if not box2 then
+        wn("sword internals changed (serializer table missing); sword changer disabled")
+        return
+    end
+    if ty(slot[7]) ~= "function" then
+        wn("sword internals changed (deserialize function missing); sword changer disabled")
+        return
+    end
+    local col3
+    local row3
+    local hld2
+
+    for val100, val101 in ips(ups(slot[7])) do
+        if toy(val101) == "Instance" and val101.ClassName == "HttpService" then
+            col3 = val101
+        elseif ty(val101) == "table" then
+            if ty(slot[19](val101, "decode")) == "function" and not row3 then
+                row3 = val101
+            else
+                slot[7] = ty(slot[19](val101, "deserialize")) == "function"
+
+                if slot[7] and ty(slot[19](val101, "serialize")) == "function" then
+                    slot[7] = not hld2
+
+                    if slot[7] then
+                        hld2 = val101
+                    end
+                end
+            end
+        end
+    end
+
+    if not col3 then
+        col3 = g:GetService("HttpService")
+    end
+
+    if not row3 or not hld2 then
+        wn("sword internals changed (buffer/serializer missing); sword changer disabled")
+        return
+    end
+
+    local boot = (function()
+        if not box2.Collections then
+            return nil
+        end
+
+        if box2.Collections.Swords then
+            return "Swords"
+        end
+
+        for val102, val103 in pairs(box2.Collections) do
+            if type(val102) == "string" and val102:lower() == "swords" then
+                return val102
+            end
+        end
+
+        return nil
+    end)()
+
+    local function getmodel(arg139)
+        if P.sword_changer.model_cache[arg139] and P.sword_changer.model_cache[arg139].Parent then
+            return P.sword_changer.model_cache[arg139]:Clone()
+        end
+
+        local ref6
+
+        if boot then
+            local dug2 = box2.Collections[boot]
+            ref6 = nil
+
+            if dug2 and dug2.Instances then
+                ref6 = dug2.Instances[arg139]
+            end
+        end
+
+        if not ref6 then
+            local giz2 = boot or "Swords"
+
+            local function fn31()
+                return box2:GetInstance(giz2, arg139)
+            end
+
+            local imp2, keg2 = pcall(fn31)
+
+            if imp2 then
+                ref6 = keg2 or ref6
+            end
+        end
+
+        if not ref6 then
+            return nil
+        end
+
+        local function fn32(arg140)
+            local lob2
+
+            if arg140:IsA("StringValue") then
+                lob2 = arg140.Value
+            else
+                if not arg140:IsA("ModuleScript") then
+                    return nil
+                end
+
+                local mop2 = getthreadidentity()
+                setthreadidentity(6)
+                local nod2, orb2 = pcall(require, arg140)
+                local pit2 = orb2
+                setthreadidentity(mop2)
+
+                if not nod2 then
+                    return nil
+                elseif type(pit2) == "string" then
+                    lob2 = pit2
+                else
+                    if typeof(pit2) == "buffer" then
+                        local rib2, tug2 = pcall(row3.decode, pit2)
+
+                        if not rib2 then
+                            return nil
+                        end
+
+                        local t17 = {}
+
+                        for val104, val105 in ipairs(arg140:GetChildren()) do
+                            t17[val105.Name] = val105
+                        end
+
+                        local wad2, yip2 = pcall(hld2.deserialize, tug2, t17)
+
+                        if wad2 then
+                            return yip2
+                        end
+
+                        return nil
+                    end
+
+                    lob2 = nil
+
+                    if type(pit2) == "table" then
+                        local zap2, bub2 = pcall(row3.decode, pit2)
+                        local cad2 = bub2
+
+                        if zap2 then
+                            local t18 = {}
+
+                            for val106, val107 in ipairs(arg140:GetChildren()) do
+                                t18[val107.Name] = val107
+                            end
+
+                            local dim2, elf2 = pcall(hld2.deserialize, cad2, t18)
+
+                            if dim2 then
+                                return elf2
+                            end
+                        end
+
+                        local fig2, gum2 = pcall(col3.JSONEncode, col3, pit2)
+                        lob2 = gum2
+
+                        if not fig2 then
+                            lob2 = nil
+                        end
+                    end
+                end
+            end
+
+            if not lob2 or lob2 == "" then
+                return nil
+            end
+
+            local hen2, ivy2 = pcall(col3.JSONDecode, col3, lob2)
+
+            if not hen2 then
+                return nil
+            end
+
+            local jaw2, kob2 = pcall(row3.decode, ivy2)
+
+            if not jaw2 then
+                return nil
+            end
+
+            local t19 = {}
+
+            for val108, val109 in ipairs(arg140:GetChildren()) do
+                t19[val109.Name] = val109
+            end
+
+            local lad2, mix2 = pcall(hld2.deserialize, kob2, t19)
+
+            if not lad2 then
+                return nil
+            end
+
+            return mix2
+        end
+
+        local oak2
+
+        if typeof(ref6) == "Instance" and ref6:IsA("Model") then
+            oak2 = ref6:Clone()
+        elseif typeof(ref6) == "Instance" and ref6:IsA("Tool") then
+            oak2 = inst.new("Model")
+            oak2.Name = arg139
+            local copy = ref6:Clone()
+            copy.Name = arg139
+            copy.Parent = oak2
+            local prt2 = copy:FindFirstChildWhichIsA("BasePart", true)
+
+            if prt2 then
+                oak2.PrimaryPart = prt2
+            end
+        else
+            if typeof(ref6) ~= "Instance" or not ref6:IsA("StringValue") and not ref6:IsA("ModuleScript") then
+                return nil
+            end
+
+            oak2 = fn32(ref6)
+
+            if not oak2 then
+                return nil
+            elseif not oak2:IsA("Model") then
+                if oak2:IsA("Tool") then
+                    oak2.Name = arg139
+                    local mdl = inst.new("Model")
+                    mdl.Name = arg139
+                    oak2.Parent = mdl
+                    local prt3 = oak2:FindFirstChildWhichIsA("BasePart", true)
+
+                    if prt3 then
+                        mdl.PrimaryPart = prt3
+                        oak2 = mdl
+                    else
+                        oak2 = mdl
+                    end
+                else
+                    local mdl2 = inst.new("Model")
+                    mdl2.Name = arg139
+                    oak2.Parent = mdl2
+                    local prt4 = oak2:IsA("BasePart") and oak2 or oak2:FindFirstChildWhichIsA("BasePart", true)
+
+                    if prt4 then
+                        mdl2.PrimaryPart = prt4
+                        oak2 = mdl2
+                    else
+                        oak2 = mdl2
+                    end
+                end
+            end
+        end
+
+        if not oak2 then
+            return nil
+        end
+
+        local cls2 = oak2:FindFirstChildWhichIsA("Tool", true)
+
+        if cls2 and cls2.Name ~= arg139 then
+            cls2.Name = arg139
+        end
+
+        P.sword_changer.model_cache[arg139] = oak2
+        return oak2:Clone()
+    end
+
+    fn33 = function(arg141, arg142)
+        local pad23 = getmodel(arg142)
+
+        if not pad23 then
+            return
+        end
+
+        local bit22 = ups(equipfn)
+        local cog2
+        local dud2
+
+        for val110, val111 in ipairs(bit22) do
+            if val111 == equip then
+                if not cog2 then
+                    cog2 = val110
+                elseif type(val111) == "boolean" and not dud2 then
+                    dud2 = val110
+                end
+            elseif type(val111) == "boolean" and not dud2 then
+                dud2 = val110
+            end
+        end
+
+        if not cog2 then
+            return
+        end
+
+        local t20 = {
+            getInstance = function(arg143, arg144)
+                if arg144 == arg142 then
+                    return pad23
+                end
+
+                return getmodel(arg144)
+            end
+        }
+
+        if dud2 then
+            setuv(equipfn, dud2, false)
+        end
+
+        setuv(equipfn, cog2, t20)
+        pcall(mob2.EquipSwordTo, mob2, arg141, arg142)
+        setuv(equipfn, cog2, equip)
+
+        if dud2 then
+            setuv(equipfn, dud2, true)
+        end
+    end
+
+    fn34 = function(arg145)
+        if not arg145 or arg145 == "" then
+            return "SlashEffect"
+        end
+
+        local getsword
+
+        if mob2 and mob2.GetSword then
+            getsword = mob2:GetSword(arg145)
+        end
+
+        if getsword then
+            getsword = getsword.SlashName
+        end
+
+        if not getsword then
+            getsword = "SlashEffect"
+        end
+
+        return getsword
+    end
+
+    sword_ok = true
+end)
+
+if not sword_ok then
+    wn("sword changer disabled: game internals changed")
+end
+
+local function fn35()
+    if not P.sword_changer.enabled or not P.sword_changer.loaded then
+        return
+    end
+
+    local ch8 = lp.Character
+
+    if not ch8 then
+        return
+    end
+
+    if P.sword_changer.model ~= "" then
+        fn33(ch8, P.sword_changer.model)
+    end
+
+    if P.sword_changer.animations ~= "" and P.sword_changer.swords_controller then
+        P.sword_changer.swords_controller:SetSword(P.sword_changer.animations)
+    end
+end
+
+P.sword_changer.save_original = function()
+    if P.sword_changer.original.saved then
+        return
+    end
+
+    local ch9 = lp.Character
+
+    if not ch9 then
+        return
+    end
+
+    local attr23 = ch9:GetAttribute("CurrentlyEquippedSword") or lp:GetAttribute("CurrentlyEquippedSword")
+
+    if attr23 then
+        P.sword_changer.original.model = attr23
+        P.sword_changer.original.saved = true
+    end
+end
+
+P.sword_changer.restore_original = function()
+    if not P.sword_changer.original.saved then
+        return
+    end
+
+    local ch10 = lp.Character
+
+    if not ch10 then
+        return
+    end
+
+    fn33(ch10, P.sword_changer.original.model)
+
+    if P.sword_changer.swords_controller then
+        P.sword_changer.swords_controller:SetSword(P.sword_changer.original.model)
+    end
+end
+
+function P.sword_changer.update()
+    if not P.sword_changer.loaded then
+        return
+    end
+
+    if P.sword_changer.fx ~= "" then
+        P.sword_changer.slash_name = fn34(P.sword_changer.fx)
+    end
+
+    fn35()
+end
+
+tsk.spawn(function()
+    while task.wait(1) do
+        if not (not P.sword_changer.enabled or not P.sword_changer.loaded) then
+            local ch11 = lp.Character
+
+            if ch11 then
+                if P.sword_changer.model ~= "" then
+                    if lp:GetAttribute("CurrentlyEquippedSword") ~= P.sword_changer.model then
+                        fn35()
+                    end
+
+                    if not ch11:FindFirstChild(P.sword_changer.model) then
+                        fn35()
+                    end
+
+                    for val112, val113 in ipairs(ch11:GetChildren()) do
+                        if val113:IsA("Model") and val113.Name ~= P.sword_changer.model then
+                            val113:Destroy()
+                        end
+                    end
+                end
+
+                if P.sword_changer.animations ~= "" and P.sword_changer.swords_controller then
+                    P.sword_changer.swords_controller:SetSword(P.sword_changer.animations)
+                end
+            end
+        end
+    end
+end)
+
+P.avatar_changer.save_original = function()
+    if P.avatar_changer.original_desc then
+        return
+    end
+
+    local original2 = P.avatar_changer.saving_original
+
+    if original2 then
+        return
+    end
+
+    P.avatar_changer.saving_original = true
+
+    task.spawn(function()
+        for idx2 = 1, 5 do
+            local function fn36()
+                return plr:GetHumanoidDescriptionFromUserIdAsync(lp.UserId)
+            end
+
+            local elm3, fry2 = pcall(fn36)
+
+            if elm3 and fry2 then
+                P.avatar_changer.original_desc = fry2
+                break
+            end
+
+            task.wait(0.3 * idx2)
+        end
+
+        P.avatar_changer.saving_original = false
+    end)
+end
+
+P.avatar_changer.get_description = function(arg146)
+    if P.avatar_changer.cache[arg146] then
+        return P.avatar_changer.cache[arg146]
+    end
+
+    for i3 = 1, 5 do
+        local function fn37()
+            return plr:GetHumanoidDescriptionFromUserIdAsync(arg146)
+        end
+
+        local gap2, hub2 = pcall(fn37)
+
+        if gap2 and hub2 then
+            P.avatar_changer.cache[arg146] = hub2
+            return hub2
+        elseif i3 < 5 then
+            task.wait(0.2 * i3)
+        end
+    end
+
+    return nil
+end
+
+P.avatar_changer.create_temp_model = function(arg147, arg148)
+    if not arg148 then
+        arg148 = en.HumanoidRigType.R15
+    end
+
+    local function fn38(arg149)
+        local function fn39()
+            return plr:CreateHumanoidModelFromDescriptionAsync(arg147, arg149, en.AssetTypeVerification.Always)
+        end
+
+        local ink2, jet2 = pcall(fn39)
+
+        if not ink2 or not jet2 then
+            local function fn40()
+                return plr:CreateHumanoidModelFromDescriptionAsync(arg147, arg149)
+            end
+
+            ink2, jet2 = pcall(fn40)
+        end
+
+        if not ink2 or not jet2 then
+            return nil
+        end
+
+        jet2.Name = "BBTheOneAvatarPreview"
+        jet2.Parent = rs
+
+        pcall(function()
+            runs.Heartbeat:Wait()
+        end)
+
+        return jet2
+    end
+
+    local lid2 = fn38(arg148)
+
+    if lid2 then
+        return lid2
+    end
+
+    return fn38(arg148 == en.HumanoidRigType.R15 and en.HumanoidRigType.R6 or en.HumanoidRigType.R15)
+end
+
+P.avatar_changer.strip_accessory_joints = function(arg150)
+    local descs2 = arg150:GetDescendants()
+
+    for val114, val115 in ipairs(descs2) do
+        if val115:IsA("Weld") or val115:IsA("Motor6D") or val115:IsA("WeldConstraint") then
+            val115:Destroy()
+        end
+    end
+end
+
+P.avatar_changer.find_body_part = function(arg151, arg152)
+    if not arg152 or arg152 == "" then
+        return nil
+    end
+
+    local kid32 = arg151:FindFirstChild(arg152)
+
+    if kid32 and kid32:IsA("BasePart") then
+        return kid32
+    end
+
+    local t21 = {
+        ["Left Arm"] = {"LeftUpperArm", "LeftLowerArm", "LeftHand"},
+        ["Right Arm"] = {"RightUpperArm", "RightLowerArm", "RightHand"},
+        ["Left Leg"] = {"LeftUpperLeg", "LeftLowerLeg", "LeftFoot"},
+        ["Right Leg"] = {"RightUpperLeg", "RightLowerLeg", "RightFoot"},
+        Torso = {"UpperTorso", "LowerTorso"}
+    }
+
+    local map3 = t21[arg152] or {}
+
+    for val116, val117 in ipairs(map3) do
+        local kid33 = arg151:FindFirstChild(val117)
+
+        if kid33 and kid33:IsA("BasePart") then
+            return kid33
+        end
+    end
+
+    return nil
+end
+
+P.avatar_changer.attach_accessory = function(arg153, arg154, arg155)
+    if not arg153 or not arg155 then
+        return false
+    end
+
+    local copy2 = arg155:Clone()
+    P.avatar_changer.strip_accessory_joints(copy2)
+    local kid34 = copy2:FindFirstChild("Handle")
+
+    if not kid34 or not kid34:IsA("BasePart") then
+        copy2:Destroy()
+        return false
+    end
+
+    kid34.Anchored = false
+    kid34.CanCollide = false
+    kid34.Massless = true
+    local kid35 = arg155:FindFirstChild("Handle")
+
+    if kid35 then
+        kid35 = kid35:FindFirstChild("AccessoryWeld")
+    end
+
+    local new18 = cf.new()
+    local new19 = cf.new()
+    local nub2
+
+    if kid35 and kid35:IsA("Weld") and kid35.Part1 then
+        nub2 = P.avatar_changer.find_body_part(arg153, kid35.Part1.Name)
+        new18 = kid35.C0
+        new19 = kid35.C1
+    end
+
+    local oar2
+
+    if not nub2 then
+        local att = kid34:FindFirstChildOfClass("Attachment")
+
+        if att then
+            local descs3 = arg153:GetDescendants()
+
+            for val118, val119 in ipairs(descs3) do
+                if val119:IsA("Attachment") and val119.Name == att.Name and not val119:IsDescendantOf(copy2) then
+                    nub2 = val119.Parent
+                    new18 = att.CFrame
+                    new19 = val119.CFrame
+                    break
+                end
+            end
+
+            oar2 = nub2
+        else
+            oar2 = nub2
+        end
+    else
+        oar2 = nub2
+    end
+
+    local pin2
+
+    if not oar2 then
+        local accessorytype = copy2.AccessoryType
+        local quo2 = accessorytype == en.AccessoryType.Hair
+        local rim2
+
+        if quo2 then
+            rim2 = quo2
+        else
+            local hat3 = en.AccessoryType.Hat
+            quo2 = accessorytype == hat3
+
+            if accessorytype ~= hat3 then
+                hat3 = en.AccessoryType.Face
+                quo2 = accessorytype == hat3
+            end
+
+            if accessorytype ~= hat3 then
+                hat3 = en.AccessoryType.Eyebrow
+                quo2 = accessorytype == hat3
+            end
+
+            if accessorytype == hat3 then
+                rim2 = quo2
+            else
+                rim2 = accessorytype == en.AccessoryType.Eyelash
+            end
+        end
+
+        if rim2 then
+            oar2 = arg153:FindFirstChild("Head")
+        end
+
+        if not oar2 then
+            oar2 = arg153:FindFirstChild("Head") or arg153:FindFirstChild("UpperTorso") or arg153:FindFirstChild("Torso")
+        end
+
+        new18 = cf.new(0, 0.5, 0)
+        new19 = cf.new()
+        pin2 = oar2
+    else
+        pin2 = oar2
+    end
+
+    if pin2 and pin2:IsA("BasePart") then
+        local wld = inst.new("Weld")
+        wld.Name = "AccessoryWeld"
+        wld.Part0 = kid34
+        wld.Part1 = pin2
+        wld.C0 = new18
+        wld.C1 = new19
+        wld.Parent = kid34
+        copy2.Parent = arg153
+        return true
+    end
+
+    if arg154 then
+        local function fn41()
+            arg154:AddAccessory(copy2)
+        end
+
+        if pcall(fn41) and copy2.Parent == arg153 then
+            return true
+        end
+    end
+
+    copy2:Destroy()
+    return false
+end
+
+P.avatar_changer.collect_accessories = function(arg156, arg157)
+    local t22 = {}
+    local t23 = {}
+    local _sap2
+
+    local function fn42(arg158)
+        if not arg158 or t23[arg158] then
+            return
+        end
+
+        t23[arg158] = true
+        table.insert(t22, arg158)
+    end
+
+    if arg156 then
+        local kids4 = arg156:GetChildren()
+
+        for val120, val121 in ipairs(kids4) do
+            if val121:IsA("Accessory") or val121:IsA("Hat") then
+                fn42(val121)
+            end
+        end
+
+        if #t22 == 0 then
+            local toy3 = arg156
+            arg156 = "Humanoid"
+            local cls = toy3:FindFirstChildOfClass(arg156)
+
+            if cls then
+                pcall(function()
+                    local accs = cls:GetAccessories()
+
+                    for val122, val123 in ipairs(accs) do
+                        fn42(val123)
+                    end
+                end)
+            end
+        end
+    end
+
+    if arg157 and arg157.GetAccessories then
+        pcall(function()
+            local accs2 = arg157:GetAccessories(true)
+
+            for val124, val125 in ipairs(accs2) do
+                local assetid = val125.AssetId
+
+                if assetid and 0 < assetid then
+                    pcall(function()
+                        local getobjects = g:GetObjects("rbxassetid://" .. assetid)
+
+                        for val126, val127 in ipairs(getobjects) do
+                            local acc = val127:IsA("Accessory") and val127 or val127:FindFirstChildOfClass("Accessory")
+
+                            if not acc then
+                                local descs4 = val127:GetDescendants()
+
+                                for val128, val129 in ipairs(descs4) do
+                                    if val129:IsA("Accessory") then
+                                        acc = val129
+                                        break
+                                    end
+                                end
+                            end
+
+                            if acc then
+                                fn42(acc)
+                            end
+                        end
+                    end)
+                end
+            end
+        end)
+    end
+
+    if arg157 and #t22 == 0 then
+        for val130, val131 in ipairs({
+            "HatAccessory",
+            "HairAccessory",
+            "FaceAccessory",
+            "NeckAccessory",
+            "ShouldersAccessory",
+            "FrontAccessory",
+            "BackAccessory",
+            "WaistAccessory"
+        }) do
+            local urn3 = arg157[val131]
+
+            if urn3 and urn3 ~= "" then
+                for val132, val133 in string.gmatch(tostring(urn3), "%d+") do
+                    local vet2 = tonumber(val132)
+
+                    if vet2 and 0 < vet2 then
+                        local function fn43()
+                            local getobjects2 = g:GetObjects("rbxassetid://" .. vet2)
+
+                            for val134, val135 in ipairs(getobjects2) do
+                                local acc2 = val135:IsA("Accessory") and val135 or val135:FindFirstChildOfClass("Accessory")
+
+                                if not acc2 then
+                                    local descs5 = val135:GetDescendants()
+
+                                    for val136, val137 in ipairs(descs5) do
+                                        if val137:IsA("Accessory") then
+                                            acc2 = val137
+                                            break
+                                        end
+                                    end
+                                end
+
+                                if acc2 then
+                                    fn42(acc2)
+                                end
+                            end
+                        end
+
+                        arg156 = pcall
+                        arg156(fn43)
+                    end
+                end
+            end
+        end
+    end
+
+    return t22
+end
+
+P.avatar_changer.remove_accessories = function(arg159)
+    local kids5 = arg159:GetChildren()
+
+    for val138, val139 in ipairs(kids5) do
+        if val139:IsA("Accessory") or val139:IsA("Hat") then
+            val139:Destroy()
+        end
+    end
+end
+
+P.avatar_changer.transfer_accessory_from_temp = function(arg160, arg161)
+    if not arg160 or not arg161 then
+        return false
+    end
+
+    local kid36 = arg161:FindFirstChild("Handle")
+
+    if not kid36 or not kid36:IsA("BasePart") then
+        return false
+    end
+
+    kid36.Anchored = false
+    kid36.CanCollide = false
+    kid36.Massless = true
+    local kid37 = kid36:FindFirstChild("AccessoryWeld")
+
+    if not kid37 then
+        local kids6 = kid36:GetChildren()
+
+        for val140, val141 in ipairs(kids6) do
+            if val141:IsA("Weld") or val141:IsA("WeldConstraint") then
+                kid37 = val141
+                break
+            end
+        end
+    end
+
+    if kid37 and kid37.Part1 then
+        local part2 = P.avatar_changer.find_body_part(arg160, kid37.Part1.Name)
+
+        if part2 then
+            kid37.Part1 = part2
+            arg161.Parent = arg160
+            return true
+        end
+    end
+
+    return P.avatar_changer.attach_accessory(arg160, nil, arg161)
+end
+
+P.avatar_changer.apply_accessories = function(arg162, arg163, arg164, arg165)
+    P.avatar_changer.remove_accessories(arg162)
+    local n9 = 0
+
+    if arg164 then
+        local kids7 = arg164:GetChildren()
+
+        for val142, val143 in ipairs(kids7) do
+            if (val143:IsA("Accessory") or val143:IsA("Hat")) and P.avatar_changer.transfer_accessory_from_temp(arg162, val143) then
+                n9 = n9 + 1
+            end
+        end
+
+        if n9 == 0 then
+            local hum = arg164:FindFirstChildOfClass("Humanoid")
+
+            if hum then
+                pcall(function()
+                    local accs3 = hum:GetAccessories()
+
+                    for val144, val145 in ipairs(accs3) do
+                        if P.avatar_changer.transfer_accessory_from_temp(arg162, val145) then
+                            n9 = n9 + 1
+                        end
+                    end
+                end)
+            end
+        end
+    end
+
+    if n9 == 0 then
+        local accessories = P.avatar_changer.collect_accessories(nil, arg165)
+
+        for val146, val147 in ipairs(accessories) do
+            if P.avatar_changer.attach_accessory(arg162, arg163, val147) then
+                n9 = n9 + 1
+            end
+        end
+    end
+
+    return n9
+end
+
+P.avatar_changer.apply_body_scales = function(arg166, arg167)
+    if not arg166 or not arg167 then
+        return
+    end
+
+    for val148, val149 in ipairs({
+        {"BodyHeightScale", arg167.HeightScale, false},
+        {"BodyWidthScale", arg167.WidthScale, false},
+        {"BodyDepthScale", arg167.DepthScale, false},
+        {"HeadScale", arg167.HeadScale, false},
+        {"BodyTypeScale", arg167.BodyTypeScale, true},
+        {"ProportionScale", arg167.ProportionScale, true}
+    }) do
+        local wig2 = val149[1]
+        local yam3 = val149[2]
+        local zen2 = val149[3]
+
+        if typeof(yam3) == "number" and (yam3 > 0 or zen2 and yam3 >= 0) then
+            local kid38 = arg166:FindFirstChild(wig2)
+
+            if not kid38 and arg166.RigType == en.HumanoidRigType.R15 then
+                local nval = inst.new("NumberValue")
+                nval.Name = wig2
+                nval.Parent = arg166
+                kid38 = nval
+            end
+
+            if kid38 and kid38:IsA("NumberValue") then
+                kid38.Value = yam3
+            end
+        end
+    end
+end
+
+P.avatar_changer.apply_special_body_parts = function(arg168, arg169)
+    if not arg168 or not arg169 then
+        return
+    end
+
+    if arg169.Head and (arg169.Head == 15093053680 or arg169.Head == 134082513) then
+        pcall(P.avatar.apply_headless, arg168)
+    end
+
+    if arg169.RightLeg and arg169.RightLeg == 139607718 then
+        pcall(function()
+            if arg168:FindFirstChild("RightLeg") or arg168:FindFirstChild("Right Leg") then
+                P.avatar.apply_korblox(arg168)
+                return
+            end
+
+            for val150, val151 in ipairs({"RightUpperLeg", "RightLowerLeg", "RightFoot"}) do
+                local kid39 = arg168:FindFirstChild(val151)
+
+                if kid39 then
+                    kid39.Transparency = 1
+                end
+            end
+
+            local kid40 = arg168:FindFirstChild("RightUpperLeg")
+
+            if kid40 and not kid40:FindFirstChild("KorbloxLeg") then
+                local prt5 = inst.new("Part")
+                prt5.Name = "KorbloxLeg"
+                prt5.CanCollide = false
+                prt5.Massless = true
+                prt5.Size = Vector3.new(1, 2, 1)
+                local mesh = inst.new("SpecialMesh")
+                mesh.MeshId = "rbxassetid://101851696"
+                mesh.TextureId = "rbxassetid://115727863"
+                mesh.Scale = Vector3.new(1, 1, 1)
+                mesh.Parent = prt5
+                local wld2 = inst.new("Weld")
+                wld2.Part0 = kid40
+                wld2.Part1 = prt5
+                wld2.C0 = cf.new(0, -0.5, 0)
+                wld2.Parent = prt5
+                prt5.Parent = kid40
+            end
+        end)
+    end
+end
+
+P.avatar_changer.transfer_body_meshes = function(arg170, arg171, arg172)
+    if not arg170 or not arg171 then
+        return
+    end
+
+    if arg172 and arg172.RigType ~= en.HumanoidRigType.R15 then
+        local kids8 = arg170:GetChildren()
+
+        for val152, val153 in ipairs(kids8) do
+            if val153:IsA("CharacterMesh") then
+                pcall(function()
+                    local kids9 = arg171:GetChildren()
+
+                    for val154, val155 in ipairs(kids9) do
+                        if val155:IsA("CharacterMesh") and val155.BodyPart == val153.BodyPart then
+                            val155:Destroy()
+                        end
+                    end
+
+                    val153:Clone().Parent = arg171
+                end)
+            end
+        end
+
+        return
+    end
+
+    for val156, val157 in ipairs({
+        "Head",
+        "UpperTorso",
+        "LowerTorso",
+        "LeftUpperArm",
+        "LeftLowerArm",
+        "LeftHand",
+        "RightUpperArm",
+        "RightLowerArm",
+        "RightHand",
+        "LeftUpperLeg",
+        "LeftLowerLeg",
+        "LeftFoot",
+        "RightUpperLeg",
+        "RightLowerLeg",
+        "RightFoot"
+    }) do
+        local kid41 = arg170:FindFirstChild(val157)
+        local kid42 = arg171:FindFirstChild(val157)
+
+        if kid41 and kid42 and kid41:IsA("MeshPart") and kid42:IsA("MeshPart") then
+            local arc2 = false
+
+            pcall(function()
+                kid42:ApplyMesh(kid41)
+                arc2 = true
+            end)
+
+            if not arc2 then
+                pcall(function()
+                    kid42.MeshId = kid41.MeshId
+                end)
+
+                pcall(function()
+                    kid42.TextureID = kid41.TextureID
+                end)
+            end
+
+            pcall(function()
+                local cls3 = kid42:FindFirstChildOfClass("SurfaceAppearance")
+
+                if cls3 then
+                    cls3:Destroy()
+                end
+
+                local cls4 = kid41:FindFirstChildOfClass("SurfaceAppearance")
+
+                if cls4 then
+                    cls4:Clone().Parent = kid42
+                end
+            end)
+        end
+    end
+end
+
+P.avatar_changer.transfer_appearance = function(arg173, arg174, arg175, arg176)
+    if not arg173 or not arg174 or not arg175 then
+        return false
+    end
+
+    pcall(function()
+        if arg175.ApplyDescriptionClientServer then
+            arg175:ApplyDescriptionClientServer(arg176)
+        else
+            arg175:ApplyDescription(arg176)
+        end
+    end)
+
+    P.avatar_changer.transfer_body_meshes(arg173, arg174, arg175)
+
+    for val158, val159 in ipairs({"Shirt", "Pants", "ShirtGraphic"}) do
+        local cls5 = arg173:FindFirstChildOfClass(val159)
+
+        if cls5 then
+            local cls6 = arg174:FindFirstChildOfClass(val159)
+
+            if cls6 then
+                cls6:Destroy()
+            end
+
+            cls5:Clone().Parent = arg174
+        end
+    end
+
+    local bcol = arg173:FindFirstChildOfClass("BodyColors")
+    local bcol2 = arg174:FindFirstChildOfClass("BodyColors")
+
+    if not bcol2 then
+        bcol2 = inst.new("BodyColors")
+        bcol2.Parent = arg174
+    end
+
+    if bcol then
+        bcol2.HeadColor3 = bcol.HeadColor3
+        bcol2.TorsoColor3 = bcol.TorsoColor3
+        bcol2.LeftArmColor3 = bcol.LeftArmColor3
+        bcol2.RightArmColor3 = bcol.RightArmColor3
+        bcol2.LeftLegColor3 = bcol.LeftLegColor3
+        bcol2.RightLegColor3 = bcol.RightLegColor3
+    end
+
+    if arg176 then
+        bcol2.HeadColor3 = arg176.HeadColor
+        bcol2.TorsoColor3 = arg176.TorsoColor
+        bcol2.LeftArmColor3 = arg176.LeftArmColor
+        bcol2.RightArmColor3 = arg176.RightArmColor
+        bcol2.LeftLegColor3 = arg176.LeftLegColor
+        bcol2.RightLegColor3 = arg176.RightLegColor
+    end
+
+    local kid43 = arg173:FindFirstChild("Head")
+    local kid44 = arg174:FindFirstChild("Head")
+
+    if kid43 and kid44 then
+        local kid45 = kid43:FindFirstChild("face") or kid43:FindFirstChildOfClass("Decal")
+
+        if kid45 then
+            local kid46 = kid44:FindFirstChild("face") or kid44:FindFirstChildOfClass("Decal")
+
+            if kid46 then
+                kid46:Destroy()
+            end
+
+            local copy3 = kid45:Clone()
+            copy3.Name = "face"
+            copy3.Parent = kid44
+        end
+    end
+
+    P.avatar_changer.apply_body_scales(arg175, arg176)
+    P.avatar_changer.apply_special_body_parts(arg174, arg176)
+    P.avatar_changer.apply_accessories(arg174, arg175, arg173, arg176)
+    return true
+end
+
+P.avatar_changer.clean = function(arg177)
+    local t24 = {}
+    local kids10 = arg177:GetChildren()
+
+    for val160, val161 in ipairs(kids10) do
+        if val161:IsA("Tool") or val161:IsA("HopperBin") then
+            table.insert(t24, val161)
+            val161.Parent = nil
+        end
+    end
+
+    local par2 = arg177.Parent and arg177.Parent:FindFirstChild("Backpack")
+
+    if par2 then
+        local kids11 = par2:GetChildren()
+
+        for val162, val163 in ipairs(kids11) do
+            if val163:IsA("Tool") or val163:IsA("HopperBin") then
+                table.insert(t24, val163)
+            end
+        end
+    end
+
+    local t25 = {}
+    local descs6 = arg177:GetDescendants()
+
+    for val164, val165 in ipairs(descs6) do
+        if val165:IsA("BaseScript") then
+            t25[val165] = true
+
+            if val165.Parent then
+                t25[val165.Parent] = true
+            end
+        end
+    end
+
+    local kids12 = arg177:GetChildren()
+
+    for val166, val167 in ipairs(kids12) do
+        if not t25[val167] and (val167:IsA("Accessory") or val167:IsA("Hat") or val167:IsA("BodyColors") or val167:IsA("CharacterMesh") or val167:IsA("Shirt") or val167:IsA("Pants") or val167:IsA("ShirtGraphic")) then
+            val167:Destroy()
+        end
+    end
+
+    for val168, val169 in ipairs(t24) do
+        if val169 and val169.Parent == nil then
+            if par2 then
+                val169.Parent = par2
+            end
+
+            if not par2 then
+                val169.Parent = arg177
+            end
+        end
+    end
+end
+
+P.avatar_changer.replace_body_part = function(arg178, arg179, arg180)
+    if not arg178 or not arg179 then
+        return
+    end
+
+    if not arg180 then
+        local parts2 = P.avatar_changer.original_parts or {}
+        P.avatar_changer.original_parts = parts2
+
+        if not P.avatar_changer.original_parts[arg178.Name] then
+            local copy4 = arg178:Clone()
+            local kids13 = copy4:GetChildren()
+
+            for val170, val171 in ipairs(kids13) do
+                if val171:IsA("JointInstance") then
+                    val171:Destroy()
+                end
+            end
+
+            P.avatar_changer.original_parts[arg178.Name] = copy4
+        end
+    end
+
+    arg179.Name = arg178.Name
+    arg179.CFrame = arg178.CFrame
+    arg179.Color = arg178.Color
+    arg179.Transparency = arg178.Transparency
+    arg179.CanCollide = arg178.CanCollide
+    arg179.Anchored = arg178.Anchored
+    local kids14 = arg178:GetChildren()
+
+    for val172, val173 in ipairs(kids14) do
+        if val173:IsA("Attachment") and not arg179:FindFirstChild(val173.Name) then
+            pcall(function()
+                val173:Clone().Parent = arg179
+            end)
+        end
+    end
+
+    local t26 = {}
+    local par3 = arg178.Parent
+
+    if par3 then
+        local descs7 = par3:GetDescendants()
+
+        for val174, val175 in ipairs(descs7) do
+            if val175:IsA("Motor6D") and (val175.Part0 == arg178 or val175.Part1 == arg178) then
+                table.insert(t26, {
+                    class = val175.ClassName,
+                    name = val175.Name,
+                    parent = val175.Parent == arg178 and "new" or val175.Parent,
+                    part0 = val175.Part0 == arg178 and "new" or val175.Part0,
+                    part1 = val175.Part1 == arg178 and "new" or val175.Part1,
+                    c0 = val175.C0,
+                    c1 = val175.C1,
+                    joint_obj = val175
+                })
+            end
+        end
+    end
+
+    arg179.Parent = arg178.Parent
+
+    for val176, val177 in ipairs(t26) do
+        local joint_obj2 = val177.joint_obj
+        local bin2 = val177.part0 == "new" and arg179 or val177.part0
+        local cup2 = val177.part1 == "new" and arg179 or val177.part1
+        local dot2 = val177.parent == "new" and arg179 or val177.parent
+
+        pcall(function()
+            joint_obj2:Destroy()
+        end)
+
+        local elm22 = bin2
+        local fin2 = cup2
+        local gag2 = dot2
+
+        pcall(function()
+            local mtr = inst.new("Motor6D")
+            mtr.Name = val177.name
+            mtr.Part0 = elm22
+            mtr.Part1 = fin2
+            mtr.C0 = val177.c0
+            mtr.C1 = val177.c1
+            mtr.Parent = gag2
+        end)
+    end
+
+    arg178:Destroy()
+end
+
+P.avatar_changer.revert_to_original = function(arg181)
+    if not arg181 then
+        return
+    end
+
+    pcall(P.avatar.remove_headless, arg181)
+    pcall(P.avatar.remove_korblox, arg181)
+
+    pcall(function()
+        for val178, val179 in ipairs({"RightUpperLeg", "RightLowerLeg", "RightFoot"}) do
+            local kid47 = arg181:FindFirstChild(val179)
+
+            if kid47 then
+                kid47.Transparency = 0
+            end
+        end
+
+        local kid48 = arg181:FindFirstChild("RightUpperLeg")
+
+        if kid48 then
+            kid48 = kid48:FindFirstChild("KorbloxLeg")
+        end
+
+        if kid48 then
+            kid48:Destroy()
+        end
+    end)
+
+    if not P.avatar_changer.original_parts then
+        return
+    end
+
+    for val180, val181 in pairs(P.avatar_changer.original_parts) do
+        local kid49 = arg181:FindFirstChild(val180)
+
+        if kid49 then
+            pcall(function()
+                P.avatar_changer.replace_body_part(kid49, val181:Clone(), true)
+            end)
+        end
+    end
+
+    P.avatar_changer.original_parts = nil
+end
+
+P.avatar_changer.apply_description = function(arg182, arg183, arg184)
+    if P.avatar_changer.applying then
+        return
+    end
+
+    P.avatar_changer.applying = true
+
+    pcall(function()
+        P.avatar_changer.expected_accessories = #arg182:GetAccessories(true)
+    end)
+
+    task.spawn(function()
+        local function fn44()
+            local function fn45()
+                if arg184 then
+                    return false
+                end
+
+                return not P.avatar_changer.enabled
+            end
+
+            local ch12 = lp.Character or lp.CharacterAdded:Wait()
+
+            if fn45() then
+                P.avatar_changer.applying = false
+                return
+            end
+
+            if not ch12 then
+                P.avatar_changer.applying = false
+                return
+            end
+
+            ch12 = lp.Character or ch12
+            local hum2 = ch12:FindFirstChildOfClass("Humanoid") or ch12:WaitForChild("Humanoid", 5)
+
+            if not hum2 then
+                P.avatar_changer.applying = false
+                return
+            end
+
+            if not arg184 then
+                P.avatar_changer.revert_to_original(ch12)
+            end
+
+            P.avatar_changer.clean(ch12)
+
+            if fn45() then
+                P.avatar_changer.applying = false
+                return
+            end
+
+            local temp_model = P.avatar_changer.create_temp_model(arg182, hum2.RigType)
+            local hem2 = false
+
+            if temp_model then
+                hem2 = P.avatar_changer.transfer_appearance(temp_model, ch12, hum2, arg182)
+                temp_model:Destroy()
+            end
+
+            if hem2 then
+                return
+            end
+
+            pcall(function()
+                if hum2.ApplyDescriptionClientServer then
+                    hum2:ApplyDescriptionClientServer(arg182)
+                else
+                    hum2:ApplyDescription(arg182)
+                end
+            end)
+
+            P.avatar_changer.apply_body_scales(hum2, arg182)
+            P.avatar_changer.apply_special_body_parts(ch12, arg182)
+            local bcol3 = ch12:FindFirstChildOfClass("BodyColors")
+
+            if not bcol3 then
+                bcol3 = inst.new("BodyColors")
+                bcol3.Parent = ch12
+            end
+
+            bcol3.HeadColor3 = arg182.HeadColor
+            bcol3.TorsoColor3 = arg182.TorsoColor
+            bcol3.LeftArmColor3 = arg182.LeftArmColor
+            bcol3.RightArmColor3 = arg182.RightArmColor
+            bcol3.LeftLegColor3 = arg182.LeftLegColor
+            bcol3.RightLegColor3 = arg182.RightLegColor
+            P.avatar_changer.apply_accessories(ch12, hum2, nil, arg182)
+        end
+
+        pcall(fn44)
+        P.avatar_changer.applying = false
+    end)
+end
+
+P.avatar_changer.apply = function(arg185)
+    if P.avatar_changer.applying then
+        return
+    end
+
+    P.avatar_changer.attempt_id = (P.avatar_changer.attempt_id or 0) + 1
+    local attempt_id2 = P.avatar_changer.attempt_id
+
+    task.spawn(function()
+        if not P.avatar_changer.enabled or P.avatar_changer.target ~= arg185 or P.avatar_changer.attempt_id ~= attempt_id2 then
+            return
+        end
+
+        local ion2 = fn27(arg185)
+
+        if not ion2 then
+            return
+        end
+
+        if P.avatar_changer.applied_id == ion2 then
+            return
+        end
+
+        local description2 = P.avatar_changer.get_description(ion2)
+
+        if not description2 then
+            return
+        end
+
+        if not P.avatar_changer.enabled or P.avatar_changer.target ~= arg185 or P.avatar_changer.attempt_id ~= attempt_id2 then
+            return
+        end
+
+        P.avatar_changer.applied_id = ion2
+        P.avatar_changer.apply_description(description2, ion2)
+    end)
+end
+
+P.avatar_changer.restore = function()
+    if not P.avatar_changer.original_desc then
+        return
+    end
+
+    P.avatar_changer.applied_id = nil
+    P.avatar_changer.applying = false
+    local ch13 = lp.Character
+
+    if ch13 then
+        P.avatar_changer.revert_to_original(ch13)
+    end
+
+    P.avatar_changer.apply_description(P.avatar_changer.original_desc, lp.UserId, true)
+end
+
+local function fn46(arg186, arg187)
+    P.avatar_changer.applying = false
+    P.avatar_changer.applied_id = nil
+    P.avatar_changer.apply(arg186)
+    local n10 = 0
+
+    while not P.avatar_changer.applying and n10 < 2 do
+        task.wait(0.05)
+        n10 = n10 + 0.05
+    end
+
+    local n11 = 0
+
+    while P.avatar_changer.applying do
+        if not (n11 < (arg187 or 8)) then
+            break
+        end
+
+        task.wait(0.05)
+        n11 = n11 + 0.05
+    end
+end
+
+function P.avatar_changer.reapply_on_spawn(arg188)
+    if not (P.avatar_changer.enabled and P.avatar_changer.target ~= "") then
+        return
+    end
+
+    if not arg188 then
+        return
+    end
+
+    P.avatar_changer.respawn_token = (P.avatar_changer.respawn_token or 0) + 1
+    local token = P.avatar_changer.respawn_token
+
+    task.spawn(function()
+        if not (arg188:FindFirstChildOfClass("Humanoid") or arg188:WaitForChild("Humanoid", 10)) then
+            return
+        end
+
+        arg188:WaitForChild("HumanoidRootPart", 10)
+        local jug2 = false
+
+        pcall(function()
+            jug2 = lp:HasAppearanceLoaded()
+        end)
+
+        if not jug2 then
+            local kat2 = false
+
+            local connect3 = lp.CharacterAppearanceLoaded:Connect(function()
+                kat2 = true
+            end)
+
+            local n12 = 0
+
+            while not kat2 and n12 < 6 do
+                task.wait(0.1)
+                n12 = n12 + 0.1
+
+                pcall(function()
+                    if lp:HasAppearanceLoaded() then
+                        kat2 = true
+                    end
+                end)
+            end
+
+            if connect3 then
+                connect3:Disconnect()
+            end
+        end
+
+        if P.avatar_changer.respawn_token ~= token then
+            return
+        end
+
+        for i4 = 1, 3 do
+            if P.avatar_changer.respawn_token ~= token then
+                return
+            end
+
+            if not (P.avatar_changer.enabled and P.avatar_changer.target ~= "") then
+                return
+            end
+
+            if arg188.Parent == nil then
+                return
+            end
+
+            fn46(P.avatar_changer.target, 8)
+
+            if i4 < 3 then
+                task.wait(1)
+            end
+        end
+    end)
+end
+
+lp.CharacterAdded:Connect(function(arg189)
+    P.avatar_changer.reapply_on_spawn(arg189)
+end)
+
+P.avatar.apply_korblox = function(arg190)
+    local kid50 = arg190:FindFirstChild("RightLeg") or arg190:FindFirstChild("Right Leg")
+
+    if not kid50 then
+        return
+    end
+
+    local kids15 = kid50:GetChildren()
+
+    for val182, val183 in ipairs(kids15) do
+        if val183:IsA("SpecialMesh") or val183:IsA("Mesh") then
+            val183:Destroy()
+        end
+    end
+
+    local mesh2 = inst.new("SpecialMesh")
+    mesh2.MeshId = "rbxassetid://101851696"
+    mesh2.TextureId = "rbxassetid://115727863"
+    mesh2.Scale = Vector3.new(1, 1, 1)
+    mesh2.Parent = kid50
+end
+
+P.avatar.remove_korblox = function(arg191)
+    local kid51 = arg191:FindFirstChild("RightLeg") or arg191:FindFirstChild("Right Leg")
+
+    if not kid51 then
+        return
+    end
+
+    local kids16 = kid51:GetChildren()
+
+    for val184, val185 in ipairs(kids16) do
+        if val185:IsA("SpecialMesh") and val185.MeshId == "rbxassetid://101851696" then
+            val185:Destroy()
+        end
+    end
+end
+
+P.avatar.set_korblox = function(arg192)
+    P.avatar.korblox_enabled = arg192
+
+    if P.avatar.korblox_conn then
+        P.avatar.korblox_conn:Disconnect()
+        P.avatar.korblox_conn = nil
+    end
+
+    local ch14 = lp.Character
+
+    if arg192 then
+        if ch14 then
+            P.avatar.apply_korblox(ch14)
+        end
+
+        local function fn47(arg193)
+            task.wait(0.1)
+
+            if P.avatar.korblox_enabled then
+                P.avatar.apply_korblox(arg193)
+            end
+        end
+
+        P.avatar.korblox_conn = lp.CharacterAdded:Connect(fn47)
+    elseif ch14 then
+        P.avatar.remove_korblox(ch14)
+    end
+end
+
+P.avatar.apply_headless = function(arg194)
+    local kid52 = arg194:FindFirstChild("Head")
+
+    if not kid52 then
+        return
+    end
+
+    kid52.Transparency = 1
+    local cls7 = kid52:FindFirstChildOfClass("Decal")
+
+    if cls7 then
+        cls7:Destroy()
+    end
+end
+
+P.avatar.remove_headless = function(arg195)
+    local kid53 = arg195:FindFirstChild("Head")
+
+    if not kid53 then
+        return
+    end
+
+    kid53.Transparency = 0
+end
+
+P.avatar.set_headless = function(arg196)
+    P.avatar.headless_enabled = arg196
+
+    if P.avatar.headless_conn then
+        P.avatar.headless_conn:Disconnect()
+        P.avatar.headless_conn = nil
+    end
+
+    local ch15 = lp.Character
+
+    if arg196 then
+        if ch15 then
+            P.avatar.apply_headless(ch15)
+        end
+
+        local function fn48(arg197)
+            task.wait(0.1)
+
+            if P.avatar.headless_enabled then
+                P.avatar.apply_headless(arg197)
+            end
+        end
+
+        P.avatar.headless_conn = lp.CharacterAdded:Connect(fn48)
+    else
+        if ch15 then
+            P.avatar.remove_headless(ch15)
+        end
+    end
+end
+
+P.parry.get_divisor_multiplier = function(arg198)
+    return 0.5 + (math.clamp(arg198 or P.config.accuracy, 1, 100) - 1) * 0.010101010101010102
+end
+
+P.parry.get_premium_parry_distance = function(arg199, arg200)
+    return math.clamp(P.cache.get_ping() / 10 / 10, 5, 17) + math.max(arg199 / ((2.4 + math.min(math.max(arg199 - 9.5, 0), 650) * 0.002) * P.parry.get_divisor_multiplier(arg200)), 9.5)
+end
+
+P.parry.mark_attempt = function()
+    local cooldown2 = P.parry_cooldown
+    cooldown2.pending_id = cooldown2.pending_id + 1
+    local pending_id2 = cooldown2.pending_id
+
+    task.delay(cooldown2.success_window, function()
+        if P.parry_cooldown.pending_id == pending_id2 then
+            P.parry_cooldown.failed_at = tk()
+        end
+    end)
+end
+
+P.parry.hook_cooldown_tracker = function(arg201)
+    if P.parry_cooldown.conn then
+        P.parry_cooldown.conn:Disconnect()
+        P.parry_cooldown.conn = nil
+    end
+
+    if not arg201 then
+        return
+    end
+
+    P.parry_cooldown.last_parrying = arg201:GetAttribute("Parrying")
+    P.parry_cooldown.failed_at = 0
+
+    P.parry_cooldown.conn = arg201:GetAttributeChangedSignal("Parrying"):Connect(function()
+        local attr24 = arg201:GetAttribute("Parrying")
+
+        if P.parry_cooldown.last_parrying == true and attr24 == false then
+            P.parry_cooldown.failed_at = tk()
+        elseif attr24 == nil or attr24 == true then
+            P.parry_cooldown.failed_at = 0
+        end
+
+        P.parry_cooldown.last_parrying = attr24
+    end)
+end
+
+if lp.Character then
+    pc(P.parry.hook_cooldown_tracker, lp.Character)
+end
+
+lp.CharacterAdded:Connect(function(arg202)
+    pcall(P.parry.hook_cooldown_tracker, arg202)
+end)
+
+P.parry_visualizer.get_parry_radius = function()
+    local all2 = P.ball.get_all()
+    local n13 = 0
+
+    for val186, val187 in ipairs(all2) do
+        n13 = math.max(n13, P.ball.get_velocity(val187.part, val187.model).Magnitude)
+    end
+
+    return math.clamp(P.parry.get_premium_parry_distance(n13, P.config.accuracy), 4, 60)
+end
+
+P.parry_visualizer.rebuild_sphere = function()
+    local visualizer2 = P.parry_visualizer
+
+    if visualizer2.sphere and visualizer2.sphere.Parent then
+        visualizer2.sphere:Destroy()
+    end
+
+    visualizer2.sphere = nil
+    visualizer2.weld = nil
+    local root = P.player.get_root()
+
+    if not root then
+        return
+    end
+
+    local prt6 = inst.new("Part")
+    prt6.Name = "ParryVisualizerSphere"
+    prt6.Shape = en.PartType.Ball
+    prt6.Material = en.Material.ForceField
+    prt6.Color = visualizer2.color
+    prt6.Size = Vector3.new(8, 8, 8)
+    prt6.Anchored = true
+    prt6.CanCollide = false
+    prt6.CanTouch = false
+    prt6.CanQuery = false
+    prt6.CastShadow = false
+    prt6.Transparency = 0.35
+    prt6.CFrame = root.CFrame
+    prt6.Parent = wsp
+    visualizer2.sphere = prt6
+end
+
+P.parry_hits.spawn = function(arg203)
+    local parry_hits2 = P.parry_hits
+    local color2 = parry_hits2.color
+
+    while #parry_hits2.parts >= 20 do
+        local remove2 = table.remove(parry_hits2.parts, 1)
+
+        if remove2 and remove2.Parent then
+            remove2:Destroy()
+        end
+    end
+
+    local t27 = {}
+
+    for i5 = 1, 12 do
+        local lap2 = i5 <= 4
+        local mat2 = lap2 and math.random(70, 110) / 100 or math.random(25, 55) / 100
+        local prt7 = inst.new("Part")
+        prt7.Size = Vector3.new(0.1, mat2, 0.1)
+        prt7.Anchored = true
+        prt7.CanCollide = false
+        prt7.CanTouch = false
+        prt7.CanQuery = false
+        prt7.CastShadow = false
+        prt7.Material = en.Material.Neon
+        prt7.Color = color2
+        prt7.CFrame = cf.new(arg203)
+        prt7.Parent = wsp
+
+        if i5 == 1 then
+            local lamp = inst.new("PointLight")
+            lamp.Brightness = 5
+            lamp.Range = 12
+            lamp.Color = color2
+            lamp.Parent = prt7
+        end
+
+        i5 = i5 / 12 * 3.141592653589793 * 2 + math.random() * 0.5
+        local net2 = lap2 and 3.141592653589793 * 0.35 + math.random() * 3.141592653589793 * 0.3 or math.random() * 3.141592653589793
+
+        table.insert(t27, {
+            part = prt7,
+            dir = Vector3.new(math.sin(net2) * math.cos(i5), math.abs(math.cos(net2)) * 0.5 + math.random() * 0.6, math.sin(net2) * math.sin(i5)).Unit,
+            speed = lap2 and math.random(6, 10) or math.random(3, 6),
+            init_len = mat2,
+            rx = (math.random() - 0.5) * 0.25,
+            ry = (math.random() - 0.5) * 0.25,
+            rz = (math.random() - 0.5) * 0.25
+        })
+
+        table.insert(parry_hits2.parts, prt7)
+    end
+
+    task.spawn(function()
+        local n14 = 0
+
+        while n14 < 1.4 do
+            n14 = n14 + hb:Wait()
+            local oat2 = n14 / 1.4
+
+            for val188, val189 in ipairs(t27) do
+                if val189.part.Parent then
+                    val189.part.CFrame = cf.new(arg203 + val189.dir * (val189.speed * (1 - (1 - oat2) ^ 3) * 3.5)) * cf.Angles(val189.rx * n14 * 6, val189.ry * n14 * 6, val189.rz * n14 * 6)
+                    local max3 = math.max(1 - oat2, 0)
+                    val189.part.Size = Vector3.new(0.1, val189.init_len * max3, 0.1)
+                    val189.part.Transparency = math.clamp((oat2 - 0.3) / 0.7, 0, 1)
+                    local lamp2 = val189.part:FindFirstChildOfClass("PointLight")
+
+                    if lamp2 then
+                        lamp2.Brightness = 5 * (1 - oat2) ^ 2
+                    end
+                end
+            end
+        end
+
+        for val190, val191 in ipairs(t27) do
+            if val191.part.Parent then
+                local find4 = table.find(parry_hits2.parts, val191.part)
+
+                if find4 then
+                    table.remove(parry_hits2.parts, find4)
+                end
+
+                val191.part:Destroy()
+            end
+        end
+    end)
+end
+
+P.parry_hits.start = function()
+    P.parry_hits.active = true
+end
+
+P.parry_hits.stop = function()
+    P.parry_hits.active = false
+
+    for val192, val193 in ipairs(P.parry_hits.parts) do
+        if val193 and val193.Parent then
+            val193:Destroy()
+        end
+    end
+
+    P.parry_hits.parts = {}
+end
+
+P.parry_hits.update_color = function(arg204)
+    P.parry_hits.color = arg204
+end
+
+P.parry_visualizer.start = function()
+    if P.parry_visualizer.active then
+        return
+    end
+
+    P.parry_visualizer.active = true
+    P.parry_visualizer.rebuild_sphere()
+
+    P.parry_visualizer.char_conn = lp.CharacterAdded:Connect(function()
+        task.wait(0.5)
+
+        if P.parry_visualizer.active then
+            P.parry_visualizer.rebuild_sphere()
+        end
+    end)
+
+    local function fn49()
+        local sp = P.parry_visualizer.sphere
+
+        if not sp or not sp.Parent then
+            return
+        end
+
+        local root = P.player.get_root()
+
+        if root then
+            sp.CFrame = root.CFrame
+        end
+    end
+
+    P.parry_visualizer.connection = hb:Connect(fn49)
+end
+
+P.parry_visualizer.stop = function()
+    if not P.parry_visualizer.active then
+        return
+    end
+
+    P.parry_visualizer.active = false
+
+    if P.parry_visualizer.connection then
+        P.parry_visualizer.connection:Disconnect()
+        P.parry_visualizer.connection = nil
+    end
+
+    if P.parry_visualizer.char_conn then
+        P.parry_visualizer.char_conn:Disconnect()
+        P.parry_visualizer.char_conn = nil
+    end
+
+    if P.parry_visualizer.sphere and P.parry_visualizer.sphere.Parent then
+        P.parry_visualizer.sphere:Destroy()
+    end
+
+    P.parry_visualizer.sphere = nil
+    P.parry_visualizer.weld = nil
+
+    for val194, val195 in ipairs(P.parry_visualizer.parts) do
+        if val195 and val195.Parent then
+            val195:Destroy()
+        end
+    end
+
+    P.parry_visualizer.parts = {}
+end
+
+P.parry_visualizer.update_color = function(arg205)
+    P.parry_visualizer.color = arg205
+
+    if P.parry_visualizer.sphere and P.parry_visualizer.sphere.Parent then
+        P.parry_visualizer.sphere.Color = arg205
+    end
+end
+
+local function fn50(arg206)
+    if not arg206 or arg206 == "" then
+        return nil
+    end
+
+    local function fn51()
+        return require(rs.Shared.Abilities[arg206])
+    end
+
+    local pup2, rag2 = pcall(fn51)
+    return pup2 and rag2 or nil
+end
+
+local function uses(arg207, arg208)
+    if not arg208 or arg208 == "" then
+        return 0
+    end
+
+    local function fn52()
+        return arg207.Upgrades[arg208].Value
+    end
+
+    local set3, tin2 = pcall(fn52)
+    return set3 and tin2 or 0
+end
+
+local function fn53(arg209)
+    return 2 + uses(arg209, "Dribble")
+end
+
+local function fn54(arg210, arg211)
+    if not arg210 or arg210 == "" then
+        return nil
+    end
+
+    return arg210 .. " V" .. uses(arg211, arg210) + 1
+end
+
+local function fn55()
+    local function fn56()
+        return tonumber(lp.PlayerGui.Hotbar.Ability.ready.counts.Text)
+    end
+
+    local pc2 = pcall
+    local urn22
+    pc2, urn22 = pc2(fn56)
+    pc2 = pc2 and urn22 or nil
+    return pc2
+end
+
+P.ability_esp.new_cd_drawing = function()
+    local txt2 = Drawing.new("Text")
+    txt2.Visible = false
+    txt2.Center = true
+    txt2.Outline = true
+    txt2.OutlineColor = cl3.new(0, 0, 0)
+    txt2.Color = P.ability_esp.cd_color
+    txt2.Size = P.ability_esp.cd_size
+    txt2.Font = Drawing.Fonts.UI
+    return txt2
+end
+
+P.ability_esp.hide_all = function(arg212)
+    arg212.nameDraw.Visible = false
+    arg212.abilityDraw.Visible = false
+    arg212.timerDraw.Visible = false
+    arg212.cdDraw.Visible = false
+    arg212.usesDraw.Visible = false
+
+    for val196, val197 in ipairs(arg212.cdDrawings) do
+        val197.Visible = false
+    end
+
+    if arg212.billboard then
+        arg212.billboard.Enabled = false
+        arg212.billboard.Adornee = nil
+    end
+end
+
+P.ability_esp.get_billboard = function(arg213, arg214)
+    if not arg213.billboard or not arg213.billboard.Parent then
+        if not P.ability_esp._holder or not P.ability_esp._holder.Parent then
+            P.ability_esp._holder = mkaux()
+        end
+
+        local bbg = inst.new("BillboardGui")
+        bbg.AlwaysOnTop = true
+        bbg.Enabled = false
+        bbg.Parent = P.ability_esp._holder
+        local img6 = inst.new("ImageLabel")
+        img6.Size = ud2.new(1, 0, 1, 0)
+        img6.BackgroundTransparency = 1
+        img6.Image = ""
+        img6.Parent = bbg
+        local lbl29 = inst.new("TextLabel")
+        lbl29.BackgroundTransparency = 1
+        lbl29.TextStrokeTransparency = 0
+        lbl29.TextStrokeColor3 = cl3.new(0, 0, 0)
+        lbl29.Font = en.Font.GothamBold
+        lbl29.Parent = bbg
+        arg213.billboard = bbg
+        arg213.billboardImg = img6
+        arg213.billboardLvl = lbl29
+    end
+
+    local ability_esp2 = P.ability_esp
+    local vat2 = ability_esp2.ability_size * 3
+    arg213.billboard.Size = ud2.new(0, vat2, 0, vat2)
+    arg213.billboard.StudsOffset = Vector3.new(0, 4, 0)
+
+    if arg213.billboardLvl then
+        local ability_size2 = ability_esp2.ability_size
+        arg213.billboardLvl.Size = ud2.new(0, ability_size2 * 2, 0, ability_size2 + 4)
+        arg213.billboardLvl.Position = ud2.new(1, -ability_size2, 0, 0)
+        arg213.billboardLvl.TextSize = ability_size2
+        arg213.billboardLvl.TextColor3 = ability_esp2.ability_color
+    end
+
+    arg213.billboard.Adornee = arg214
+    return arg213.billboard, arg213.billboardImg, arg213.billboardLvl
+end
+
+P.ability_esp.create_drawing = function(arg215)
+    if P.ability_esp.drawings[arg215] then
+        P.ability_esp.remove_drawing(arg215)
+    end
+
+    local ability_esp3 = P.ability_esp
+
+    local function fn57(arg216, arg217)
+        local txt3 = Drawing.new("Text")
+        txt3.Visible = false
+        txt3.Center = true
+        txt3.Outline = true
+        txt3.OutlineColor = cl3.new(0, 0, 0)
+        txt3.Color = arg217
+        txt3.Size = arg216
+        txt3.Font = Drawing.Fonts.UI
+        return txt3
+    end
+
+    ability_esp3.drawings[arg215] = {
+        nameDraw = fn57(ability_esp3.name_size, ability_esp3.name_color),
+        abilityDraw = fn57(ability_esp3.ability_size, ability_esp3.ability_color),
+        timerDraw = fn57(ability_esp3.active_size, ability_esp3.active_color),
+        cdDraw = fn57(ability_esp3.cd_size, ability_esp3.cd_color),
+        usesDraw = fn57(ability_esp3.active_size, cl3.fromRGB(100, 255, 150)),
+        cdQueue = {},
+        cdDrawings = {},
+        curUses = nil,
+        maxUses = nil,
+        activeStart = nil,
+        activeDur = nil,
+        cdStart = nil,
+        cdLen = nil,
+        abilityName = nil,
+        abilityLine = nil,
+        iconId = nil,
+        billboard = nil,
+        billboardImg = nil,
+        billboardLvl = nil,
+        charConns = {}
+    }
+end
+
+P.ability_esp.remove_drawing = function(arg218)
+    local won2 = P.ability_esp.drawings[arg218]
+
+    if not won2 then
+        return
+    end
+
+    won2.nameDraw:Remove()
+    won2.abilityDraw:Remove()
+    won2.timerDraw:Remove()
+    won2.cdDraw:Remove()
+    won2.usesDraw:Remove()
+
+    for val198, val199 in ipairs(won2.cdDrawings) do
+        val199:Remove()
+    end
+
+    if won2.billboard then
+        won2.billboard:Destroy()
+    end
+
+    local charConns2 = won2.charConns or {}
+
+    for val200, val201 in ipairs(charConns2) do
+        pcall(function()
+            val201:Disconnect()
+        end)
+    end
+
+    P.ability_esp.drawings[arg218] = nil
+end
+
+P.ability_esp.begin_cd = function(arg219, arg220)
+    local yam22 = fn50(arg219.abilityName)
+
+    if not yam22 then
+        return
+    end
+
+    local zig2 = uses(arg220, arg219.abilityName)
+    local max4 = math.max(0, yam22.cooldown - (yam22.cooldownReductionPerUpgrade or 0) * zig2)
+
+    if max4 > 0 then
+        arg219.cdStart = tk()
+        arg219.cdLen = max4
+    end
+end
+
+P.ability_esp.track_player = function(arg221)
+    P.ability_esp.create_drawing(arg221)
+
+    local function fn58(arg222)
+        local tmp3 = P.ability_esp.drawings[arg221]
+
+        if not tmp3 then
+            return
+        end
+
+        for val202, val203 in ipairs(tmp3.charConns) do
+            pcall(function()
+                val203:Disconnect()
+            end)
+        end
+
+        table.clear(tmp3.charConns)
+        tmp3.activeStart = nil
+        tmp3.activeDur = nil
+        tmp3.cdStart = nil
+        tmp3.cdLen = nil
+        tmp3.cdQueue = {}
+        tmp3.curUses = nil
+        tmp3.maxUses = nil
+
+        for val204, val205 in ipairs(tmp3.cdDrawings) do
+            val205.Visible = false
+        end
+
+        if tmp3.billboard then
+            tmp3.billboard.Adornee = nil
+            tmp3.billboard.Enabled = false
+        end
+
+        local attr25 = arg221:GetAttribute("CurrentlyEquippedAbility")
+
+        if attr25 and attr25 ~= "" then
+            tmp3.abilityName = attr25
+            tmp3.abilityLine = fn54(attr25, arg221)
+            local itm3 = fn50(attr25)
+
+            if itm3 then
+                itm3 = itm3.iconId
+            end
+
+            tmp3.iconId = itm3 or nil
+
+            if attr25 == "Dribble" then
+                tmp3.maxUses = fn53(arg221)
+                tmp3.curUses = tmp3.maxUses
+            end
+        end
+
+        table.insert(tmp3.charConns, arg222.AttributeChanged:Connect(function(arg223)
+            local thg3 = P.ability_esp.drawings[arg221]
+
+            if not thg3 then
+                return
+            end
+
+            if arg223 == "DribbleDebounce" and arg222:GetAttribute("DribbleDebounce") == true and thg3.abilityName == "Dribble" then
+                local nit3 = fn50("Dribble")
+
+                if nit3 then
+                    table.insert(thg3.cdQueue, {t = tk(), dur = nit3.cooldown})
+                end
+
+                if thg3.curUses ~= nil then
+                    thg3.curUses = math.max(0, thg3.curUses - 1)
+                end
+            end
+
+            if arg223 == "AbilityUpgrade" and arg222:GetAttribute("AbilityUpgrade") ~= nil and thg3.abilityName ~= "Dribble" then
+                thg3.abilityLine = fn54(thg3.abilityName, arg221)
+                P.ability_esp.begin_cd(thg3, arg221)
+            end
+
+            if arg223 ~= "AbilityActive" then
+                return
+            end
+
+            local attr26 = arg222:GetAttribute("AbilityActive")
+            local attr27 = arg221:GetAttribute("AbilityDuration")
+
+            if attr26 == true and attr27 and attr27 > 0 then
+                thg3.activeStart = tk()
+                thg3.activeDur = attr27
+            else
+                thg3.activeStart = nil
+                thg3.activeDur = nil
+            end
+        end))
+
+        table.insert(tmp3.charConns, arg221.AttributeChanged:Connect(function(arg224)
+            local bit4 = P.ability_esp.drawings[arg221]
+
+            if not bit4 then
+                return
+            end
+
+            if arg224 == "CurrentlyEquippedAbility" then
+                local attr28 = arg221:GetAttribute("CurrentlyEquippedAbility")
+                bit4.abilityName = attr28
+                bit4.abilityLine = fn54(attr28, arg221)
+                bit4.cdStart = nil
+                bit4.cdLen = nil
+                bit4.cdQueue = {}
+
+                for val206, val207 in ipairs(bit4.cdDrawings) do
+                    val207.Visible = false
+                end
+
+                local hat4 = fn50(attr28)
+
+                if hat4 then
+                    hat4 = hat4.iconId
+                end
+
+                bit4.iconId = hat4 or nil
+
+                if attr28 == "Dribble" then
+                    bit4.maxUses = fn53(arg221)
+                    bit4.curUses = bit4.maxUses
+                else
+                    bit4.maxUses = nil
+                    bit4.curUses = nil
+                end
+            end
+
+            if arg224 ~= "AbilityDuration" then
+                return
+            end
+
+            local attr29 = arg222:GetAttribute("AbilityActive")
+            local attr210 = arg221:GetAttribute("AbilityDuration")
+
+            if attr29 == true and attr210 and attr210 > 0 then
+                bit4.activeStart = tk()
+                bit4.activeDur = attr210
+            end
+        end))
+    end
+
+    if arg221.Character then
+        fn58(arg221.Character)
+    end
+
+    arg221.CharacterAdded:Connect(function(arg225)
+        fn58(arg225)
+    end)
+
+    arg221.CharacterRemoving:Connect(function()
+        local fob3 = P.ability_esp.drawings[arg221]
+
+        if not fob3 then
+            return
+        end
+
+        P.ability_esp.hide_all(fob3)
+        fob3.activeStart = nil
+        fob3.activeDur = nil
+        fob3.cdStart = nil
+        fob3.cdLen = nil
+        fob3.cdQueue = {}
+        fob3.curUses = nil
+        fob3.maxUses = nil
+    end)
+end
+
+P.ability_esp.update = function()
+    local jig3 = tk()
+    local ability_esp4 = P.ability_esp
+
+    for val208, val209 in prs(ability_esp4.drawings) do
+        if not val208 or not val208.Parent then
+            ability_esp4.remove_drawing(val208)
+            continue
+        end
+
+        local ch16 = val208.Character
+        local lug3 = ch16 and (ch16:FindFirstChild("HumanoidRootPart"))
+
+        if not lug3 then
+            ability_esp4.hide_all(val209)
+            continue
+        end
+
+        local vpt, vpt2 = cam:WorldToViewportPoint(lug3.Position + v3.new(0, 3.5, 0))
+
+        if not vpt2 or vpt.Z < 0 then
+            ability_esp4.hide_all(val209)
+            continue
+        end
+
+        ch16, vpt2 = Vector2.new(vpt.X, vpt.Y), 0
+
+        if ability_esp4.show_name then
+            vpt = ability_esp4.name_mode == "Username" and val208.Name or val208.DisplayName
+            val209.nameDraw.Position = ch16 + Vector2.new(0, -(ability_esp4.name_size - 9))
+            val209.nameDraw.Text = vpt
+            val209.nameDraw.Size = ability_esp4.name_size
+            val209.nameDraw.Color = ability_esp4.name_color
+            val209.nameDraw.Visible = true
+        else
+            val209.nameDraw.Visible = false
+        end
+
+        if ability_esp4.mode == "Image" then
+            val209.abilityDraw.Visible = false
+
+            if val209.iconId and val209.iconId ~= "" and val209.iconId ~= "rbxassetid://0" then
+                local billboard2, billboard3, billboard4 = ability_esp4.get_billboard(val209, lug3)
+                billboard3.Image = val209.iconId
+
+                if billboard4 then
+                    billboard4.Text = "V" .. uses(val208, val209.abilityName) + 1
+                end
+
+                billboard2.Enabled = true
+            elseif val209.billboard then
+                val209.billboard.Enabled = false
+            end
+
+            local mug3, nip3, odd3 = ability_esp4.ability_size * 3, cam:WorldToViewportPoint(lug3.Position + v3.new(0, 3.5 + (val209.billboard and val209.billboard.StudsOffset.Y or 4), 0))
+
+            if odd3 and nip3.Z > 0 then
+                cam:WorldToViewportPoint(lug3.Position + v3.new(0, 3.5 + (val209.billboard and val209.billboard.StudsOffset.Y or 4), 0))
+                vpt2 += mug3 * (mug3 / mt.max(1, cam.ViewportSize.Y / 10)) * 0.5 + 4
+            else
+                vpt2 += ability_esp4.ability_size + 4
+            end
+        else
+            if val209.billboard then
+                val209.billboard.Enabled = false
+            end
+
+            if val209.abilityLine then
+                val209.abilityDraw.Position = ch16 + Vector2.new(0, vpt2)
+                val209.abilityDraw.Text = val209.abilityLine
+                val209.abilityDraw.Size = ability_esp4.ability_size
+                val209.abilityDraw.Color = ability_esp4.ability_color
+                val209.abilityDraw.Visible = true
+                vpt2 += ability_esp4.ability_size + 4
+            else
+                val209.abilityDraw.Visible = false
+            end
+        end
+
+        if val209.abilityName == "Dribble" then
+            val209.cdDraw.Visible = false
+            local maxUses2 = val209.maxUses or (fn53(val208))
+            vpt = val208 == lp and (fn55()) or val209.curUses
+
+            if ability_esp4.show_cd and vpt ~= nil then
+                local peg3 = vpt / mt.max(1, maxUses2)
+                val209.usesDraw.Color = cl3.fromRGB(mt.floor(255 * (1 - peg3)), mt.floor(255 * peg3), 50)
+                val209.usesDraw.Size = ability_esp4.active_size
+                val209.usesDraw.Position = ch16 + Vector2.new(0, vpt2)
+                val209.usesDraw.Text = "uses  " .. vpt
+                val209.usesDraw.Visible = true
+                vpt2 += ability_esp4.active_size + 2
+            else
+                val209.usesDraw.Visible = false
+            end
+
+            local n15 = 1
+
+            while n15 <= #val209.cdQueue do
+                lug3 = val209.cdQueue[n15]
+
+                if jig3 - lug3.t >= lug3.dur then
+                    if val208 ~= lp and val209.curUses ~= nil then
+                        val209.curUses = mt.min(maxUses2, val209.curUses + 1)
+                    end
+
+                    tb.remove(val209.cdQueue, n15)
+                else
+                    n15 += 1
+                end
+            end
+
+            while #val209.cdDrawings < #val209.cdQueue do
+                tb.insert(val209.cdDrawings, ability_esp4.new_cd_drawing())
+            end
+
+            if ability_esp4.show_cd then
+                for val210, val211 in ips(val209.cdQueue) do
+                    n15, maxUses2 = mt.max(0, val211.dur - (jig3 - val211.t)), val209.cdDrawings[val210]
+                    maxUses2.Size = ability_esp4.cd_size
+                    maxUses2.Color = ability_esp4.cd_color
+                    maxUses2.Position = ch16 + Vector2.new(0, vpt2)
+                    maxUses2.Text = str.format("cd %d  %.1fs", val210, n15)
+                    maxUses2.Visible = true
+                    vpt2 += ability_esp4.cd_size + 2
+                end
+
+                for i6 = #val209.cdQueue + 1, #val209.cdDrawings do
+                    val209.cdDrawings[i6].Visible = false
+                end
+            else
+                for val212, val213 in ips(val209.cdDrawings) do
+                    val213.Visible = false
+                end
+            end
+        else
+            val209.usesDraw.Visible = false
+
+            for val214, val215 in ips(val209.cdDrawings) do
+                val215.Visible = false
+            end
+
+            if ability_esp4.show_cd and val209.cdStart and val209.cdLen then
+                local max5 = mt.max(0, val209.cdLen - (jig3 - val209.cdStart))
+
+                if max5 > 0 then
+                    val209.cdDraw.Size = ability_esp4.cd_size
+                    val209.cdDraw.Color = ability_esp4.cd_color
+                    val209.cdDraw.Position = ch16 + Vector2.new(0, vpt2)
+                    val209.cdDraw.Text = str.format("cd  %.1fs", max5)
+                    val209.cdDraw.Visible = true
+                    vpt2 += ability_esp4.cd_size + 2
+                else
+                    val209.cdDraw.Visible = false
+                    val209.cdStart = nil
+                    val209.cdLen = nil
+                end
+            else
+                val209.cdDraw.Visible = false
+
+                if val209.cdStart and val209.cdLen then
+                    if val209.cdLen - (jig3 - val209.cdStart) <= 0 then
+                        val209.cdStart = nil
+                        val209.cdLen = nil
+                    end
+                end
+            end
+        end
+
+        if ability_esp4.show_timer and val209.activeStart and val209.activeDur then
+            val208 = mt.max(0, val209.activeDur - (jig3 - val209.activeStart))
+
+            if val208 > 0 then
+                val209.timerDraw.Size = ability_esp4.active_size
+                val209.timerDraw.Color = ability_esp4.active_color
+                val209.timerDraw.Position = ch16 + Vector2.new(0, vpt2)
+                val209.timerDraw.Text = str.format("active  %.1fs", val208)
+                val209.timerDraw.Visible = true
+            else
+                val209.timerDraw.Visible = false
+                val209.activeStart = nil
+                val209.activeDur = nil
+            end
+        else
+            val209.timerDraw.Visible = false
+
+            if val209.activeStart and val209.activeDur then
+                if val209.activeDur - (jig3 - val209.activeStart) <= 0 then
+                    val209.activeStart = nil
+                    val209.activeDur = nil
+                end
+            end
+        end
+    end
+end
+
+P.ability_esp.start = function()
+    if P.ability_esp.active then
+        return
+    end
+
+    P.ability_esp.active = true
+
+    pcall(function()
+        require(rs.Shared.Abilities)
+    end)
+
+    local players = plr:GetPlayers()
+
+    for val216, val217 in ipairs(players) do
+        if val217 ~= lp then
+            P.ability_esp.track_player(val217)
+        end
+    end
+
+    plr.PlayerAdded:Connect(function(arg226)
+        if P.ability_esp.active and arg226 ~= lp then
+            P.ability_esp.track_player(arg226)
+        end
+    end)
+
+    plr.PlayerRemoving:Connect(function(arg227)
+        P.ability_esp.remove_drawing(arg227)
+    end)
+
+    P.ability_esp.connection = rstep:Connect(P.ability_esp.update)
+end
+
+P.ability_esp.stop = function()
+    if not P.ability_esp.active then
+        return
+    end
+
+    P.ability_esp.active = false
+
+    if P.ability_esp.connection then
+        P.ability_esp.connection:Disconnect()
+        P.ability_esp.connection = nil
+    end
+
+    for val218, val219 in pairs(P.ability_esp.drawings) do
+        P.ability_esp.remove_drawing(val218)
+    end
+end
+
+P.ball.is_curved = function(arg228, arg229, arg230, arg231, arg232, arg233)
+    if not arg230 then
+        local ch17 = lp.Character
+        local pod3 = ch17 and ch17.PrimaryPart
+
+        if not pod3 then
+            return false, false
+        end
+
+        arg230 = pod3.Position
+    end
+
+    if not arg231 then
+        local kid54 = arg228:FindFirstChild("zoomies")
+
+        if not kid54 then
+            return false, false
+        end
+
+        arg231 = kid54.VectorVelocity
+        arg232 = arg231.Magnitude
+    end
+
+    arg232 = arg232 or arg231.Magnitude
+
+    if arg232 < 1 then
+        return false, false
+    end
+
+    local pos2 = arg228.Position
+    arg233 = arg233 or (arg230 - pos2).Magnitude
+    local n16 = 1 / arg232
+    local sod3, tap3 = arg231 * n16, (arg230 - pos2).Unit
+    arg230 = tap3:Dot(sod3)
+    local wag3 = arg230 < 0
+    pos2 = P.cache.get_ping()
+    local kit3 = pos2 * 0.001
+    local min3, min4, min5, min6, min7 = mt.min(arg232 * 0.01, 40), arg230 > 0 and 40 * arg230 or 0, arg230 - tap3:Dot((sod3 - arg231).Unit), 0.5 - kit3, (arg233 * n16 - kit3) / 1.5
+    local n17, n18 = 15 - mt.min(arg233 * 0.001, 15) + min4 + min3, P.curve_detection
+    min4 = n18.per_ball[arg228]
+
+    if not min4 then
+        min4 = {vel = {}, last_warping = 0, lerp = 0}
+        n18.per_ball[arg228] = min4
+    end
+
+    arg228 = min4.vel
+    min3 = #arg228
+
+    if min3 >= 4 then
+        arg228[1], arg228[2], arg228[3] = arg228[2], arg228[3], arg228[4]
+        arg228[4] = arg231
+        min3 = 4
+    else
+        min3 += 1
+        arg228[min3] = arg231
+    end
+
+    if arg233 < (if arg232 > 100 and arg233 * n16 - kit3 > pos2 * 0.1 then (mt.max(n17 - 15, 15)) else n17) then
+        return false, wag3
+    end
+
+    arg232 = tk()
+
+    if arg232 - (n18.curve_time or 0) < min7 then
+        return true, wag3
+    end
+
+    if min5 < min6 then
+        return true, wag3
+    end
+
+    min5 = mt.rad(mt.asin(mt.clamp(arg230, -1, 1)))
+    min4.lerp = min4.lerp + (min5 - min4.lerp) * 0.8
+
+    if min4.lerp < 0.018 then
+        min4.last_warping = arg232
+    end
+
+    if arg232 - min4.last_warping < min7 then
+        return true, wag3
+    end
+
+    if min3 == 4 then
+        if arg230 - tap3:Dot((sod3 - arg228[1].Unit).Unit) < min6 then
+            return true, wag3
+        end
+
+        if arg230 - tap3:Dot((sod3 - arg228[2].Unit).Unit) < min6 then
+            return true, wag3
+        end
+    end
+
+    return arg230 < min6, wag3
+end
+
+local jot3
+
+local function fn59()
+    if jot3 then
+        return true
+    end
+
+    local kid55 = rs:FindFirstChild("Controllers")
+
+    if not kid55 then
+        return false
+    end
+
+    local kids17 = kid55:GetChildren()
+
+    for val220, val221 in ipairs(kids17) do
+        if val221.Name:find("SwordsController", 1, true) == 1 then
+            local kid56 = val221:FindFirstChild("PRY")
+
+            if kid56 then
+                local dab3, gob3 = pcall(require, kid56)
+
+                if dab3 and type(gob3) == "function" then
+                    jot3 = require(rs.Packages.Signal).new()
+                    jot3:Connect(gob3)
+                    return true
+                end
+            end
+        end
+    end
+
+    return false
+end
+
+P.parry.fire_remote = function()
+    if place0 then
+        return false
+    end
+
+    if not fn59() then
+        return false
+    end
+
+    local fire = jot3.Fire
+    local hop3 = jot3
+    local cframe2 = P.curve.get_cframe()
+    local event_data = P.parry.get_event_data()
+    local mouse_vec = P.parry.get_mouse_vec()
+    return pcall(fire, hop3, 0.5, cframe2, event_data, mouse_vec, false)
+end
+
+lp.CharacterAdded:Connect(function()
+    P.state.grab_track = nil
+end)
+
+P.animation.get_sword_name = function()
+    local ch18 = lp.Character
+
+    if not ch18 then
+        return nil
+    end
+
+    local enabled2 = P.sword_changer.enabled
+
+    if enabled2 then
+        enabled2 = P.sword_changer.animations ~= "" and P.sword_changer.animations or ch18:GetAttribute("CurrentlyEquippedSword")
+    elseif not enabled2 then
+        enabled2 = ch18:GetAttribute("CurrentlyEquippedSword")
+    end
+
+    if not enabled2 then
+        enabled2 = lp:GetAttribute("CurrentlyEquippedSword")
+    end
+
+    return enabled2
+end
+
+P.animation.get_anim_folder = function()
+    local sword_name = P.animation.get_sword_name()
+    local collection = rs.Shared.SwordAPI.Collection
+
+    if sword_name then
+        local function fn60()
+            return rs.Shared.ReplicatedInstances.Swords.GetSword:Invoke(sword_name)
+        end
+
+        local kip3, lop3 = pcall(fn60)
+        local mob3 = lop3
+
+        if kip3 and mob3 and mob3.AnimationType then
+            local kid57 = collection:FindFirstChild(mob3.AnimationType)
+
+            if kid57 then
+                return kid57
+            end
+        end
+    end
+
+    return collection.Default
+end
+
+P.animation.stop_tracks_with_attrs = function(arg234, arg235)
+    if not arg234 then
+        return
+    end
+
+    local tracks = arg234:GetPlayingAnimationTracks()
+
+    for val222, val223 in ipairs(tracks) do
+        for val224, val225 in ipairs(arg235) do
+            if val223:GetAttribute(val225) then
+                pcall(function()
+                    val223:Stop(val223:GetAttribute("StopFadeTime"))
+                end)
+
+                break
+            end
+        end
+    end
+end
+
+P.animation.play_grab = function()
+    local ch19 = lp.Character
+
+    if not ch19 then
+        return
+    end
+
+    local hum3 = ch19:FindFirstChildOfClass("Humanoid")
+    local nag3 = hum3 and hum3:FindFirstChildOfClass("Animator")
+
+    if not nag3 then
+        return
+    end
+
+    if ch19:GetAttribute("InOverdriveMech") then
+        return
+    end
+
+    P.animation.stop_tracks_with_attrs(nag3, {"SuccessParry", "Parry", "GrabParry"})
+    local anim_folder = P.animation.get_anim_folder()
+
+    if not anim_folder then
+        return
+    end
+
+    local kid58 = anim_folder:FindFirstChild("GrabParry") or anim_folder:FindFirstChild("Grab") or anim_folder:FindFirstChild("Parry")
+
+    if not kid58 then
+        return
+    end
+
+    local loadanimation = nag3:LoadAnimation(kid58)
+    loadanimation.Priority = en.AnimationPriority.Action4
+    loadanimation:Play(loadanimation:GetAttribute("PlayFadeTime"), loadanimation:GetAttribute("PlayWeight"), loadanimation:GetAttribute("PlaySpeed"))
+    local attr211 = loadanimation:GetAttribute("PlaySpeed") or 1
+    ch19:SetAttribute("ParryTime", math.max(ch19:GetAttribute("ParryTime") or 0, loadanimation.Length == 0 and 1 or (loadanimation.Length - loadanimation.TimePosition) * attr211))
+    P.state.grab_track = loadanimation
+end
+
+P.animation.stop_grab = function()
+    local grab_track2 = P.state.grab_track
+
+    if grab_track2 then
+        pcall(function()
+            grab_track2:Stop(grab_track2:GetAttribute("StopFadeTime"))
+        end)
+    end
+
+    P.state.grab_track = nil
+    local ch20 = lp.Character
+
+    if ch20 then
+        ch20 = ch20:FindFirstChildOfClass("Humanoid")
+    end
+
+    local pig3 = ch20 and ch20:FindFirstChildOfClass("Animator")
+
+    if not pig3 then
+        return
+    end
+
+    P.animation.stop_tracks_with_attrs(pig3, {"GrabParry", "Parry"})
+end
+
+P.animation.init = function()
+    local function fn61()
+        local onclientevent3 = rs.Remotes.ParrySuccess.OnClientEvent
+        local connect4 = onclientevent3.Connect
+
+        connect4(onclientevent3, function()
+            local cooldown3 = P.parry_cooldown
+            cooldown3.pending_id = cooldown3.pending_id + 1
+            P.parry_cooldown.failed_at = 0
+            P.animation.stop_grab()
+
+            if P.parry_hits.active then
+                local root2 = P.player.get_root()
+
+                if root2 then
+                    P.parry_hits.spawn(root2.Position)
+                end
+            end
+
+            if P.config.auto_parry and P.state.parried then
+                local delay2 = task.delay
+
+                delay2(0.15, function()
+                    local kid59 = ws:FindFirstChild("Alive")
+                    local rob3
+
+                    if kid59 then
+                        local sip3 = false
+                        local kids18 = kid59:GetChildren()
+                        rob3 = true
+
+                        for val226, val227 in ipairs(kids18) do
+                            if val227.Name == lp.Name then
+                                rob3 = true
+                            else
+                                local kid60 = plr:FindFirstChild(val227.Name)
+
+                                if not kid60 then
+                                    rob3 = false
+                                    sip3 = true
+                                    break
+                                end
+
+                                if kid60:GetAttribute("CurrentlyEquippedAbility") ~= "Invisibility" then
+                                    sip3 = true
+                                    rob3 = false
+                                    break
+                                end
+
+                                sip3 = true
+
+                                if not val227:GetAttribute("AbilityActive") then
+                                    rob3 = false
+                                    sip3 = true
+                                    break
+                                end
+
+                                rob3 = true
+                            end
+                        end
+
+                        if not sip3 then
+                            rob3 = false
+                        end
+                    else
+                        rob3 = false
+                    end
+
+                    if rob3 and #P.ball.get_targeted() > 0 then
+                        P.state.parried = false
+                    end
+                end)
+            end
+        end)
+    end
+
+    pcall(fn61)
+end
+
+P.ball.is_model_targeting_me = function(arg236)
+    local kid61 = arg236:FindFirstChild("CollisionWhitelist")
+
+    if not kid61 then
+        return false
+    end
+
+    return kid61.Value == lp.Character
+end
+
+P.ball.get_all = function()
+    local t28 = {}
+    local t29 = {"Balls", "TrainingBalls"}
+
+    for val228, val229 in ips(t29) do
+        val228 = ws:FindFirstChild(val229)
+
+        if not val228 then
+            continue
+        end
+
+        for val230, val231 in ips(val228:GetChildren()) do
+            if val231:GetAttribute("realBall") then
+                tb.insert(t28, {part = val231, model = nil})
+                continue
+            end
+
+            if val231:IsA("Model") then
+                val230 = val231:FindFirstChild("Corpo") or val231.PrimaryPart or (val231:FindFirstChildWhichIsA("BasePart"))
+
+                if val230 then
+                    tb.insert(t28, {part = val230, model = val231})
+                end
+            end
+        end
+    end
+
+    return t28
+end
+
+P.ball.get_targeted = function()
+    local nm4 = lp.Name
+    local t30 = {}
+
+    for val232, val233 in ips(P.ball.get_all()) do
+        if if val233.model then (P.ball.is_model_targeting_me(val233.model)) else val233.part:GetAttribute("target") == nm4 then
+            tb.insert(t30, val233)
+        end
+    end
+
+    return t30
+end
+
+P.ball.get_velocity = function(arg237, arg238)
+    if arg238 then
+        local attr212 = arg238:GetAttribute("Velocity")
+
+        if toy(attr212) == "Vector3" then
+            return attr212
+        end
+    end
+
+    arg238 = arg237:FindFirstChild("zoomies")
+
+    if arg238 then
+        return arg238.VectorVelocity
+    end
+
+    return arg237.AssemblyLinearVelocity
+end
+
+P.ball.get_first = function()
+    local kid62 = ws:FindFirstChild("Balls")
+
+    if not kid62 then
+        return nil
+    end
+
+    local kids19 = kid62:GetChildren()
+
+    for val234, val235 in ipairs(kids19) do
+        if val235:IsA("BasePart") then
+            return val235
+        end
+    end
+
+    return nil
+end
+
+P.ball.update_tracking = function(arg239, arg240)
+    local tip3 = tostr(arg239)
+    local detection = P.curve_detection
+
+    if not P.state.ball_tracking[tip3] then
+        P.state.ball_tracking[tip3] = {samples = {}}
+    end
+
+    if not detection.velocity_history[tip3] then
+        detection.velocity_history[tip3] = {}
+    end
+
+    if not detection.dot_histories[tip3] then
+        detection.dot_histories[tip3] = {}
+    end
+
+    local velocity2 = P.ball.get_velocity(arg239, arg240)
+    local root3 = P.player.get_root()
+    local wob3 = P.state.ball_tracking[tip3].samples
+    tb.insert(wob3, {vel = velocity2, t = clock()})
+
+    if #wob3 > 20 then
+        tb.remove(wob3, 1)
+    end
+
+    wob3 = detection.velocity_history[tip3]
+    tb.insert(wob3, velocity2)
+
+    if #wob3 > 10 then
+        tb.remove(wob3, 1)
+    end
+
+    if root3 then
+        wob3, arg240 = detection.dot_histories[tip3], (root3.Position - arg239.Position).Unit:Dot(velocity2.Unit)
+        tb.insert(wob3, arg240)
+
+        if #wob3 > 10 then
+            tb.remove(wob3, 1)
+        end
+    end
+end
+
+P.ball.check_tornado = function(arg241)
+    if arg241:FindFirstChild("AeroDynamicSlashVFX") then
+        pcall(function()
+            arg241.AeroDynamicSlashVFX:Destroy()
+        end)
+
+        P.detections.tornado_time = tk()
+    end
+
+    if rtinst and rtinst:FindFirstChild("Tornado") then
+        local attr213 = rtinst.Tornado:GetAttribute("TornadoTime") or 1
+
+        if tk() - P.detections.tornado_time < attr213 + 0.314159 then
+            return true
+        end
+    end
+
+    return false
+end
+
+P.player.get_root = function()
+    local ch21 = lp.Character
+    return ch21 and (ch21:FindFirstChild("HumanoidRootPart"))
+end
+
+P.player.is_alive = function()
+    local ch22 = lp.Character
+
+    if not ch22 then
+        return false
+    end
+
+    local hum4 = ch22:FindFirstChildOfClass("Humanoid")
+    local kid63 = ch22:FindFirstChild("HumanoidRootPart")
+    local yak3 = hum4 ~= nil
+
+    if hum4 ~= nil then
+        yak3 = kid63 ~= nil
+
+        if kid63 ~= nil then
+            yak3 = hum4.Health > 0
+        end
+    end
+
+    return yak3
+end
+
+P.player.has_singularity_cape = function()
+    local ch23 = lp.Character
+
+    if not ch23 or not ch23.PrimaryPart then
+        return false
+    end
+
+    return ch23.PrimaryPart:FindFirstChild("SingularityCape") ~= nil
+end
+
+P.player.get_alive_chars = function()
+    local kid64 = ws:FindFirstChild("Alive")
+
+    if kid64 then
+        return kid64:GetChildren()
+    end
+
+    local t31 = {}
+    local players2 = plr:GetPlayers()
+
+    for val236, val237 in ipairs(players2) do
+        if val237.Character then
+            table.insert(t31, val237.Character)
+        end
+    end
+
+    return t31
+end
+
+P.player.get_closest_to_cursor = function()
+    if not P.player.get_root() then
+        return nil
+    end
+
+    local function fn62()
+        return uins:GetMouseLocation()
+    end
+
+    local box3, col4 = pcall(fn62)
+
+    if not box3 then
+        return nil
+    end
+
+    local ray2 = cam:ScreenPointToRay(col4.X, col4.Y)
+    local lookAt2 = cf.lookAt(ray2.Origin, ray2.Origin + ray2.Direction)
+    local row4 = -(1/0)
+    local alive_chars = P.player.get_alive_chars()
+    local hld3
+
+    for val238, val239 in ipairs(alive_chars) do
+        if not (val239 == lp.Character) then
+            local kid65 = val239:FindFirstChild("HumanoidRootPart")
+
+            if kid65 then
+                local dot3 = lookAt2.LookVector:Dot((kid65.Position - cam.CFrame.Position).Unit)
+
+                if row4 < dot3 then
+                    row4 = dot3
+                    hld3 = val239
+                end
+            end
+        end
+    end
+
+    return hld3
+end
+
+P.curve.get_target_pos = function()
+    if P.config.target_player_enabled and P.config.target_player_name then
+        local kid66 = plr:FindFirstChild(P.config.target_player_name)
+
+        if kid66 and kid66.Character then
+            local kid67 = kid66.Character:FindFirstChild("HumanoidRootPart")
+
+            if kid67 then
+                return kid67.Position
+            end
+        end
+    end
+
+    local cursor = P.player.get_closest_to_cursor()
+
+    if cursor then
+        local kid68 = cursor:FindFirstChild("HumanoidRootPart")
+
+        if kid68 then
+            return kid68.Position
+        end
+    end
+
+    local root4 = P.player.get_root()
+
+    if root4 then
+        root4 = root4.Position + cam.CFrame.LookVector * 100
+    end
+
+    return root4
+end
+
+P.curve.get_cframe = function()
+    local root5 = P.player.get_root()
+
+    if not root5 then
+        return cam.CFrame
+    end
+
+    local target_pos = P.curve.get_target_pos() or root5.Position + cam.CFrame.LookVector * 100
+    local rightvector = cam.CFrame.RightVector
+    local new20 = Vector3.new(0, 1, 0)
+    local ref7 = -(target_pos - root5.Position).Unit
+    local curve_mode2 = P.config.curve_mode
+    local random4 = math.random
+
+    if curve_mode2 == 1 then
+        return cam.CFrame
+    elseif curve_mode2 == 2 then
+        local dug3 = random4(0, 1) == 0 and -1 or 1
+
+        local t32 = {
+            ref7 * random4(7000, 12000) + rightvector * (dug3 * random4(2000, 5000)) + new20 * random4(3000, 6000),
+            ref7 * random4(8000, 15000) + rightvector * (dug3 * random4(1500, 4000)) + new20 * random4(2000, 5000),
+            rightvector * (dug3 * random4(8000, 15000)) + ref7 * random4(2000, 5000) + new20 * random4(2000, 5000),
+            rightvector * (dug3 * random4(10000, 18000)) + ref7 * random4(1000, 3000) + new20 * random4(1500, 4000),
+            ref7 * random4(10000, 18000) + rightvector * (dug3 * random4(3000, 6000)) + new20 * random4(2500, 5500),
+            new20 * random4(6000, 10000) + ref7 * random4(4000, 8000) + rightvector * (dug3 * random4(2000, 5000))
+        }
+
+        return cf.new(root5.Position, target_pos + t32[random4(1, #t32)])
+    elseif curve_mode2 == 3 then
+        return cf.new(root5.Position, target_pos + Vector3.new(0, 5, 0))
+    elseif curve_mode2 == 4 then
+        return cf.new(cam.CFrame.Position, root5.Position + (root5.Position - target_pos).Unit * 10000 + Vector3.new(0, 1000, 0))
+    elseif curve_mode2 == 5 then
+        return cf.new(root5.Position, target_pos + Vector3.new(0, -9e+18, 0))
+    elseif curve_mode2 == 6 then
+        return cf.new(root5.Position, target_pos + Vector3.new(0, 9e+18, 0))
+    elseif curve_mode2 == 7 then
+        local clamp7 = math.clamp(((root5.Position - target_pos).Magnitude - 60) * 0.2, -25, 5)
+        local giz3 = target_pos + Vector3.new(0, clamp7, 0)
+        return cf.new(root5.Position, giz3)
+    end
+
+    return cam.CFrame
+end
+
+P.parry.get_event_data = function()
+    local t33 = {}
+
+    if P.config.target_player_enabled and P.config.target_player_name then
+        local kid69 = plr:FindFirstChild(P.config.target_player_name)
+
+        if kid69 and kid69.Character and kid69.Character.PrimaryPart then
+            local function fn63()
+                return cam:WorldToScreenPoint(kid69.Character.PrimaryPart.Position)
+            end
+
+            local imp3, keg3 = pcall(fn63)
+
+            if imp3 then
+                t33[kid69.Character.Name] = keg3
+            end
+        end
+
+        return t33
+    end
+
+    local alive_chars2 = P.player.get_alive_chars()
+
+    for val240, val241 in ipairs(alive_chars2) do
+        if val241.PrimaryPart then
+            local function fn64()
+                return cam:WorldToScreenPoint(val241.PrimaryPart.Position)
+            end
+
+            local lob3, mop3 = pcall(fn64)
+
+            if lob3 then
+                t33[val241.Name] = mop3
+            end
+        end
+    end
+
+    return t33
+end
+
+P.parry.get_mouse_vec = function()
+    if P.config.is_mobile then
+        local viewportsize = cam.ViewportSize
+        return {viewportsize.X / 2, viewportsize.Y / 2}
+    end
+
+    if P.config.target_player_enabled and P.config.target_player_name then
+        local kid70 = plr:FindFirstChild(P.config.target_player_name)
+
+        if kid70 and kid70.Character then
+            local kid71 = kid70.Character:FindFirstChild("HumanoidRootPart")
+
+            if kid71 then
+                local function fn65()
+                    return cam:WorldToScreenPoint(kid71.Position)
+                end
+
+                local nod3, orb3 = pcall(fn65)
+
+                if nod3 then
+                    return {orb3.X, orb3.Y}
+                end
+            end
+        end
+    end
+
+    local cursor2 = P.player.get_closest_to_cursor()
+
+    if cursor2 then
+        local kid72 = cursor2:FindFirstChild("HumanoidRootPart")
+
+        if kid72 then
+            local function fn66()
+                return cam:WorldToScreenPoint(kid72.Position)
+            end
+
+            local pit3, rib3 = pcall(fn66)
+
+            if pit3 then
+                return {rib3.X, rib3.Y}
+            end
+        end
+    end
+
+    local function fn67()
+        return uins:GetMouseLocation()
+    end
+
+    local tug3, wad3 = pcall(fn67)
+
+    if tug3 then
+        tug3 = {wad3.X, wad3.Y}
+    end
+
+    if not tug3 then
+        tug3 = {0, 0}
+    end
+
+    return tug3
+end
+
+P.parry.execute = function()
+    if P.config.parry_mode == "Keypress" then
+        fn26()
+        task.spawn(P.animation.play_grab)
+        return
+    end
+
+    if not P.parry.fire_remote() then
+        fn26()
+    end
+
+    task.spawn(P.animation.play_grab)
+end
+
+P.parry.execute_fast = function(arg242)
+    if arg242 == "Keypress" then
+        fn25()
+        return
+    end
+
+    if not P.parry.fire_remote() then
+        fn25()
+    end
+end
+
+P.parry.should_fire = function(arg243, arg244)
+    local root6 = P.player.get_root()
+
+    if not root6 then
+        return false
+    end
+
+    local velocity3 = P.ball.get_velocity(arg243, arg244).Magnitude
+    return (root6.Position - arg243.Position).Magnitude <= P.parry.get_premium_parry_distance(velocity3, P.config.accuracy)
+end
+
+P.parry.try_cooldown_protection = function()
+    if not P.ability.cooldown_protection then
+        return false
+    end
+
+    local failed_at2 = P.parry_cooldown.failed_at
+
+    if failed_at2 == 0 then
+        return false
+    end
+
+    if tk() - failed_at2 >= P.parry_cooldown.duration then
+        P.parry_cooldown.failed_at = 0
+        return false
+    end
+
+    local yip3 = pcall(function()
+        rs.Remotes.AbilityButtonPress:Fire()
+    end)
+
+    P.parry_cooldown.failed_at = 0
+    return yip3
+end
+
+P.parry.try_auto_ability = function()
+    local auto_ability2 = P.ability.auto_ability
+
+    if not auto_ability2 then
+        return false
+    end
+
+    local function fn68()
+        if lp.PlayerGui.Hotbar.Ability.UIGradient.Offset.Y ~= 0.5 then
+            return false
+        end
+
+        local ch24 = lp.Character and lp.Character:FindFirstChild("Abilities")
+
+        if not ch24 then
+            return false
+        end
+
+        for val242, val243 in ipairs({
+            "Raging Deflection",
+            "Rapture",
+            "Calming Deflection",
+            "Aerodynamic Slash",
+            "Fracture",
+            "Death Slash"
+        }) do
+            local kid73 = ch24:FindFirstChild(val243)
+
+            if kid73 and kid73.Enabled then
+                rs.Remotes.AbilityButtonPress:Fire()
+
+                if val243 == "Death Slash" then
+                    local delay3 = task.delay
+
+                    delay3(2.432, function()
+                        pcall(function()
+                            rs:WaitForChild("Remotes"):WaitForChild("DeathSlashShootActivation"):FireServer(true)
+                        end)
+                    end)
+                end
+
+                return true
+            end
+        end
+
+        return false
+    end
+
+    auto_ability2 = pcall
+    local zap3
+    auto_ability2, zap3 = auto_ability2(fn68)
+    return auto_ability2 and zap3
+end
+
+P.parry.process = function()
+    local config2 = P.config
+
+    if not config2.auto_parry then
+        return
+    end
+
+    if P.triggerbot.enabled then
+        return
+    end
+
+    if P.phantom.active then
+        return
+    end
+
+    local ch25 = lp.Character
+
+    if not ch25 then
+        return
+    end
+
+    local kid74 = ch25:FindFirstChild("HumanoidRootPart")
+
+    if not kid74 then
+        return
+    end
+
+    local hum5 = ch25:FindFirstChildOfClass("Humanoid")
+
+    if not hum5 or hum5.Health <= 0 then
+        return
+    end
+
+    if ch25.PrimaryPart and (ch25.PrimaryPart:FindFirstChild("SingularityCape")) then
+        return
+    end
+
+    ch25 = P.ball.get_targeted()
+
+    if #ch25 == 0 then
+        return
+    end
+
+    local pos3 = kid74.Position
+    local state2 = P.state
+    local detections2 = P.detections
+
+    for val244, val245 in ips(ch25) do
+        val244, hum5 = val245.part, val245.model
+
+        if hum5 then
+            (hum5:FindFirstChild("CollisionWhitelist") or hum5).Changed:Once(function()
+                state2.parried = false
+            end)
+        else
+            val244:GetAttributeChangedSignal("target"):Once(function()
+                state2.parried = false
+            end)
+        end
+
+        if state2.parried then
+            continue
+        end
+
+        if val244:FindFirstChild("ComboCounter") then
+            continue
+        end
+
+        if P.ball.check_tornado(val244) then
+            continue
+        end
+
+        if detections2.infinity and state2.infinity_active then
+            continue
+        end
+
+        if detections2.deathslash and state2.deathslash_active then
+            continue
+        end
+
+        if detections2.slashesoffury and state2.slashesoffury_active then
+            continue
+        end
+
+        if detections2.timehole and state2.timehole_active then
+            continue
+        end
+
+        kid74 = P.ball.get_velocity(val244, hum5)
+        local bub3, cad3 = kid74.Magnitude, (val244.Position - pos3).Magnitude
+        P.ball.update_tracking(val244, hum5)
+
+        if bub3 >= 40 then
+            local curved, curved2 = P.ball.is_curved(val244, hum5, pos3, kid74, bub3, cad3)
+
+            if curved then
+                continue
+            end
+
+            if curved2 then
+                continue
+            end
+        end
+
+        if cad3 > P.parry.get_premium_parry_distance(bub3, config2.accuracy) then
+            continue
+        end
+
+        if config2.randomize_accuracy then
+            val244, bub3 = mt.clamp(mt.floor(mt.min(config2.random_accuracy_min, config2.random_accuracy_max)), 1, 100), mt.clamp(mt.floor(mt.max(config2.random_accuracy_min, config2.random_accuracy_max)), 1, 100)
+            config2.accuracy = mt.random(val244, bub3)
+        end
+
+        if P.parry.try_cooldown_protection() then
+            continue
+        end
+
+        if not P.parry.try_auto_ability() then
+            P.parry.execute()
+        end
+
+        P.parry.mark_attempt()
+        state2.parried = true
+        P.spam.parries += 1
+
+        tsk.delay(0.5, function()
+            if P.spam.parries > 0 then
+                P.spam.parries -= 1
+            end
+        end)
+
+        local dim3 = tk()
+
+        tsk.spawn(function()
+            repeat
+                presim:Wait()
+            until tk() - dim3 >= 1 or not state2.parried
+
+            state2.parried = false
+        end)
+    end
+end
+
+P.triggerbot.process = function()
+    if not P.triggerbot.enabled then
+        return
+    end
+
+    if P.player.has_singularity_cape() then
+        return
+    end
+
+    if P.triggerbot.is_parrying then
+        return
+    end
+
+    local kid75 = ws:FindFirstChild("Balls")
+
+    if not kid75 then
+        return
+    end
+
+    for val246, val247 in ips(kid75:GetChildren()) do
+        if not val247:IsA("BasePart") then
+            continue
+        end
+
+        if val247:GetAttribute("target") ~= lp.Name then
+            continue
+        end
+
+        P.triggerbot.is_parrying = true
+        tsk.spawn(P.animation.play_grab)
+        P.parry.execute()
+
+        val247:GetAttributeChangedSignal("target"):Once(function()
+            P.triggerbot.is_parrying = false
+        end)
+
+        local elf3 = tk()
+
+        tsk.spawn(function()
+            repeat
+                hb:Wait()
+            until tk() - elf3 >= 1 or not P.triggerbot.is_parrying
+
+            P.triggerbot.is_parrying = false
+        end)
+
+        break
+    end
+end
+
+P.triggerbot.set = function(arg245)
+    P.triggerbot.enabled = arg245
+
+    if arg245 then
+        if not P.triggerbot.connection then
+            P.triggerbot.connection = hb:Connect(P.triggerbot.process)
+        end
+    else
+        if P.triggerbot.connection then
+            P.triggerbot.connection:Disconnect()
+            P.triggerbot.connection = nil
+        end
+
+        P.triggerbot.is_parrying = false
+    end
+end
+
+P.spam.manual_start = function()
+    if P.spam.connection_manual then
+        P.spam.connection_manual:Disconnect()
+    end
+
+    P.spam.manual_enabled = true
+
+    local function fn69()
+        if not P.spam.manual_enabled then
+            return
+        end
+
+        local ch26 = lp.Character
+
+        if not ch26 then
+            return
+        end
+
+        local hum6 = ch26:FindFirstChildOfClass("Humanoid")
+
+        if not hum6 or hum6.Health <= 0 then
+            return
+        end
+
+        if not ch26:FindFirstChild("HumanoidRootPart") then
+            return
+        end
+
+        local alive_ref2 = P.spam.alive_ref
+
+        if not alive_ref2 or alive_ref2.Parent ~= ws then
+            alive_ref2 = ws:FindFirstChild("Alive")
+            P.spam.alive_ref = alive_ref2
+        end
+
+        if not alive_ref2 or not alive_ref2:FindFirstChild(lp.Name) then
+            return
+        end
+
+        alive_ref2 = P.spam.manual_mode
+
+        if alive_ref2 == "Remote" and P.spam.animation_fix_manual then
+            fn25()
+        end
+
+        P.parry.execute_fast(alive_ref2)
+    end
+
+    P.spam.connection_manual = presim:Connect(fn69)
+end
+
+P.spam.manual_stop = function()
+    P.spam.manual_enabled = false
+
+    if not P.spam.connection_manual then
+        return
+    end
+
+    P.spam.connection_manual:Disconnect()
+
+    P.spam.connection_manual = nil
+end
+
+P.spam.auto_start = function()
+    if P.spam.connection_auto then
+        P.spam.connection_auto:Disconnect()
+    end
+
+    P.spam.auto_enabled = true
+    P.spam.parries = 0
+    table.clear(P.spam.auto_decay_at)
+    local auto_decay_at2 = P.spam.auto_decay_at
+    local spam2 = P.spam
+
+    local function spam_tick()
+        if not spam2.auto_enabled then
+            return
+        end
+
+        local ch = lp.Character
+
+        if not ch then
+            return
+        end
+
+        local hum = ch:FindFirstChildOfClass("Humanoid")
+
+        if not hum or hum.Health <= 0 then
+            return
+        end
+
+        if not ch:FindFirstChild("HumanoidRootPart") then
+            return
+        end
+
+        local alive = spam2.alive_ref
+
+        if not alive or alive.Parent ~= ws then
+            alive = ws:FindFirstChild("Alive")
+            spam2.alive_ref = alive
+        end
+
+        if not alive or not alive:FindFirstChild(lp.Name) then
+            return
+        end
+
+        local now = tk()
+
+        for idx = #auto_decay_at2, 1, -1 do
+            if now - auto_decay_at2[idx] >= spam2.threshold then
+                table.remove(auto_decay_at2, idx)
+            end
+        end
+
+        if #auto_decay_at2 > 0 and spam2.parries <= 0 then
+            return
+        end
+
+        if spam2.parries > 0 then
+            spam2.parries -= 1
+        end
+
+        auto_decay_at2[#auto_decay_at2 + 1] = now
+
+        if spam2.auto_mode == "Remote" and spam2.animation_fix_auto then
+            fn25()
+        end
+
+        P.parry.execute_fast(spam2.auto_mode)
+    end
+
+    P.spam.connection_auto = presim:Connect(spam_tick)
+end
+
+P.spam.auto_stop = function()
+    P.spam.auto_enabled = false
+    P.spam.parries = 0
+    table.clear(P.spam.auto_decay_at)
+
+    if P.spam.connection_auto then
+        P.spam.connection_auto:Disconnect()
+        P.spam.connection_auto = nil
+    end
+end
+
+P.player_mods.set_fov = function(arg246, arg247)
+    P.player_mods.fov_enabled = arg246
+    local player_mods2 = P.player_mods
+
+    if not arg247 then
+        arg247 = P.player_mods.fov
+    end
+
+    player_mods2.fov = arg247
+
+    cam.FieldOfView = arg246 and P.player_mods.fov or 70
+end
+
+P.player_mods.set_speed = function(arg248, arg249)
+    P.player_mods.speed_enabled = arg248
+    P.player_mods.speed = arg249 or P.player_mods.speed
+
+    if P.player_mods.speed_conn then
+        P.player_mods.speed_conn:Disconnect()
+        P.player_mods.speed_conn = nil
+    end
+
+    if arg248 then
+        local function fn70()
+            local ch27 = lp.Character
+            local fig3 = ch27 and (ch27:FindFirstChildOfClass("Humanoid"))
+
+            if fig3 then
+                fig3.WalkSpeed = P.player_mods.speed
+            end
+        end
+
+        P.player_mods.speed_conn = hb:Connect(fn70)
+    else
+        local ch28 = lp.Character
+
+        if ch28 then
+            ch28 = ch28:FindFirstChildOfClass("Humanoid")
+        end
+
+        if ch28 then
+            ch28.WalkSpeed = 36
+        end
+    end
+end
+
+P.player_mods.set_gravity = function(arg250, arg251)
+    P.player_mods.gravity_enabled = arg250
+    P.player_mods.gravity = arg251 or P.player_mods.gravity
+    local gum3 = ws
+
+    if arg250 then
+        arg250 = P.player_mods.gravity
+    end
+
+    if not arg250 then
+        arg250 = 196.2
+    end
+
+    gum3.Gravity = arg250
+end
+
+P.player_mods.set_jump_power = function(arg252, arg253)
+    P.player_mods.jump_power_enabled = arg252
+    local player_mods3 = P.player_mods
+
+    if not arg253 then
+        arg253 = P.player_mods.jump_power
+    end
+
+    player_mods3.jump_power = arg253
+
+    if P.player_mods.jump_conn then
+        P.player_mods.jump_conn:Disconnect()
+        P.player_mods.jump_conn = nil
+    end
+
+    if arg252 then
+        local function fn71()
+            local ch29 = lp.Character
+            local hen3 = ch29 and (ch29:FindFirstChildOfClass("Humanoid"))
+
+            if not hen3 then
+                return
+            end
+
+            if hen3.UseJumpPower then
+                hen3.JumpPower = P.player_mods.jump_power
+            else
+                hen3.JumpHeight = P.player_mods.jump_power / 5
+            end
+        end
+
+        P.player_mods.jump_conn = hb:Connect(fn71)
+    else
+        local ch30 = lp.Character
+
+        if ch30 then
+            ch30 = ch30:FindFirstChildOfClass("Humanoid")
+        end
+
+        if ch30 then
+            if ch30.UseJumpPower then
+                ch30.JumpPower = 50
+            else
+                ch30.JumpHeight = 7.2
+            end
+        end
+    end
+end
+
+P.player_mods.set_infinite_jump = function(arg254)
+    P.player_mods.infinite_jump_enabled = arg254
+
+    if P.player_mods.infinite_jump_conn then
+        P.player_mods.infinite_jump_conn:Disconnect()
+        P.player_mods.infinite_jump_conn = nil
+    end
+
+    if arg254 then
+        local function fn72()
+            local ch31 = lp.Character
+
+            if ch31 then
+                ch31 = ch31:FindFirstChildOfClass("Humanoid")
+            end
+
+            if ch31 then
+                ch31:ChangeState(en.HumanoidStateType.Jumping)
+            end
+        end
+
+        P.player_mods.infinite_jump_conn = uins.JumpRequest:Connect(fn72)
+    end
+end
+
+P.ball_trail.get_ball = function()
+    local kid76 = ws:FindFirstChild("Balls")
+
+    if not kid76 then
+        return nil
+    end
+
+    local kids20 = kid76:GetChildren()
+
+    for val248, val249 in ipairs(kids20) do
+        if val249:IsA("BasePart") then
+            return val249
+        end
+    end
+
+    return nil
+end
+
+P.ball_trail.build_color_sequence = function()
+    local color3 = P.ball_trail.color
+
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0, color3),
+        ColorSequenceKeypoint.new(0.5, cl3.new(math.min(color3.R * 1.3, 1), math.min(color3.G * 1.3, 1), math.min(color3.B * 1.3, 1))),
+        ColorSequenceKeypoint.new(1, color3)
+    })
+end
+
+P.ball_trail.attach = function(arg255)
+    P.ball_trail.detach()
+    local num_trails2 = P.ball_trail.num_trails
+
+    for i7 = 1, num_trails2 do
+        local ivy3 = i7 / num_trails2 * 3.141592653589793 * 2
+        local random5 = math.random(150, 250) / 100
+        local random6 = math.random(-150, 150) / 100
+        local att2 = inst.new("Attachment")
+        att2.Position = Vector3.new(math.cos(ivy3) * random5, random6, math.sin(ivy3) * random5)
+        att2.Parent = arg255
+        local att3 = inst.new("Attachment")
+        att3.Position = Vector3.new(math.cos(ivy3 + 3.141592653589793 * 0.7) * random5 * 1.3, -random6, math.sin(ivy3 + 3.141592653589793 * 0.7) * random5 * 1.3)
+        att3.Parent = arg255
+        local trail2 = inst.new("Trail")
+        trail2.Attachment0 = att2
+        trail2.Attachment1 = att3
+        trail2.Lifetime = 0.6
+        trail2.MinLength = 0
+        trail2.FaceCamera = true
+        trail2.LightEmission = 1
+        trail2.LightInfluence = 0
+        trail2.Texture = "rbxassetid://5029929719"
+        trail2.TextureMode = en.TextureMode.Stretch
+        trail2.Color = P.ball_trail.build_color_sequence()
+
+        trail2.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.2),
+            NumberSequenceKeypoint.new(0.3, 0),
+            NumberSequenceKeypoint.new(0.7, 0.3),
+            NumberSequenceKeypoint.new(1, 1)
+        })
+
+        trail2.WidthScale = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.1),
+            NumberSequenceKeypoint.new(0.3, 0.25),
+            NumberSequenceKeypoint.new(0.7, 0.15),
+            NumberSequenceKeypoint.new(1, 0.02)
+        })
+
+        trail2.Parent = arg255
+
+        table.insert(P.ball_trail.attachments, {
+            a0 = att2,
+            a1 = att3,
+            trail = trail2,
+            baseAngle = ivy3,
+            angle = 0,
+            speed = math.random(15, 30) / 10,
+            spiralSpeed = math.random(25, 45) / 10,
+            radiusMultiplier = math.random(80, 120) / 100,
+            pulseOffset = math.random() * 3.141592653589793 * 2,
+            baseRadius = random5,
+            baseHeight = random6,
+            chaosSpeed = math.random(10, 20) / 10
+        })
+    end
+end
+
+P.ball_trail.detach = function()
+    for val250, val251 in ipairs(P.ball_trail.attachments) do
+        if val251.a0 and val251.a0.Parent then
+            val251.a0:Destroy()
+        end
+
+        if val251.a1 and val251.a1.Parent then
+            val251.a1:Destroy()
+        end
+
+        if val251.trail and val251.trail.Parent then
+            val251.trail:Destroy()
+        end
+    end
+
+    P.ball_trail.attachments = {}
+end
+
+P.ball_trail.animate = function(arg256)
+    if not P.ball_trail.active then
+        return
+    end
+
+    local jaw3 = tk()
+
+    for val252, val253 in ips(P.ball_trail.attachments) do
+        if not val253.a0.Parent then
+            continue
+        end
+
+        val253.angle = val253.angle + val253.speed * arg256
+        local kob3 = val253.angle * val253.spiralSpeed
+        local sin2, sin3, sin4 = mt.sin(jaw3 * 4 + val253.pulseOffset) * 0.4 + 1, mt.sin(val253.angle * 3) * 0.7, mt.sin(jaw3 * val253.chaosSpeed + val253.pulseOffset) * 0.5
+        local lad3 = val253.baseRadius * val253.radiusMultiplier * sin2
+        local mix3 = val253.baseRadius * 1.3 * val253.radiusMultiplier * sin2
+        val253.a0.Position = v3.new(mt.cos(val253.baseAngle + val253.angle) * lad3 + mt.cos(kob3) * 0.6, val253.baseHeight + mt.sin((val253.baseAngle + val253.angle) * 3) * 0.8 + sin3 + sin4 + mt.sin(kob3 * 2) * 0.6, mt.sin(val253.baseAngle + val253.angle) * lad3 + mt.sin(kob3) * 0.6)
+        val253.a1.Position = v3.new(mt.cos(val253.baseAngle + val253.angle + mt.pi * 0.7) * mix3 + mt.sin(kob3 * 1.3) * 0.5, -val253.baseHeight + mt.cos((val253.baseAngle + val253.angle) * 2.5) * 0.8 - sin3 - sin4 + mt.cos(kob3 * 1.7) * 0.5, mt.sin(val253.baseAngle + val253.angle + mt.pi * 0.7) * mix3 + mt.cos(kob3 * 1.1) * 0.5)
+        val253.trail.LightEmission = mt.sin(jaw3 * 5 + val253.pulseOffset) * 0.4 + 0.6
+    end
+end
+
+P.ball_trail.start = function()
+    if P.ball_trail.active then
+        return
+    end
+
+    P.ball_trail.active = true;
+
+    (function()
+        local ball2 = P.ball_trail.get_ball()
+
+        if ball2 then
+            P.ball_trail.attach(ball2)
+        end
+    end)()
+
+    local function fn73(arg257)
+        if not P.ball_trail.active then
+            return
+        end
+
+        local ball3 = P.ball_trail.get_ball()
+
+        if not ball3 then
+            P.ball_trail.detach()
+            return
+        end
+
+        if #P.ball_trail.attachments == 0 then
+            P.ball_trail.attach(ball3)
+        end
+
+        P.ball_trail.animate(arg257)
+    end
+
+    P.ball_trail.connection = hb:Connect(fn73)
+end
+
+P.ball_trail.stop = function()
+    if not P.ball_trail.active then
+        return
+    end
+
+    P.ball_trail.active = false
+
+    if P.ball_trail.connection then
+        P.ball_trail.connection:Disconnect()
+        P.ball_trail.connection = nil
+    end
+
+    P.ball_trail.detach()
+end
+
+P.ball_trail.update_color = function(arg258)
+    P.ball_trail.color = arg258
+
+    for val254, val255 in ipairs(P.ball_trail.attachments) do
+        if val255.trail and val255.trail.Parent then
+            val255.trail.Color = P.ball_trail.build_color_sequence()
+        end
+    end
+end
+
+P.ball_velocity.start = function()
+    if P.ball_velocity.active then
+        return
+    end
+
+    P.ball_velocity.active = true
+    P.ball_velocity.peak = {}
+    local oak3 = mkaux()
+    oak3.ZIndexBehavior = en.ZIndexBehavior.Sibling
+    local frm46 = mkn("Frame")
+    frm46.Size = ud2.new(0, 230, 0, 130)
+    frm46.Position = ud2.new(0, 20, 0, 150)
+    frm46.BackgroundColor3 = cl3.fromRGB(17, 17, 24)
+    frm46.BorderSizePixel = 0
+    frm46.Parent = oak3
+    local cnr58 = inst.new("UICorner")
+    cnr58.CornerRadius = ud.new(0, 12)
+    cnr58.Parent = frm46
+    local strk26 = inst.new("UIStroke")
+    strk26.Thickness = 1
+    strk26.Color = cl3.fromRGB(36, 40, 58)
+    strk26.Parent = frm46
+    local frm47 = inst.new("Frame")
+    frm47.Size = ud2.new(1, 0, 0, 34)
+    frm47.BackgroundColor3 = cl3.fromRGB(13, 13, 20)
+    frm47.BorderSizePixel = 0
+    frm47.Parent = frm46
+    local cnr59 = inst.new("UICorner")
+    cnr59.CornerRadius = ud.new(0, 12)
+    cnr59.Parent = frm47
+    local frm48 = inst.new("Frame")
+    frm48.Size = ud2.new(1, 0, 0, 12)
+    frm48.Position = ud2.new(0, 0, 1, -12)
+    frm48.BackgroundColor3 = cl3.fromRGB(13, 13, 20)
+    frm48.BorderSizePixel = 0
+    frm48.Parent = frm47
+    local lbl30 = inst.new("TextLabel")
+    lbl30.Size = ud2.new(1, -16, 1, 0)
+    lbl30.Position = ud2.new(0, 12, 0, 0)
+    lbl30.BackgroundTransparency = 1
+    lbl30.Text = "Ball Stats"
+    lbl30.TextColor3 = cl3.fromRGB(235, 235, 245)
+    lbl30.TextSize = 13
+    lbl30.Font = en.Font.GothamBold
+    lbl30.TextXAlignment = en.TextXAlignment.Left
+    lbl30.Parent = frm47
+    local frm49 = inst.new("Frame")
+    frm49.Size = ud2.new(1, -24, 1, -44)
+    frm49.Position = ud2.new(0, 12, 0, 40)
+    frm49.BackgroundTransparency = 1
+    frm49.Parent = frm46
+
+    local function fn74(arg259, arg260)
+        local frm50 = inst.new("Frame")
+        frm50.Size = ud2.new(1, 0, 0, 38)
+        frm50.Position = ud2.new(0, 0, 0, arg260)
+        frm50.BackgroundTransparency = 1
+        frm50.Parent = frm49
+        local lbl31 = inst.new("TextLabel")
+        lbl31.Size = ud2.new(1, 0, 0, 14)
+        lbl31.Position = ud2.new(0, 0, 0, 0)
+        lbl31.BackgroundTransparency = 1
+        lbl31.Text = arg259
+        lbl31.TextColor3 = cl3.fromRGB(148, 152, 185)
+        lbl31.TextSize = 11
+        lbl31.Font = en.Font.Gotham
+        lbl31.TextXAlignment = en.TextXAlignment.Left
+        lbl31.Parent = frm50
+        local lbl32 = inst.new("TextLabel")
+        lbl32.Size = ud2.new(1, 0, 0, 22)
+        lbl32.Position = ud2.new(0, 0, 0, 15)
+        lbl32.BackgroundTransparency = 1
+        lbl32.Text = "0.0"
+        lbl32.TextColor3 = cl3.fromRGB(172, 178, 255)
+        lbl32.TextSize = 18
+        lbl32.Font = en.Font.GothamBold
+        lbl32.TextXAlignment = en.TextXAlignment.Left
+        lbl32.Parent = frm50
+        return lbl32
+    end
+
+    local pad24 = fn74("Current Velocity", 0)
+    local bit23 = fn74("Peak Velocity", 42)
+    local cog3 = false
+    local dud3
+    local elm4
+
+    frm47.InputBegan:Connect(function(arg261)
+        if arg261.UserInputType == en.UserInputType.MouseButton1 or arg261.UserInputType == en.UserInputType.Touch then
+            cog3 = true
+            dud3 = arg261.Position
+            elm4 = frm46.Position
+        end
+    end)
+
+    uins.InputChanged:Connect(function(arg262)
+        local _fry3 = cog3
+
+        if cog3 and (arg262.UserInputType == en.UserInputType.MouseMovement or arg262.UserInputType == en.UserInputType.Touch) then
+            local gap3 = arg262.Position - dud3
+            frm46.Position = ud2.new(elm4.X.Scale, elm4.X.Offset + gap3.X, elm4.Y.Scale, elm4.Y.Offset + gap3.Y)
+        end
+    end)
+
+    uins.InputEnded:Connect(function(arg263)
+        if arg263.UserInputType == en.UserInputType.MouseButton1 or arg263.UserInputType == en.UserInputType.Touch then
+            cog3 = false
+        end
+    end)
+
+    P.ball_velocity.gui = oak3
+
+    local function fn75()
+        local cur = 0
+        local peak = 0
+        local ball = P.ball.get_targeted()[1]
+
+        if ball then
+            local part = ball.part or (ball.model and ball.model.PrimaryPart)
+            local vel = part and part.AssemblyLinearVelocity
+
+            if vel then
+                cur = vel.Magnitude
+                local was = P.ball_velocity.peak[ball] or 0
+
+                if cur > was then
+                    P.ball_velocity.peak[ball] = cur
+                    was = cur
+                end
+
+                peak = was
+            end
+        end
+
+        pad24.Text = string.format("%.1f", cur)
+        bit23.Text = string.format("%.1f", peak)
+    end
+
+    P.ball_velocity.connection = hb:Connect(fn75)
+end
+
+P.ball_velocity.stop = function()
+    if not P.ball_velocity.active then
+        return
+    end
+
+    P.ball_velocity.active = false
+
+    if P.ball_velocity.connection then
+        P.ball_velocity.connection:Disconnect()
+        P.ball_velocity.connection = nil
+    end
+
+    if P.ball_velocity.gui then
+        P.ball_velocity.gui:Destroy()
+        P.ball_velocity.gui = nil
+    end
+
+    P.ball_velocity.peak = {}
+end
+
+P.no_render.start = function()
+    if P.no_render.active then
+        return
+    end
+
+    P.no_render.active = true
+
+    pcall(function()
+        lp.PlayerScripts.EffectScripts.ClientFX.Disabled = true
+    end)
+
+    if rtinst then
+        P.no_render.connection = rtinst.ChildAdded:Connect(function(arg264)
+            if P.no_render.active then
+                g:GetService("Debris"):AddItem(arg264, 0)
+            end
+        end)
+    end
+end
+
+P.no_render.stop = function()
+    if not P.no_render.active then
+        return
+    end
+
+    P.no_render.active = false
+
+    pcall(function()
+        lp.PlayerScripts.EffectScripts.ClientFX.Disabled = false
+    end)
+
+    if P.no_render.connection then
+        P.no_render.connection:Disconnect()
+        P.no_render.connection = nil
+    end
+end
+
+P.ball_indicator.start = function()
+    if P.ball_indicator.active then
+        return
+    end
+
+    P.ball_indicator.active = true
+    local hub3 = mkaux()
+    hub3.ZIndexBehavior = en.ZIndexBehavior.Sibling
+    local frm51 = inst.new("Frame")
+    frm51.Size = ud2.new(0, P.ball_indicator.size, 0, P.ball_indicator.size)
+    frm51.Position = ud2.new(0.5, 0, 0.5, 0)
+    frm51.AnchorPoint = Vector2.new(0.5, 0.5)
+    frm51.BackgroundTransparency = 1
+    frm51.Parent = hub3
+    local img7 = inst.new("ImageLabel")
+    img7.BackgroundTransparency = 1
+    img7.Size = ud2.new(1, 0, 1, 0)
+    img7.Position = ud2.new(0.5, 0, 0.5, 0)
+    img7.AnchorPoint = Vector2.new(0.5, 0.5)
+    img7.Image = "rbxassetid://18604510750"
+    img7.ImageColor3 = cl3.new(0, 0, 0)
+    img7.Parent = frm51
+    P.ball_indicator.gui = hub3
+
+    local function fn76()
+        local ball = P.ball.get_targeted()[1]
+
+        if not ball then
+            frm51.Visible = false
+            return
+        end
+
+        local part = ball.part or (ball.model and ball.model.PrimaryPart)
+
+        if not part then
+            frm51.Visible = false
+            return
+        end
+
+        local px, on = cam:WorldToViewportPoint(part.Position)
+
+        if not on or px.Z < 0 or (cam.CFrame.Position - part.Position).Magnitude > P.ball_indicator.distance then
+            frm51.Visible = false
+            return
+        end
+
+        frm51.Visible = true
+        P.ball_indicator.position = Vector2.new(px.X, px.Y)
+        frm51.Position = ud2.fromOffset(P.ball_indicator.position.X, P.ball_indicator.position.Y)
+        frm51.Rotation = P.ball_indicator.rotation
+    end
+
+    P.ball_indicator.connection = rstep:Connect(fn76)
+end
+
+P.ball_indicator.stop = function()
+    if not P.ball_indicator.active then
+        return
+    end
+
+    P.ball_indicator.active = false
+
+    if P.ball_indicator.connection then
+        P.ball_indicator.connection:Disconnect()
+        P.ball_indicator.connection = nil
+    end
+
+    if P.ball_indicator.gui then
+        P.ball_indicator.gui:Destroy()
+        P.ball_indicator.gui = nil
+    end
+end
+
+P.plushies.create = function(arg265)
+    local ink3 = P.plushies.models[arg265]
+
+    if not ink3 then
+        return nil
+    end
+
+    if not P.plushies.loaded_models[arg265] then
+        local function fn77()
+            return g:GetObjects(ink3)[1]
+        end
+
+        local jet3, lid3 = pcall(fn77)
+
+        if not jet3 or not lid3 then
+            return nil
+        end
+
+        P.plushies.loaded_models[arg265] = lid3
+    end
+
+    local map4 = P.plushies.loaded_models[arg265]:Clone()
+    map4.Name = arg265
+    local nub3 = P.plushies.scales[arg265] or 1.5
+    local descs8 = map4:GetDescendants()
+
+    for val256, val257 in ipairs(descs8) do
+        if val257:IsA("BasePart") or val257:IsA("MeshPart") then
+            val257.CanCollide = false
+            val257.Anchored = false
+            val257.Size = val257.Size * nub3
+            local mesh3 = val257:FindFirstChildOfClass("SpecialMesh")
+
+            if mesh3 then
+                mesh3.Scale = mesh3.Scale * nub3
+            end
+        end
+    end
+
+    local prt8 = map4:FindFirstChildOfClass("BasePart") or map4:FindFirstChildOfClass("MeshPart")
+
+    if prt8 then
+        map4.PrimaryPart = prt8
+    end
+
+    return map4
+end
+
+P.plushies.update = function()
+    if not P.plushies.active then
+        return
+    end
+
+    local ch32 = lp.Character
+
+    if not ch32 or not ch32.PrimaryPart or not P.plushies.folder then
+        return
+    end
+
+    local n19 = 1
+
+    for val258 in prs(P.plushies.active_types) do
+        local oar3, pin3 = P.plushies.positions[(n19 - 1) % #P.plushies.positions + 1], P.plushies.folder:FindFirstChild(val258)
+
+        if not pin3 then
+            local create7 = P.plushies.create(val258)
+
+            if create7 then
+                create7.Parent = P.plushies.folder
+                create7:SetPrimaryPartCFrame(cf.new(ch32.PrimaryPart.Position + oar3))
+                pin3 = create7
+            end
+        end
+
+        if pin3 and pin3.PrimaryPart then
+            local primarypart3 = pin3.PrimaryPart
+            local new21 = v3.new(0, mt.sin(tk() * 2) * 0.3, 0)
+            local quo3, rim3 = ch32.PrimaryPart.CFrame * cf.new(oar3 + new21) * (P.plushies.rotations[val258] or (cf.new())), primarypart3:FindFirstChild("PlushieBP")
+
+            if not rim3 then
+                rim3 = inst.new("BodyPosition")
+                rim3.Name = "PlushieBP"
+                rim3.MaxForce = v3.new(40000, 40000, 40000)
+                rim3.P = 10000
+                rim3.D = 1000
+                rim3.Parent = primarypart3
+            end
+
+            rim3.Position = quo3.Position
+            primarypart3.CFrame = cf.new(primarypart3.Position) * quo3.Rotation
+        end
+
+        n19 += 1
+    end
+
+    for val259, val260 in ips(P.plushies.folder:GetChildren()) do
+        if not P.plushies.active_types[val260.Name] then
+            val260:Destroy()
+        end
+    end
+end
+
+P.plushies.start = function()
+    if P.plushies.active then
+        return
+    end
+
+    P.plushies.active = true
+    P.plushies.folder = inst.new("Folder")
+    P.plushies.folder.Name = "Plushies_Temp"
+    P.plushies.folder.Parent = wsp
+    P.plushies.connection = rstep:Connect(P.plushies.update)
+end
+
+P.plushies.stop = function()
+    if not P.plushies.active then
+        return
+    end
+
+    P.plushies.active = false
+
+    if P.plushies.connection then
+        P.plushies.connection:Disconnect()
+        P.plushies.connection = nil
+    end
+
+    if P.plushies.folder then
+        P.plushies.folder:Destroy()
+        P.plushies.folder = nil
+    end
+end
+
+P.orbit_ball.start = function()
+    if P.orbit_ball.active then
+        return
+    end
+
+    P.orbit_ball.active = true
+    P.orbit_ball.angle = 0
+
+    local origin
+    local function fn78()
+        local ch = lp.Character
+        local hrp = ch and ch:FindFirstChild("HumanoidRootPart")
+
+        if not hrp then
+            return
+        end
+
+        origin = origin or hrp.Position
+        P.orbit_ball.angle += 0.05 * P.orbit_ball.speed
+        local ang = P.orbit_ball.angle
+        hrp.CFrame = cf.new(origin + v3.new(mt.cos(ang) * P.orbit_ball.distance, P.orbit_ball.height, mt.sin(ang) * P.orbit_ball.distance))
+    end
+
+    P.orbit_ball.connection = hb:Connect(fn78)
+end
+
+P.orbit_ball.stop = function()
+    if not P.orbit_ball.active then
+        return
+    end
+
+    P.orbit_ball.active = false
+    local ch33 = lp.Character
+
+    if ch33 then
+        ch33 = ch33:FindFirstChildOfClass("Humanoid")
+    end
+
+    if ch33 then
+        cam.CameraSubject = ch33
+    end
+
+    if P.orbit_ball.connection then
+        P.orbit_ball.connection:Disconnect()
+        P.orbit_ball.connection = nil
+    end
+end
+
+P.winstreak.update = function()
+    if not P.winstreak.enabled then
+        if P.winstreak.conn then
+            P.winstreak.conn:Disconnect()
+            P.winstreak.conn = nil
+        end
+
+        if P.winstreak.enabled_conn then
+            P.winstreak.enabled_conn:Disconnect()
+            P.winstreak.enabled_conn = nil
+        end
+
+        return
+    end
+
+    local ch34 = lp.Character
+
+    if not ch34 then
+        return
+    end
+
+    local kid77 = ch34:FindFirstChild("WinStreakDisplay")
+
+    if not kid77 then
+        kid77 = ch34:WaitForChild("WinStreakDisplay", 5)
+    end
+
+    if not kid77 then
+        return
+    end
+
+    ch34 = kid77:FindFirstChild("Main")
+
+    if not ch34 then
+        return
+    end
+
+    local kid78, kid79 = ch34:FindFirstChild("Icon"), ch34:FindFirstChild("Value")
+
+    if not kid78 or not kid79 then
+        return
+    end
+
+    if P.winstreak.original_enabled == nil then
+        P.winstreak.original_enabled = kid77.Enabled
+    end
+
+    if not P.winstreak.original_text or P.winstreak.original_text == "" then
+        P.winstreak.original_text = kid79.Text
+    end
+
+    if not P.winstreak.original_icon or P.winstreak.original_icon == "" then
+        P.winstreak.original_icon = kid78.Image
+    end
+
+    local streak2 = P.winstreak.streak or "1"
+    ch34 = str.format("<b><stroke color='rgb(0, 0, 0)' thickness='2'>%s</stroke></b>", tostr(streak2))
+    local sap3 = ton(streak2)
+    streak2 = if sap3 and sap3 >= 10 then true else false
+
+    if P.winstreak.conn then
+        P.winstreak.conn:Disconnect()
+        P.winstreak.conn = nil
+    end
+
+    if P.winstreak.enabled_conn then
+        P.winstreak.enabled_conn:Disconnect()
+        P.winstreak.enabled_conn = nil
+    end
+
+    local toy4 = false
+    kid78.Image = streak2 and "rbxassetid://75598166115655" or "rbxassetid://89658127170771"
+    kid79.Text = ch34
+    kid77.Enabled = true
+
+    P.winstreak.conn = kid79:GetPropertyChangedSignal("Text"):Connect(function()
+        if toy4 then
+            return
+        end
+
+        P.winstreak.original_text = kid79.Text
+        toy4 = true
+        local streak3 = P.winstreak.streak or "1"
+        local urn4 = ton(streak3)
+        kid78.Image = (if urn4 and urn4 >= 10 then true else false) and "rbxassetid://75598166115655" or "rbxassetid://89658127170771"
+        kid79.Text = str.format("<b><stroke color='rgb(0, 0, 0)' thickness='2'>%s</stroke></b>", tostr(streak3))
+        toy4 = false
+    end)
+
+    P.winstreak.enabled_conn = kid77:GetPropertyChangedSignal("Enabled"):Connect(function()
+        if toy4 then
+            return
+        end
+
+        P.winstreak.original_enabled = kid77.Enabled
+        toy4 = true
+        kid77.Enabled = true
+        toy4 = false
+    end)
+end
+
+P.winstreak.start = function()
+    P.winstreak.enabled = true
+    local vet3
+
+    if not P.winstreak.char_conn then
+        local winstreak2 = P.winstreak
+        local characteradded = lp.CharacterAdded
+        vet3 = characteradded.Connect
+
+        vet3 = vet3(characteradded, function()
+            P.winstreak.original_text = nil
+            P.winstreak.original_icon = nil
+            P.winstreak.original_enabled = nil
+            task.wait(1.5)
+            pcall(P.winstreak.update)
+        end)
+
+        winstreak2.char_conn = vet3
+    end
+
+    vet3 = P.winstreak
+    vet3 = vet3.update
+    pcall(vet3)
+end
+
+P.winstreak.stop = function()
+    P.winstreak.enabled = false
+
+    if P.winstreak.char_conn then
+        P.winstreak.char_conn:Disconnect()
+        P.winstreak.char_conn = nil
+    end
+
+    if P.winstreak.conn then
+        P.winstreak.conn:Disconnect()
+        P.winstreak.conn = nil
+    end
+
+    if P.winstreak.enabled_conn then
+        P.winstreak.enabled_conn:Disconnect()
+        P.winstreak.enabled_conn = nil
+    end
+
+    local ch35 = lp.Character
+
+    if ch35 then
+        local kid80 = ch35:FindFirstChild("WinStreakDisplay")
+
+        if kid80 then
+            local kid81 = kid80:FindFirstChild("Main")
+
+            if kid81 then
+                local kid82 = kid81:FindFirstChild("Icon")
+                local kid83 = kid81:FindFirstChild("Value")
+
+                if kid82 and kid83 then
+                    if P.winstreak.original_text and P.winstreak.original_text ~= "" then
+                        kid83.Text = P.winstreak.original_text
+                    end
+
+                    if P.winstreak.original_icon and P.winstreak.original_icon ~= "" then
+                        kid82.Image = P.winstreak.original_icon
+                    end
+                end
+            end
+
+            if P.winstreak.original_enabled ~= nil then
+                kid80.Enabled = P.winstreak.original_enabled
+            end
+        end
+    end
+
+    P.winstreak.original_text = nil
+    P.winstreak.original_icon = nil
+    P.winstreak.original_enabled = nil
+end
+
+P.custom_win.update = function()
+    if not P.custom_win.enabled then
+        return
+    end
+
+    local kid84 = lp:FindFirstChild("PlayerGui")
+
+    if not kid84 then
+        return
+    end
+
+    local kid85 = kid84:FindFirstChild("announcer")
+
+    if not kid85 then
+        return
+    end
+
+    kid84 = P.custom_win.kill_message
+
+    if kid84 ~= nil and kid84 ~= "" then
+        local kid86 = kid85:FindFirstChild("Killed")
+
+        if kid86 and (kid86:IsA("TextLabel") or (kid86:IsA("TextBox"))) then
+            if kid86.Text ~= kid84 then
+                kid86.Text = kid84
+            end
+        end
+    end
+
+    kid84 = P.custom_win.win_message
+
+    if kid84 ~= nil and kid84 ~= "" then
+        local kid87 = kid85:FindFirstChild("Winner")
+
+        if kid87 and (kid87:IsA("TextLabel") or (kid87:IsA("TextBox"))) then
+            if kid87.Text ~= kid84 then
+                kid87.Text = kid84
+            end
+        end
+    end
+end
+
+P.custom_win.start = function()
+    P.custom_win.stop()
+    P.custom_win.enabled = true
+    local wkid = lp:WaitForChild("PlayerGui", 10)
+
+    if not wkid then
+        return
+    end
+
+    local wkid2 = wkid:WaitForChild("announcer", 10)
+
+    if not wkid2 then
+        return
+    end
+
+    local function fn79(arg266, arg267)
+        if not arg266 then
+            return
+        end
+
+        table.insert(P.custom_win.connections, arg266.Changed:Connect(function(arg268)
+            if arg268 ~= "Text" or not P.custom_win.enabled then
+                return
+            end
+
+            local wig3 = arg267()
+
+            if wig3 ~= nil and wig3 ~= "" and arg266.Text ~= wig3 then
+                arg266.Text = wig3
+            end
+        end))
+
+        local yam4 = arg267()
+
+        if yam4 ~= nil and yam4 ~= "" and arg266.Text ~= yam4 then
+            arg266.Text = yam4
+        end
+    end
+
+    fn79(wkid2:WaitForChild("Killed", 10), function()
+        return P.custom_win.kill_message
+    end)
+
+    fn79(wkid2:FindFirstChild("Winner"), function()
+        return P.custom_win.win_message
+    end)
+
+    table.insert(P.custom_win.connections, wkid2.ChildAdded:Connect(function(arg269)
+        if arg269.Name == "Winner" then
+            fn79(arg269, function()
+                return P.custom_win.win_message
+            end)
+        end
+
+        if arg269.Name == "Killed" then
+            fn79(arg269, function()
+                return P.custom_win.kill_message
+            end)
+        end
+    end))
+end
+
+P.custom_win.stop = function()
+    P.custom_win.enabled = false
+
+    for val261, val262 in ipairs(P.custom_win.connections) do
+        pcall(function()
+            val262:Disconnect()
+        end)
+    end
+
+    table.clear(P.custom_win.connections)
+end
+
+local function getplr(arg270)
+    if type(arg270) ~= "string" or arg270 == "" then
+        return nil
+    end
+
+    local kid88 = wsp:FindFirstChild("Alive")
+
+    if kid88 then
+        kid88 = kid88:FindFirstChild(arg270)
+    end
+
+    local zen3 = kid88 or wsp:FindFirstChild(arg270)
+
+    if zen3 and zen3:IsA("Model") then
+        local kid89 = zen3:FindFirstChild("HumanoidRootPart") or zen3.PrimaryPart or zen3:FindFirstChildWhichIsA("BasePart")
+
+        if kid89 then
+            return kid89.Position
+        end
+    end
+
+    return nil
+end
+
+local function fn80()
+    local all3 = P.ball.get_all()
+    local n20 = 0
+
+    for val263, val264 in ipairs(all3) do
+        local velocity4 = P.ball.get_velocity(val264.part, val264.model)
+
+        if velocity4 then
+            local mag2 = velocity4.Magnitude
+
+            if n20 < mag2 then
+                n20 = mag2
+            end
+        end
+    end
+
+    return n20
+end
+
+local function fn81(...)
+    if not P.config.kill_pre_click then
+        return
+    end
+
+    local root7 = P.player.get_root()
+
+    if not root7 then
+        return
+    end
+
+    if not P.player.is_alive() then
+        return
+    end
+
+    local speed2 = P.config.kill_pre_click_speed or 1
+
+    if speed2 > 1 and fn80() < speed2 then
+        return
+    end
+
+    local range3 = P.config.kill_pre_click_range or 30
+    local pos4 = root7.Position
+    local arc3 = false
+
+    for i8 = 1, sel("#", ...) do
+        speed2 = sel(i8, ...)
+        i8 = getplr(if ty(speed2) == "string" then speed2 else if ty(speed2) == "table" then speed2.Name or speed2.DisplayName or speed2.Victim or speed2.Player else nil)
+
+        if i8 and (pos4 - i8).Magnitude <= range3 then
+            arc3 = true
+            break
+        end
+    end
+
+    if not arc3 then
+        local ch36 = lp.Character
+
+        for val265, val266 in ips(P.player.get_alive_chars()) do
+            if val266 ~= ch36 then
+                val265 = val266:FindFirstChild("HumanoidRootPart") or val266.PrimaryPart
+
+                if val265 and (pos4 - val265.Position).Magnitude <= range3 then
+                    arc3 = true
+                    break
+                end
+            end
+        end
+    end
+
+    if arc3 then
+        pc(P.parry.execute)
+    end
+end
+
+tsk.spawn(function()
+    local wkid3 = rs:WaitForChild("Remotes", 30)
+
+    if not wkid3 then
+        return
+    end
+
+    local wkid4 = wkid3:WaitForChild("Killed", 30)
+
+    if not wkid4 then
+        return
+    end
+
+    pcall(function()
+        wkid4.OnClientEvent:Connect(fn81)
+    end)
+end)
+
+local function heartbeat_tick()
+    pc(P.parry.process)
+end
+
+hb:Connect(heartbeat_tick)
+P.animation.init()
+P.avatar_changer.save_original()
+slot[7] = slot[84]:create_tab("Visuals", "eye")
+slot[8] = slot[84]:create_tab("Player", "user")
+slot[9] = slot[84]:create_tab("Sword", "package")
+slot[10] = slot[84]:create_tab("Avatar", "users")
+slot[12] = slot[84]:create_tab("Misc", "settings")
+
+slot[7]:create_module({
+    title = "Parry Visualizer",
+    description = "shows a forcefield ball on parry",
+    section = "left",
+    flag = "parry_visualizer",
+    callback = function(arg302)
+        if arg302 then
+            P.parry_visualizer.start()
+        else
+            P.parry_visualizer.stop()
+        end
+    end
+}):create_colorpicker({
+    title = "Visualizer Color",
+    flag = "parry_visualizer_color",
+    value = cl3.fromRGB(255, 255, 255),
+    callback = function(arg303)
+        P.parry_visualizer.update_color(arg303)
+    end
+})
+
+slot[7]:create_module({
+    title = "Parry Hits",
+    description = "burst effect on every parry success",
+    section = "left",
+    flag = "parry_hits",
+    callback = function(arg304)
+        if arg304 then
+            P.parry_hits.start()
+        else
+            P.parry_hits.stop()
+        end
+    end
+}):create_colorpicker({
+    title = "Hits Color",
+    flag = "parry_hits_color",
+    value = cl3.fromRGB(255, 255, 255),
+    callback = function(arg305)
+        P.parry_hits.update_color(arg305)
+    end
+})
+
+slot[13] = slot[7]:create_module({
+    title = "Custom WinStreak",
+    description = "Customize your client-side win streak display",
+    section = "right",
+    flag = "custom_winstreak",
+    callback = function(arg306)
+        if arg306 then
+            P.winstreak.start()
+        else
+            P.winstreak.stop()
+        end
+    end
+})
+
+if lib._config._flags.custom_winstreak_amount == nil then
+    lib._config._flags.custom_winstreak_amount = "1"
+end
+
+P.winstreak.streak = lib._config._flags.custom_winstreak_amount
+
+if lib._config._flags.custom_winstreak then
+    tsk.spawn(P.winstreak.start)
+end
+
+slot[13]:create_textbox({
+    title = "Streak Amount",
+    flag = "custom_winstreak_amount",
+    placeholder = "Enter streak value (e.g. 999)...",
+    callback = function(arg307)
+        P.winstreak.streak = arg307
+
+        if P.winstreak.enabled then
+            pcall(P.winstreak.update)
+        end
+    end
+})
+
+slot[13] = slot[7]:create_module({
+    title = "Custom Win Message",
+    description = "Customize announcer messages for win and kills",
+    section = "right",
+    flag = "custom_win_enabled",
+    callback = function(arg308)
+        if arg308 then
+            P.custom_win.start()
+        else
+            P.custom_win.stop()
+        end
+    end
+})
+
+if lib._config._flags.custom_win_win_text == nil then
+    slot[3] = lib._config._flags.custom_win_text
+    slot[5] = lib._config._flags
+
+    if slot[3] then
+        slot[294] = slot[3] ~= ""
+
+        if slot[3] == "" then
+            slot[3] = slot[294]
+        end
+    else
+        slot[3] = slot[3]
+    end
+
+    if not slot[3] then
+        slot[3] = "by zeryxia"
+    end
+
+    slot[5].custom_win_win_text = slot[3]
+end
+
+if lib._config._flags.custom_win_kill_text == nil then
+    slot[3] = lib._config._flags.custom_win_text
+    slot[5] = lib._config._flags
+
+    if slot[3] then
+        slot[294] = slot[3] ~= ""
+
+        if slot[3] == "" then
+            slot[3] = slot[294]
+        end
+    else
+        slot[3] = slot[3]
+    end
+
+    if not slot[3] then
+        slot[3] = "by zeryxia"
+    end
+
+    slot[5].custom_win_kill_text = slot[3]
+end
+
+P.custom_win.win_message = lib._config._flags.custom_win_win_text
+P.custom_win.kill_message = lib._config._flags.custom_win_kill_text
+
+if lib._config._flags.custom_win_enabled then
+    tsk.spawn(P.custom_win.start)
+end
+
+slot[13]:create_textbox({
+    title = "Win Message",
+    flag = "custom_win_win_text",
+    placeholder = "Enter win message...",
+    callback = function(arg309)
+        P.custom_win.win_message = arg309
+
+        if P.custom_win.enabled then
+            P.custom_win.update()
+        end
+    end
+})
+
+slot[13]:create_textbox({
+    title = "Kill Message",
+    flag = "custom_win_kill_text",
+    placeholder = "Enter kill message...",
+    callback = function(arg310)
+        P.custom_win.kill_message = arg310
+
+        if P.custom_win.enabled then
+            P.custom_win.update()
+        end
+    end
+})
+
+slot[13] = slot[7]:create_module({
+    title = "Ability ESP",
+    description = "shows player equipped abilities",
+    section = "left",
+    flag = "ability_esp",
+    callback = function(arg311)
+        if arg311 then
+            P.ability_esp.start()
+        else
+            P.ability_esp.stop()
+        end
+    end
+})
+
+slot[13]:create_divider({showtopic = true, title = "Name"})
+
+slot[13]:create_checkbox({
+    title = "Show Name",
+    flag = "esp_show_name",
+    value = false,
+    callback = function(arg312)
+        P.ability_esp.show_name = arg312
+    end
+})
+
+slot[13]:create_dropdown({
+    title = "Name Type",
+    flag = "esp_name_mode",
+    options = {"Display Name", "Username"},
+    maximum_options = 2,
+    multi_dropdown = false,
+    callback = function(arg313)
+        P.ability_esp.name_mode = arg313
+    end
+})
+
+slot[13]:create_slider({
+    title = "Name Size",
+    flag = "esp_name_size",
+    value = 18,
+    minimum_value = 8,
+    maximum_value = 36,
+    callback = function(arg314)
+        P.ability_esp.name_size = arg314
+
+        for val269, val270 in pairs(P.ability_esp.drawings) do
+            if val270.nameDraw then
+                val270.nameDraw.Size = arg314
+            end
+        end
+    end
+})
+
+slot[13]:create_colorpicker({
+    title = "Name Color",
+    flag = "esp_name_color",
+    value = cl3.fromRGB(255, 255, 255),
+    callback = function(arg315)
+        P.ability_esp.name_color = arg315
+
+        for val271, val272 in pairs(P.ability_esp.drawings) do
+            if val272.nameDraw then
+                val272.nameDraw.Color = arg315
+            end
+        end
+    end
+})
+
+slot[13]:create_divider({showtopic = true, title = "Ability"})
+
+slot[13]:create_slider({
+    title = "Ability Size",
+    flag = "esp_ability_size",
+    value = 16,
+    minimum_value = 8,
+    maximum_value = 36,
+    callback = function(arg316)
+        P.ability_esp.ability_size = arg316
+
+        for val273, val274 in pairs(P.ability_esp.drawings) do
+            if val274.abilityDraw then
+                val274.abilityDraw.Size = arg316
+            end
+        end
+    end
+})
+
+slot[13]:create_colorpicker({
+    title = "Ability Color",
+    flag = "esp_ability_color",
+    value = cl3.fromRGB(120, 200, 255),
+    callback = function(arg317)
+        P.ability_esp.ability_color = arg317
+
+        for val275, val276 in pairs(P.ability_esp.drawings) do
+            if val276.abilityDraw then
+                val276.abilityDraw.Color = arg317
+            end
+        end
+    end
+})
+
+slot[7]:create_module({
+    title = "Ball Velocity",
+    description = "displays current and peak ball speed",
+    section = "left",
+    flag = "ball_velocity",
+    callback = function(arg318)
+        if arg318 then
+            P.ball_velocity.start()
+        else
+            P.ball_velocity.stop()
+        end
+    end
+})
+
+slot[7]:create_module({
+    title = "No Render",
+    description = "disables client effects",
+    section = "right",
+    flag = "no_render",
+    callback = function(arg320)
+        if arg320 then
+            P.no_render.start()
+        else
+            P.no_render.stop()
+        end
+    end
+})
+
+slot[7]:create_module({
+    title = "Plushies",
+    description = "animated plushies that follow you",
+    section = "right",
+    flag = "plushies",
+    callback = function(arg321)
+        if arg321 then
+            P.plushies.start()
+        else
+            P.plushies.stop()
+        end
+    end
+}):create_dropdown({
+    title = "Plushie Type",
+    flag = "plushie_type",
+    options = {
+        "Reimu",
+        "Youmou",
+        "Shion",
+        "Yuuka",
+        "Flandre",
+        "Ayanami",
+        "Padoru"
+    },
+    maximum_options = 7,
+    multi_dropdown = true,
+    callback = function(arg322)
+        P.plushies.active_types = {}
+
+        for val277, val278 in ipairs(arg322) do
+            P.plushies.active_types[val278] = true
+        end
+    end
+})
+
+slot[8]:create_module({
+    title = "Field of View",
+    description = "changes camera field of view",
+    section = "left",
+    flag = "fov",
+    notify = true,
+    callback = function(arg323)
+        P.player_mods.set_fov(arg323, nil)
+    end
+}):create_slider({
+    title = "FOV",
+    flag = "fov_value",
+    value = 70,
+    minimum_value = 40,
+    maximum_value = 120,
+    callback = function(arg324)
+        P.player_mods.fov = arg324
+
+        if P.player_mods.fov_enabled then
+            cam.FieldOfView = arg324
+        end
+    end
+})
+
+slot[5] = P.emotes.get_emotes_list()
+
+slot[6] = slot[8]:create_module({
+    title = "Emotes",
+    description = "plays character emote animations",
+    section = "left",
+    flag = "emotes",
+    notify = true,
+    callback = function(arg332)
+        if arg332 then
+            P.emotes.start()
+        else
+            P.emotes.cleanup()
+        end
+    end
+})
+
+slot[6]:create_dropdown({
+    title = "Emote",
+    flag = "emote_select",
+    options = slot[5],
+    maximum_options = 10,
+    multi_dropdown = false,
+    search = true,
+    callback = function(arg333)
+        P.emotes.current = arg333
+
+        if P.emotes.enabled then
+            P.emotes.play(arg333)
+        end
+    end
+})
+
+slot[6]:create_checkbox({
+    title = "Auto Stop",
+    flag = "emote_auto_stop",
+    callback = function(arg334)
+        P.emotes.auto_stop = arg334
+    end
+})
+
+slot[7] = slot[9]:create_module({
+    title = "Sword Changer",
+    description = "customizes sword appearance and effects",
+    section = "left",
+    flag = "sword_changer",
+    callback = function(arg335)
+        if arg335 then
+            P.sword_changer.save_original()
+            P.sword_changer.enabled = true
+            pcall(P.sword_changer.update)
+        else
+            P.sword_changer.enabled = false
+            P.sword_changer.restore_original()
+        end
+    end
+})
+
+slot[7]:create_textbox({
+    title = "Sword Model",
+    flag = "sword_model",
+    placeholder = "Enter sword model name...",
+    callback = function(arg336)
+        P.sword_changer.model = arg336
+        P.sword_changer.model_cache[arg336] = nil
+        pcall(P.sword_changer.update)
+    end
+})
+
+slot[7]:create_textbox({
+    title = "Sword Animations",
+    flag = "sword_animations",
+    placeholder = "Enter sword animation name...",
+    callback = function(arg337)
+        P.sword_changer.animations = arg337
+        pcall(P.sword_changer.update)
+    end
+})
+
+slot[7]:create_textbox({
+    title = "Sword FX",
+    flag = "sword_fx",
+    placeholder = "Enter sword FX name...",
+    callback = function(arg338)
+        P.sword_changer.fx = arg338
+        pcall(P.sword_changer.update)
+    end
+})
+
+slot[10]:create_module({
+    title = "Avatar Changer",
+    description = "copies another player avatar",
+    section = "left",
+    flag = "avatar_changer",
+    callback = function(arg339)
+        P.avatar_changer.enabled = arg339
+
+        if arg339 then
+            P.avatar_changer.save_original()
+
+            if P.avatar_changer.target ~= "" then
+                P.avatar_changer.apply(P.avatar_changer.target)
+            end
+        end
+
+        if not arg339 and P.avatar_changer.applied_id then
+            P.avatar_changer.restore()
+        end
+    end
+}):create_textbox({
+    title = "Username",
+    flag = "avatar_target",
+    placeholder = "Enter username...",
+    callback = function(arg340)
+        local changer = P.avatar_changer
+
+        if not arg340 then
+            arg340 = ""
+        end
+
+        changer.target = arg340
+
+        if P.avatar_changer.enabled and P.avatar_changer.target ~= "" then
+            P.avatar_changer.applied_id = nil
+            P.avatar_changer.apply(P.avatar_changer.target)
+        end
+    end
+})
+
+slot[10]:create_module({
+    title = "Korblox",
+    description = "replaces right leg with korblox mesh",
+    section = "right",
+    flag = "korblox",
+    callback = function(arg341)
+        P.avatar.set_korblox(arg341)
+    end
+})
+
+slot[10]:create_module({
+    title = "Headless",
+    description = "makes head invisible",
+    section = "right",
+    flag = "headless",
+    callback = function(arg342)
+        P.avatar.set_headless(arg342)
+    end
+})
+
+slot[12]:create_module({
+    title = "Staff Detection",
+    description = "detects if staff members are in your game",
+    section = "left",
+    flag = "staff_detection",
+    callback = function(arg352)
+        if arg352 then
+            local jug3 = false
+            local t34 = {}
+            local tps = cref(g:GetService("TeleportService"))
+
+            local function fn82(arg353)
+                if t34[arg353.UserId] ~= nil then
+                    return t34[arg353.UserId]
+                end
+
+                local function fn83()
+                    local isingroup = arg353:IsInGroup(12836673) and arg353:GetRankInGroup(12836673) >= 2
+                    return isingroup
+                end
+
+                local kat3, lap3 = pcall(fn83)
+
+                if kat3 then
+                    t34[arg353.UserId] = lap3
+                    return lap3
+                end
+
+                return false
+            end
+
+            local function fn84()
+                local players3 = plr:GetPlayers()
+                local mat3 = false
+
+                for val279, val280 in ipairs(players3) do
+                    if fn82(val280) then
+                        mat3 = true
+                        break
+                    end
+
+                    mat3 = false
+                end
+
+                if mat3 and not jug3 then
+                    jug3 = true
+
+                    if P.staff_detection.mode == "Notify" then
+                        pcall(function()
+                            lib.SendNotification({title = "Staff Detection", text = "Possible staff detected in your game.", duration = 5})
+                        end)
+                    elseif P.staff_detection.mode == "Kick" then
+                        pcall(function()
+                            lib.SendNotification({title = "Staff Detection", text = "Staff detected. Disconnecting...", duration = 3})
+                        end)
+
+                        task.wait(1)
+                        tps:Teleport(g.PlaceId, lp)
+                    end
+                elseif not mat3 and jug3 then
+                    jug3 = false
+                end
+            end
+
+            local net3 = true
+
+            task.spawn(function()
+                fn84()
+
+                while net3 do
+                    task.wait(5)
+
+                    if not net3 then
+                        break
+                    end
+
+                    fn84()
+                end
+            end)
+
+            uix["Staff Detection"] = {
+                Disconnect = function()
+                    net3 = false
+                end
+            }
+        elseif uix["Staff Detection"] then
+            uix["Staff Detection"]:Disconnect()
+            uix["Staff Detection"] = nil
+        end
+    end
+}):create_dropdown({
+    title = "Detection Mode",
+    flag = "staff_detection_mode",
+    options = {"Notify", "Kick"},
+    maximum_options = 2,
+    multi_dropdown = false,
+    callback = function(arg354)
+        P.staff_detection.mode = arg354
+    end
+})
+
+tsk.spawn(function()
+    task.wait(3)
+    P.sword_changer.loaded = sword_ok
+
+    if P.sword_changer.enabled and P.sword_changer.update then
+        pcall(P.sword_changer.update)
+    end
+end)
